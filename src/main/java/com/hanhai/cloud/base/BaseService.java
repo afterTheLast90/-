@@ -1,5 +1,6 @@
 package com.hanhai.cloud.base;
 
+import com.github.pagehelper.PageHelper;
 import com.hanhai.cloud.entity.GroupRelationship;
 import com.hanhai.cloud.mapper.*;
 
@@ -95,4 +96,18 @@ public class BaseService {
      */
     @Resource
     UserShareMapper userShareMapper;
+
+
+    /**
+     * 分页方法，在查询之前调用，传入分页参数
+     * @param pageParam
+     */
+    public void startPage(PageParam pageParam){
+        if (pageParam!=null){
+            PageHelper.startPage(pageParam.getPageNum(), pageParam.getPageSize());
+            return;
+        }
+
+        PageHelper.startPage(PageParam.DEFAULT_PAGE_NUM, PageParam.DEFAULT_PAGE_SIZE);
+    }
 }
