@@ -3,6 +3,7 @@ package com.hanhai.cloud.base;
 import com.github.pagehelper.PageHelper;
 import com.hanhai.cloud.entity.GroupRelationship;
 import com.hanhai.cloud.mapper.*;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;
 
@@ -16,94 +17,95 @@ public class BaseService {
      * 文件历史
      */
     @Resource
-    FileHistoryMapper fileHistoryMapper;
+    protected FileHistoryMapper fileHistoryMapper;
 
 
     /**
      * 文件收集箱
      */
     @Resource
-    FileInboxMapper fileInboxMapper;
+    protected FileInboxMapper fileInboxMapper;
 
     /**
      * 文件操作
      */
     @Resource
-    FileMapper fileMapper;
+    protected FileMapper fileMapper;
 
     /**
      * 组操作
      */
     @Resource
-    GroupMapper groupMapper;
+    protected GroupMapper groupMapper;
 
     /**
      * 组关系
      */
     @Resource
-    GroupRelationship groupRelationship;
+    protected GroupRelationshipMapper groupRelationshipMapper;
 
 
     /**
      * 内部分享关系
      */
     @Resource
-    InnerShareMapper innerShareMapper;
+    protected InnerShareMapper innerShareMapper;
 
     /**
      * 回收站记录
      */
     @Resource
-    ReceivingRecordMapper receivingRecordMapper;
+    protected ReceivingRecordMapper receivingRecordMapper;
 
     /**
      * 回收站
      */
     @Resource
-    RecycleMapper recycleMapper;
+    protected RecycleMapper recycleMapper;
 
     /**
      * 系统设置项
      */
     @Resource
-    SystemSettingsMapper systemSettingsMapper;
+    protected SystemSettingsMapper systemSettingsMapper;
 
     /**
      * 标签
      */
     @Resource
-    TagMapper tagMapper;
+    protected TagMapper tagMapper;
 
     /**
      * 标签关系
      */
     @Resource
-    TagRelationshipMapper tagRelationshipMapper;
+    protected TagRelationshipMapper tagRelationshipMapper;
     /**
      * 用户文件
      */
     @Resource
-    UserFileMapper userFileMapper;
+    protected UserFileMapper userFileMapper;
 
     /**
      * 用户相关
      */
     @Resource
-    UserMapper userMapper;
+    protected UserMapper userMapper;
 
     /**
      * 用户分享
      */
     @Resource
-    UserShareMapper userShareMapper;
+    protected UserShareMapper userShareMapper;
 
 
     /**
      * 分页方法，在查询之前调用，传入分页参数
+     *
      * @param pageParam
      */
-    public void startPage(PageParam pageParam){
-        if (pageParam!=null){
+    public void startPage(PageParam pageParam) {
+        if (pageParam != null) {
             PageHelper.startPage(pageParam.getPageNum(), pageParam.getPageSize());
             return;
         }
