@@ -15,4 +15,8 @@ public class UserService extends BaseService {
     public User getUserByEmailAndPhone(String p){
         return userMapper.getUserByPhoneOrEmail(p);
     }
+
+    public User getUserById(Long userId){
+        return userMapper.selectById(userId);
+    }
 }
