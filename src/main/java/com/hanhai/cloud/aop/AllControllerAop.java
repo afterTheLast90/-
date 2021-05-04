@@ -2,13 +2,15 @@ package com.hanhai.cloud.aop;
 
 import cn.hutool.json.JSONUtil;
 import com.hanhai.cloud.base.R;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.Signature;
 import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -18,12 +20,14 @@ import javax.servlet.http.HttpServletRequest;
  * @author wmgx
  * @create 2021-04-27-20:16
  **/
-@Log4j2
+@Slf4j
+@Component
+@Aspect
 public class AllControllerAop {
     /**
      * ..表示包及子包 该方法代表controller层的所有方法  TODO 路径需要根据自己项目定义
      */
-    @Pointcut("execution(public * com.hanhai.cloud.controller.* (..))")
+    @Pointcut("execution(public * com.hanhai.cloud.controller.*.* (..))")
     public void controllerMethod() {
     }
 
@@ -76,9 +80,16 @@ public class AllControllerAop {
 
 
 
-    @AfterReturning(returning = "baseResult", pointcut =
+    @AfterReturning(returning = "r", pointcut =
             "controllerMethod()")
-    public void logResultVOInfo(R r) throws Exception {
+    public void logResultVOInfo(R r) {
         log.info("请求结果：" + r.getCode() + "\t" + r.getMsg()+"\t"+ JSONUtil.toJsonStr(r.getData()));
+    }
+
+    @AfterReturning(returning = "s", pointcut =
+            "controllerMethod()")
+    public void logResultVOInfo(String s) {
+        log.info("页码跳转到"+s);
+//        log.info("请求结果：" + r.getCode() + "\t" + r.getMsg()+"\t"+ JSONUtil.toJsonStr(r.getData()));
     }
 }

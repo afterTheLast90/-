@@ -1,24 +1,9 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>欢迎登录瀚海云盘</title>
-    <script type="text/javascript" src="/static/jquery/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/css/base.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.6.0/css/bootstrap.css">
-    <script type="text/javascript"
-            src="/static/bootstrap-4.6.0/js/bootstrap.js"></script>
-
-    <script type="text/javascript" src="/static/axios/axios.min.js"></script>
-
-    <script type="text/javascript" src="/static/serializeObject.js"></script>
-    <script type="text/javascript" src="/static/layer/layer.js"></script>
-    <script type="text/javascript" src="/static/constant.js"></script>
-
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org">
+<head >
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>欢迎登录瀚海云盘</title>
+    </th:block>
     <style type="text/css">
         body {
             /* animation: mymove 1s infinite; */
@@ -74,30 +59,30 @@
         <br>
         <form class="login-validation" novalidate action="/login" method="POST" id="formLogin">
             <div class="row form-group mb-4">
-                <input type="text" class="form-control col-12 " placeholder="请输入邮箱/手机号"
+                <input type="text" class="form-control col-12 " placeholder="请输入邮箱/手机号" title="请输入邮箱/手机号"
                        name="username" required
                        pattern="([a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+)|(1[358]\d{9})">
                 <div style="text-align: left" class="invalid-feedback">请输入格式正确的邮箱或手机号</div>
             </div>
             <div class="row form-group  mb-4">
                 <input type="password" class="form-control col-12" name="password"
-                       placeholder="请输入密码" required pattern="^.{6,}">
+                       placeholder="请输入密码" title="请输入密码" required pattern="^.{6,}">
 
                 <div style="text-align: left" class="invalid-feedback">请输入密码,最少6位</div>
             </div>
             <div class="row form-group  mb-4">
                 <input type="text" class="form-control col-6" name="captcha"
                        placeholder="请输入四位验证码" pattern="^[a-zA-Z0-9]{4}"
-                       required>
+                       required title="请输入验证码">
 
                 <img src="/captcha" id="captcha" class="col-4 offset-1 "
                      style="height: calc(1.5em + 0.75rem + 2px);"
-                     alt="">
+                     alt="" title="看不清验证码？单击更换验证码">
 
                 <div style="text-align: left" class="invalid-feedback">验证码格式错误</div>
             </div>
             <div class="row">
-                <button id="login" class="btn btn-primary col-md-12">登录</button>
+                <button id="login" class="btn btn-primary col-md-12" title="登录">登录</button>
             </div>
 
             <div class="row mt-4">
