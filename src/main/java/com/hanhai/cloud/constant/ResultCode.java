@@ -15,6 +15,12 @@ public enum ResultCode {
      */
     SUCCESS(200, "操作成功"),
 
+
+    /**
+     * 操作成功 前端不显示
+     */
+    SUCCESS_NO_SHOW(201, "操作成功"),
+
     /**
      * 更新成功
      */
