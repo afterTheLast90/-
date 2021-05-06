@@ -27,6 +27,11 @@ public enum ResultCode {
     UPDATE_SUCCESS(200,"更新成功") ,
 
     /**
+     * 更新成功
+     */
+    UPDATE_ERROR(453,"更新失败") ,
+
+    /**
      * 参数错误
      */
     PARAMETER_ERROR(451,"参数错误"),
