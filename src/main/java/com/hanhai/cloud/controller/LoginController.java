@@ -51,7 +51,7 @@ public class LoginController {
     @ResponseBody
     public R loginSystem(HttpServletRequest request,
                          @RequestBody  @Validated  LoginParams loginParams){
-        log.info("请求登录"+loginParams.toString());
+//        log.info("请求登录"+loginParams.toString());
         if (!loginParams.getCaptcha().equals(request.getSession().getAttribute("captcha")))
             return new R(ResultCode.CAPTCHA_ERROR);
         request.getSession().setAttribute("captcha",null);
