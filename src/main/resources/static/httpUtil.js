@@ -17,9 +17,14 @@ httpUtil.interceptors.response.use(
         console.log(response.data)
         console.log("==========================================")
         layer.closeAll('loading');
-        layer.msg(response.data.msg);
+        if (response.data.code !== 201)
+            layer.msg(response.data.msg
+        //     , {
+        //     offset: 't',
+        // }
+        );
         if (response.data.code) {
-            if (response.data.code !== 200)
+            if (response.data.code !== 200 && response.data.code !== 201)
                 return Promise.reject(response.data)
         }
 
@@ -29,10 +34,16 @@ httpUtil.interceptors.response.use(
     error => {
         layer.closeAll('loading');
         console.log("============拦截器拦截输出==================")
-        console.log(response.data)
+        console.log(error)
         console.log("==========================================")
-        layer.msg("网络错误，请稍后再试")
-        return Promise.reject(response.data) // 返回接口返回的错误信息
+
+        layer.msg("网络错误，请稍后再试"
+        //     , {
+        //     offset: 't',
+        // }
+        );
+        // layer.msg("网络错误，请稍后再试")
+        return Promise.reject(error) // 返回接口返回的错误信息
     })
 
 export default httpUtil
