@@ -1,0 +1,89 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <th:block th:include="common/header :: header(~{::title})">
+            <title>瀚海云盘</title>
+        </th:block>
+
+        <style>
+            body {
+                background-color: #efefef;
+                min-width: 1400px;
+                margin: 0px auto;
+                padding: 0px 0px;
+                /*overflow:hidden hidden;*/
+            }
+
+
+            .actions {
+                padding-top: 10px;
+                justify-content: left;
+            }
+            .dropdown-item {
+                font-size: 1rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .actions button {
+                margin-right: 10px;
+                margin-left: 5px;
+            }
+
+        </style>
+    </head>
+    <body>
+      <div th:replace="common/nav-header :: nav-header"></div>
+        <div class="row" style="margin-top:8px;margin-left: 0px ;margin-right: 0px">
+            <div th:replace="common/nav-left :: nav-left"></div>
+            <div class="col-my-10 main" style="margin-right: 0px" >
+                <div class="row  navbar bg-light  actions">
+                    <div class="dropdown">
+                        <button type="button" class="btn btn-lg btn-primary dropdown-toggle " data-toggle="dropdown"
+                                aria-expanded="false" id="dropdownMenu2">
+                            <span class="bi bi-cloud-upload"></span>&nbsp;上传
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="uploadButton">
+                            <a class="dropdown-item" href="#" id="uploadFileMenuItem"><h5>上传文件</h5></a>
+                            <a class="dropdown-item" href="#" id="uploadFolderMenuItem"><h5>上传文件夹</h5></a>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        <span class="bi bi-folder-plus"></span>新建文件夹
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        <span class="bi bi-cloud-download"></span>下载
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        <span class="bi bi-trash"></span>删除
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        重命名
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        复制到
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-md">
+                        移动到
+                    </button>
+                    <form class="form-inline ml-auto "  style="margin-top:10px;">
+                        <input class="form-control mr-sm-2" type="search" placeholder="搜索您的文件" aria-label="serach">
+                        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
+                            <i class="bi bi-search"></i>搜索
+                        </button>
+                    </form>
+                </div>
+                <div class="row navbar navbar-light bg-light" style="margin-top: 5px;">
+                    <button type="button" class="btn btn-light btn-lg">
+                        <span class="bi bi-reply"></span>&nbsp;返回上一级
+                    </button>
+                    <nav aria-label="breadcrumb" style="top: 7px;left: 145px;position: absolute;">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="#">全部文件</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Library</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="nav-left">
+    <style>
+
+        #accordion ul {
+            padding-left: 0px;
+        }
+
+        #accordion li {
+            list-style: none;
+            cursor: pointer;
+            padding-left: 2rem;
+            margin-left: 6px;
+            margin-right: 6px;
+            border-radius: 6px;
+        }
+
+        #accordion li i {
+            margin-right: 10px;
+        }
+
+        #accordion li:hover {
+            background-color: #ecf0f1;
+        }
+
+        .nav-item {
+            font-size: 1.5rem;
+            /*padding-top: 1rem;*/
+            /*padding-left: 3rem;*/
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .item-second {
+            font-size: 1.2rem;
+            padding-top: 1rem;
+            padding-left: 4rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .breadcrumb-item + .breadcrumb-item::before {
+            display: inline-block;
+            padding-right: 0.5rem;
+            color: #6c757d;
+            content: ">";
+        }
+
+        .left-nav {
+            background-color: #ffffff;
+            height: 92vh;
+            width: 100%;
+            padding-top: 1rem;
+            margin-left: 5%;
+        }
+
+        .col-my-1 {
+            width: 13%;
+            min-width: 200px;
+        }
+
+        .col-my-10 {
+            width: 85%;
+
+        }
+
+        .navbar {
+            background-color: #ffffff;
+        }
+
+        .main {
+            padding-left: 2.5%;
+        }
+
+        a {
+            color: black;
+        }
+
+        a:hover {
+            text-decoration: none;
+        }
+
+    </style>
+
+    <div class="col-my-1 left-nav">
+        <div class="panel-group" id="accordion">
+            <ul>
+                <li data-toggle="collapse" data-parent="#accordion" href="#item-Myfile" id="headMyfile"
+                    class="nav-item">
+                    <i class="bi bi-file-earmark-text navigation"></i>我的文件
+
+                </li>
+                <div id="item-Myfile" class="panel-collapse collapse">
+                    <div class="item-body">
+                        <ul class="list-unstyled">
+                            <li class="item-second" id='a'><a href="a.html" style="text-align: center"><i
+                                    class="bi bi-image-alt"></i>图片</a></li>
+
+                            <li class="item-second" id='b'><a href="b.html" style="text-align: center"><i
+                                    class="bi bi-file-earmark-word"></i>文档</a></li>
+
+                            <li class="item-second" id='c'><a href="c.html" style="text-align: center"><i
+                                    class="bi bi-film"></i>视频</a></li>
+
+                            <li class="item-second" id='d'><a href="d.html" style="text-align: center"><i
+                                    class="bi bi-music-note-list"></i>音乐</a></li>
+
+                            <li class="item-second" id='e'><a href="e.html" style="text-align: center"><i
+                                    class="bi bi-question"></i>其他</a></li>
+
+                        </ul>
+                    </div>
+                </div>
+                <li href="#item-Inbox" id="headInbox" class="nav-item">
+                    <i class="bi bi-inbox navigation"></i>收件箱
+                </li>
+                <li href="#item-Sharetherecord" id="Sharetherecord" class="nav-item">
+                    <i class="bi bi-share navigation"></i>分享记录
+                </li>
+
+                <li href="#item-group" id="headgroup" class="nav-item">
+                    <i class="bi bi-people-fill navigation"></i>群组
+                </li>
+
+                <li href="#item-Labelmanagement" id="headLabelmanagement" class="nav-item">
+                    <i class="bi bi-tags navigation"></i>标签管理
+                </li>
+
+                <li href="#item-Recyclebin" id="headRecyclebin" class="nav-item">
+                    <i class="bi bi-trash navigation"></i>回收站
+                </li>
+
+                <li href="#item-Search" id="headsearch" class="nav-item">
+                    <i class="bi bi-search navigation"></i>搜索
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+</html>

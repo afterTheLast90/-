@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<div th:fragment="nav-header">
+
+    <nav class="navbar navbar-expand-lg navbar-top" style="box-shadow: 0 5px 3px rgba(0,0,0,.2)">
+        <a class="navbar-brand" href="#">
+            <img style="display: inline" src="/static/img/logo-capacity.png" width="40px" title="这是瀚海云盘的LOGO"
+                 alt="此处是瀚海云盘的LOGO">
+            <span style="font-size: 25px">瀚海云盘</span>
+        </a>
+
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto"></ul>
+            <div class="form-inline">
+                <div class="dropdown">
+                    <button type="button" class="btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
+                        <img src="/static/img/logo-capacity.png" class="rounded-circle" width="40px" title="这是用户头像"
+                             alt="此处是用户头像"><br>
+                    </button>
+                    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                        <li role="presentation">
+                            <a role="menuitem" tabindex="-1" href="#" class="dropdown-item">
+                                个人信息
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a role="menuitem" tabindex="0" href="#" class="dropdown-item">
+                                后台管理
+                            </a>
+                        </li>
+                        <li role="presentation">
+                            <a role="menuitem" tabindex="1" href="#" class="dropdown-item">
+                                注销退出
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <p style="margin-top: 10px;margin-left: 8px">用户名</p>
+            </div>
+        </div>
+    </nav>
+</div>
+
+</html>
