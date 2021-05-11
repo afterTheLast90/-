@@ -1,6 +1,8 @@
 package com.hanhai.cloud.base;
 
 
+import com.hanhai.cloud.constant.ResultCode;
+
 /**
  * @author wmgx
  * @create 2021-02-01-19:21
@@ -12,6 +14,11 @@ public class BaseException extends Exception{
     public BaseException(Integer code, String msg) {
         this.code = code;
         this.msg = msg;
+    }
+
+    public BaseException(ResultCode r) {
+        this.code = r.getCode();
+        this.msg = r.getMsg();
     }
 
     public BaseException() {
