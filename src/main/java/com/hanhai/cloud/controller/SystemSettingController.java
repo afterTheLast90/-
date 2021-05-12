@@ -1,9 +1,6 @@
 package com.hanhai.cloud.controller;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.db.ds.simple.SimpleDataSource;
-import cn.hutool.db.sql.SqlExecutor;
-import com.github.yitter.idgen.YitIdHelper;
 import com.hanhai.cloud.CloudApplication;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.configuration.SystemInfo;
@@ -13,21 +10,15 @@ import com.hanhai.cloud.params.CreateNewFolderParam;
 import com.hanhai.cloud.params.DateBaseParam;
 import com.hanhai.cloud.params.InstallParams;
 import com.hanhai.cloud.service.SystemSettingService;
-import com.hanhai.cloud.utils.PasswordEncryptionUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.support.EncodedResource;
-import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.*;
-import java.sql.Connection;
+import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -138,9 +129,9 @@ public class SystemSettingController {
 
     @PostMapping("/system/install")
     @ResponseBody
-    public R installSystem(@RequestBody @Validated InstallParams installParams) throws IOException, SQLException,UpdateException {
+    public R installSystem(@RequestBody @Validated InstallParams installParams) throws IOException, SQLException, UpdateException {
 
-        if (systemInfo.getInstalled()){
+        if (systemInfo.getInstalled()) {
             return new R(ResultCode.UNAUTHORIZED_ACCESS).setMsg("系统已经安装，无需重复安装");
         }
 
@@ -148,7 +139,7 @@ public class SystemSettingController {
         systemSettingService.install(installParams);
 
         CloudApplication.restartApplication();
-        return  R.getSuccess().setMsg("系统安装完成，系统自动重启");
+        return R.getSuccess().setMsg("系统安装完成，系统自动重启");
     }
 
 }

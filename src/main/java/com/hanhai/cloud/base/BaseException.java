@@ -7,7 +7,7 @@ import com.hanhai.cloud.constant.ResultCode;
  * @author wmgx
  * @create 2021-02-01-19:21
  **/
-public class BaseException extends RuntimeException{
+public class BaseException extends RuntimeException {
     private Integer code;
     private String msg;
 
@@ -23,6 +23,7 @@ public class BaseException extends RuntimeException{
 
     public BaseException() {
     }
+
     public Integer getCode() {
         return code;
     }

@@ -1,12 +1,9 @@
 package com.hanhai.cloud.service;
 
-import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.db.ds.simple.SimpleDataSource;
 import cn.hutool.db.sql.SqlExecutor;
 import com.github.yitter.idgen.YitIdHelper;
 import com.hanhai.cloud.base.BaseService;
-import com.hanhai.cloud.base.R;
-import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.SystemSetting;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.InstallParams;
@@ -16,7 +13,6 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.EncodedResource;
 import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.*;
 import java.sql.Connection;
@@ -36,12 +32,17 @@ public class SystemSettingService extends BaseService {
 
     /**
      * 安装系统
-     * @param installParams 安装参数
+     *
+     * @param installParams
+     *         安装参数
+     *
      * @throws IOException
-     * @throws SQLException sql错误
-     * @throws UpdateException 安装失败
+     * @throws SQLException
+     *         sql错误
+     * @throws UpdateException
+     *         安装失败
      */
-    public void install(InstallParams installParams) throws IOException, SQLException,UpdateException {
+    public void install(InstallParams installParams) throws IOException, SQLException, UpdateException {
 
 
 //        ApplicationHome h = new ApplicationHome(getClass());
@@ -116,9 +117,14 @@ public class SystemSettingService extends BaseService {
 
     /**
      * 插入系统设置项
-     * @param connection 数据库连接
-     * @param key key
-     * @param value value
+     *
+     * @param connection
+     *         数据库连接
+     * @param key
+     *         key
+     * @param value
+     *         value
+     *
      * @throws SQLException
      */
     private void insertSystemSetting(Connection connection, String key, String value) throws SQLException {

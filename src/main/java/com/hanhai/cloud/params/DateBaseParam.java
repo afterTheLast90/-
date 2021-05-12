@@ -23,8 +23,8 @@ public class DateBaseParam {
     @NotNull(message = "数据库名称不能为空")
     private String dbName;
 
-    @Max(value = 65535 ,message = "数据库端口错误")
-    @Min(value = 1 ,message = "数据库端口错误")
+    @Max(value = 65535, message = "数据库端口错误")
+    @Min(value = 1, message = "数据库端口错误")
     @NotNull(message = "数据库端口不能为空")
     private Integer dbPort;
 
@@ -37,8 +37,8 @@ public class DateBaseParam {
     private String dbPassword;
 
 
-    public String getJDBCUrl(){
-        return "jdbc:mysql://"+getDbAddress()+":"+getDbPort()+"/"+getDbName() +
+    public String getJDBCUrl() {
+        return "jdbc:mysql://" + getDbAddress() + ":" + getDbPort() + "/" + getDbName() +
                 "?serverTimezone=UTC";
     }
 }
