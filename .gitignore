@@ -37,3 +37,4 @@ build/
 /src/test/java/com/hanhai/cloud/*
 # except for .gitkeep
 !.gitkeep
+/application.properties

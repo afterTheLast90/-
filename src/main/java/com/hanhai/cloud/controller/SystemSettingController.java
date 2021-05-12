@@ -1,20 +1,33 @@
 package com.hanhai.cloud.controller;
 
-import cn.hutool.db.DbUtil;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.db.ds.simple.SimpleDataSource;
+import cn.hutool.db.sql.SqlExecutor;
+import com.github.yitter.idgen.YitIdHelper;
+import com.hanhai.cloud.CloudApplication;
 import com.hanhai.cloud.base.R;
+import com.hanhai.cloud.configuration.SystemInfo;
 import com.hanhai.cloud.constant.ResultCode;
+import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.CreateNewFolderParam;
 import com.hanhai.cloud.params.DateBaseParam;
+import com.hanhai.cloud.params.InstallParams;
+import com.hanhai.cloud.service.SystemSettingService;
+import com.hanhai.cloud.utils.PasswordEncryptionUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.EncodedResource;
+import org.springframework.jdbc.datasource.init.ScriptUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +39,12 @@ import java.util.List;
 @Controller
 public class SystemSettingController {
 
+    @Autowired
+    SystemSettingService systemSettingService;
+
+    @Autowired
+    SystemInfo systemInfo;
+
     /**
      * 访问install界面
      *
@@ -33,7 +52,9 @@ public class SystemSettingController {
      */
     @GetMapping("/install")
     public String install() {
-        return "install";
+        if (!systemInfo.getInstalled())
+            return "install";
+        return "redict:login";
     }
 
     /**
@@ -115,6 +136,20 @@ public class SystemSettingController {
         return new R(ResultCode.SUCCESS).setMsg("连接数据库成功");
     }
 
+    @PostMapping("/system/install")
+    @ResponseBody
+    public R installSystem(@RequestBody @Validated InstallParams installParams) throws IOException, SQLException,UpdateException {
+
+        if (systemInfo.getInstalled()){
+            return new R(ResultCode.UNAUTHORIZED_ACCESS).setMsg("系统已经安装，无需重复安装");
+        }
+
+        // 安装系统
+        systemSettingService.install(installParams);
+
+        CloudApplication.restartApplication();
+        return  R.getSuccess().setMsg("系统安装完成，系统自动重启");
+    }
 
 }
 

@@ -3,7 +3,7 @@ package com.hanhai.cloud.utils;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.IdUtil;
-import com.hanhai.cloud.configuration.FileUtilConfiguration;
+import com.hanhai.cloud.configuration.SystemInfo;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,10 +27,10 @@ public class BaseFileUtil {
 
     /**
      * 父类构造方法，通过子类传入的配置类设置配置
-     * @param fileUtilConfiguration
+     * @param systemInfo
      */
-    public BaseFileUtil(FileUtilConfiguration fileUtilConfiguration) {
-        this.basePath = fileUtilConfiguration.getBasePath();
+    public BaseFileUtil(SystemInfo systemInfo) {
+        this.basePath = systemInfo.getUpLoadPath();
     }
 
     /**

@@ -45,7 +45,13 @@ public enum ResultCode {
     /**
      * 验证码错误
      */
-    CAPTCHA_ERROR(453,"验证码错误");
+    CAPTCHA_ERROR(453,"验证码错误"),
+
+
+    /**
+     * 非法访问
+     */
+    UNAUTHORIZED_ACCESS(490,"非法访问");
     ResultCode(Integer code, String msg) {
         this.code = code;
         this.msg = msg;
