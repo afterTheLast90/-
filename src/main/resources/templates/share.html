@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入 popper.js(bootstrap-table需要)	-->
+	<script src="/static/popper/popper.min.js"></script>
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>分享纪录</title>
+	</th:block>
+
+
+	<!-- drawer.css -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/drawer/3.2.2/css/drawer.min.css">
+	<!-- iScroll.js -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/iScroll/5.2.0/iscroll.min.js"></script>
+	<!-- drawer.js -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/drawer/3.2.2/js/drawer.min.js"></script>
+
+	<!-- 引入bootstrap-table.css	-->
+	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+	<!--	引入bootstrap-table.js -->
+	<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+
+	<style>
+
+    body {
+      background-color: #efefef;
+      min-width: 1400px;
+      margin: 0px auto;
+      padding: 0px 0px;
+      overflow: hidden;
+    }
+
+    .rMain {
+      width: 84%;
+      margin-left: 2%;
+      padding-top: 10px;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
+    }
+
+    .detailIcon {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .rMain nav li {
+      list-style: none;
+    }
+
+    .rMain nav .sInfo {
+      margin-left: 5px;
+      color: rgb(21,151,219);
+    }
+	</style>
+
+	<script>
+      $(function() {
+
+          // 表格参数
+          $("#rTable").bootstrapTable({
+              // 表格 样式类
+              classes: 'table table-hover',
+              // 表格高度
+              height: 550,
+              // 开启搜索
+              search: true,
+              // 回车后搜索
+              // searchOnEnterKey: true,
+              // 自动去除搜索空格
+              trimOnSearch: true,
+              searchAlign: "left",
+              //ustomSearch:customSearch,//自定义搜索，比如只搜索ID字段
+              // function  customSearch(data, text) {
+              //   return data.filter(function (row) {
+              //       return (row.Id+"").indexOf(text) > -1
+              //   })
+              data: [{
+                  fileName: "java实验1",
+                  createdTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '内部分享',
+                  // 失效开关
+                  rStatus: '<input type="button"/>',
+                  // 查看详情图标，弹出抽屉显示信息
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+                  // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }, {
+                  fileName: "Python实验2",
+                  createTime: '2018-11-30',
+                  expireTime: '2018-11-30',
+                  shareType: '公共分享',
+                  rStatus: 'fff',
+                  rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+              }]
+          });
+          // 得到数据
+          // function ajaxRequest(params) {
+          //   var url = 'https://examples.wenzhixin.net.cn/examples/bootstrap_table/data'
+          //   $.get(url + '?' + $.param(params.data)).then(function (res) {
+          //       params.success(res)
+          //   })
+          // }
+
+          // 抽屉(必须先创建元素，再绑定事件）
+          $('.drawer').drawer();
+      });
+	</script>
+</head>
+<body >
+<!--页头-->
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+	<div th:replace="common/nav-left :: nav-left"></div>
+
+	<div class="rMain drawer drawer--right">
+
+		<!--	ShareTable	-->
+		<table id="rTable" data-pagination="true">
+			<thead>
+			<tr>
+				<th data-field="fileName" data-align="center">文件名</th>
+				<th data-field="createdTime" data-align="center">分享时间</th>
+				<th data-field="expireTime" data-align="center">失效时间</th>
+				<th data-field="shareType" data-align="center">分享类型</th>
+				<!--	用开关实现，添加确认窗口	-->
+				<th data-field="rStatus" data-align="center">状态</th>
+				<!--	显示文件详情（内部分享组、人；删除、添加权限）；转存、下载次数查看；查看密码~~~~弹出模态框	-->
+				<th data-field="rDetails" data-align="center">查看详情</th>
+			</tr>
+			</thead>
+		</table>
+
+		<!--	ShareDetails	-->
+		<nav class="drawer-nav" role="navigation">
+			<ul>
+				<li>文件名:<span class="sInfo"></span></li>
+				<li>分享方式: <span class="sInfo">内部分享</span></li>
+				<!--	分享人应该可以 加/删	-->
+				<li>分享人:
+					<ul class="sInfo">
+						<li>家人</li>
+						<li>李咏</li>
+					</ul>
+				</li>
+				<li>总转存次数:<span class="sInfo">15</span></li>
+				<li>已转存次数:<span class="sInfo">10</span></li>
+				<li>总下载次数:<span class="sInfo">15</span></li>
+				<li>已下载次数:<span class="sInfo">10</span></li>
+				<li>分享密码: <span class="sInfo">3dDz</span></li>
+			</ul>
+		</nav>
+		<!--	rMain:end	-->
+	</div>
+
+</div>
+</body>
+</html>

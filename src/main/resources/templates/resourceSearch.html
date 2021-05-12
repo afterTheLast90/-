@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入popper.js	-->
+	<script src="/static/popper/popper.min.js"></script>
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>资源搜索</title>
+	</th:block>
+
+	<!-- 引入bootstrap-table.css	-->
+	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+	<!--	引入bootstrap-table.js -->
+	<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+
+	<style>
+    body {
+      background-color: #efefef;
+      min-width: 1400px;
+      margin: 0px auto;
+      padding: 0px 0px;
+      /*overflow: hidden;*/
+    }
+
+    .rMain {
+      margin-top: 10px;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+      overflow: auto;
+      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
+    }
+
+    #rTable tbody i {
+      color: #1296db;
+      cursor: pointer;
+    }
+
+    #rTable thead tr .th-inner input {
+      cursor: pointer;
+    }
+
+    #rTable tr td label input {
+      cursor: pointer;
+    }
+
+    #rTable tbody tr:hover {
+      background-color: rgba(18, 150, 219, .15);
+    }
+
+    #rTable tbody .rUpload {
+      font-size: 23px;
+      margin-right: 20px;
+    }
+
+    #rTable tbody .rDownload {
+      /*display: none;*/
+      font-size: 23px;
+    }
+	</style>
+
+	<script>
+      $(function(){
+          // 设置表格数据、样式
+          $('#rTable').bootstrapTable({
+              // url: 'data1.json',
+              // 表格 样式类
+              classes: 'table',
+              // 表格高度
+              height: 550,
+              // 自动去除搜索空格
+              trimOnSearch: true,
+              // 左对齐
+              searchAlign: "left",
+              // 分页
+              pagination: true,
+              // 开启查询
+              search: true,
+              data: [{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },{
+                  fileName: "java实验一",
+                  userName: "大白",
+                  createdTime: "2018-03-31",
+                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+                      "<i class=\"bi bi bi-download rDownload\"></i>"
+              },]
+          })
+      });
+	</script>
+</head>
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+
+	<div class="rMain container shadow">
+		<table id="rTable">
+			<thead>
+			<tr>
+				<!--				<th  data-checkbox="true"></th>-->
+				<th data-field="fileName" data-align="center">文件名</th>
+				<th data-field="userName" data-align="center">分享人</th>
+				<th data-field="createdTime" data-align="center">分享时间</th>
+				<th data-field="operation" data-align="center">下载/转存</th>
+			</tr>
+			</thead>
+		</table>
+	</div>
+
+</div>
+</div>
+</body>
+</html>

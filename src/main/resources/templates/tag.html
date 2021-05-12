@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入 popper.js(bootstrap-table需要)	-->
+	<script src="/static/popper/popper.min.js"></script>
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>标签管理</title>
+	</th:block>
+
+	<!-- 引入bootstrap-table.css	-->
+	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+	<!--	引入bootstrap-table.js -->
+	<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+	<!-- 引入bootstrop-select.css -->
+	<link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
+	<!-- 引入bootstrop-select.js -->
+	<script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
+
+	<style>
+    body {
+      background-color: #efefef;
+      min-width: 1400px;
+      margin: 0px auto;
+      padding: 0px 0px;
+      overflow: hidden;
+    }
+
+    .tMain {
+      width: 85%;
+      margin-left: 1.5%;
+    }
+
+    .tLists {
+      padding-top: 10px;
+      width: 20%;
+      height: 100%;
+      background-color: #fff;
+      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
+    }
+
+    .tLists .row .tAdd {
+      padding: 0;
+      margin-left: 15%;
+      margin-top: 1%;
+      font-size: 20px;
+      color: #1296db;
+      vertical-align: middle;
+      cursor: pointer;
+    }
+
+    .tLists .tTags {
+      /*position: relative;*/
+      margin: 0;
+    }
+
+    .tLists ul {
+      width: 100%;
+      margin-top: 15px;
+      margin-left: 10px;
+      padding-left: 0;
+    }
+
+    .tLists ul li {
+      position: relative;
+      margin-bottom: 5px;
+      padding-left: 30px;
+      width: 95%;
+      list-style: none;
+    }
+
+    .tLists ul li:hover {
+      background: #ecf0f1;
+    }
+
+    .tLists ul li .info:hover {
+      cursor: pointer;
+    }
+
+    .tLists ul li .tTag {
+      padding-right: 20px;
+      font-size: 15px;
+      color: #797979;
+    }
+
+    .tLists .tTags .updTag {
+      position: absolute;
+      right: 10%;
+      /*margin-left: 40%;*/
+      font-size: 15px;
+      color: #12a559;
+      cursor: pointer;
+    }
+
+    .tLists .tTags .delTag {
+      position: absolute;
+      right: 0;
+      /*margin-left: 3%;*/
+      font-size: 15px;
+      color: #c82333;
+      cursor: pointer;
+    }
+
+    .tFiles {
+      width: 78.5%;
+      height: 100%;
+      margin-left: 1%;
+      padding: 1% 2%;
+      background-color: #fff;
+      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
+    }
+	</style>
+
+	<script>
+      $(function() {
+          // 设置表格数据、样式
+          $('#tTable').bootstrapTable({
+              // url: 'data1.json',
+              // 表格 样式类
+              classes: 'table',
+              // 表格高度
+              height: 550,
+              // 自动去除搜索空格
+              trimOnSearch: true,
+              // 左对齐
+              searchAlign: "left",
+              // 分页
+              pagination: true,
+              // 开启查询
+              search: true,
+              data: [{
+                  fileName: "java实验一",
+                  fileSize: "1303M",
+                  filePath: "/大三下/java实验",
+                  createdTime: "2018-03-31"
+              }]
+          });
+
+          let delLi;
+          // 点删除标签后，取到当前标签对象
+          $(".delTag").click(function() {
+              delLi = $(this).parent();
+          });
+          // 再点击确定按钮，把标签删除
+          $(".delConfirm").click(function(){
+              // 删除标签，并把文件带有的该标签去除
+              // $.ajax();
+              $("#delTagModal").modal("hide");
+              delLi.remove();
+          });
+
+          // 更改标签 确认操作
+          $(".addConfirm").click(function(){
+              $("#addTagModal").modal("hide");
+          });
+
+
+          // 修改按钮，自动把值插入修改框
+          $(".updTag").click(function(){
+              $("#updateTag").val($(this).parent().text().trim());
+          });
+          // 修改标签 确认操作
+          $(".updConfirm").click(function() {
+              $("#updTagModal").modal("hide");
+          })
+      })
+	</script>
+</head>
+
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+	<div th:replace="common/nav-left :: nav-left"></div>
+	<div class="row tMain">
+
+		<!--	标签列表	-->
+		<div class="tLists">
+			<div class="row">
+				<!--	标签搜索框 -->
+				<div class="col-8 ml-1">
+					<select id="groupQuery" class="selectpicker" multiple data-live-search="true">
+						<option>rew</option>
+					</select>
+				</div>
+				<!--	添加标签按钮 	-->
+				<i class="bi bi-plus-square offset-1 col-2 tAdd" data-toggle="modal" data-target="#addTagModal"></i>
+			</div>
+			<div class="row tTags">
+				<!--	 标签列表显示		-->
+				<ul>
+					<li>
+						<span class="info"><i class="bi bi-tags tTag"></i>家人</span>
+						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
+						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
+					</li>
+					<li>
+						<span class="info"><i class="bi bi-tags tTag"></i>朋友</span>
+						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
+						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
+					</li>
+					<li>
+						<span class="info"><i class="bi bi-tags tTag"></i>同事</span>
+						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
+						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
+				</ul>
+			</div>
+		</div>
+
+		<!--	使用标签的文件列表 	-->
+		<div class="tFiles">
+			<table id="tTable">
+				<thead>
+				<tr>
+					<th  data-checkbox="true"></th>
+					<th data-field="fileName" data-align="center">文件名</th>
+					<th data-field="fileSize" data-align="center">文件大小</th>
+					<th data-field="filePath" data-align="center">文件路径</th>
+					<th data-field="createdTime" data-align="center">修改时间</th>
+				</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<!-- 删除标签模态框 -->
+<div class="modal fade" id="delTagModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">确认操作</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body mt-3 mb-3 ml-2 mr-2">
+				您确定删除该标签么？<br/>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger delConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- 修改标签模态框 -->
+<div class="modal fade" id="updTagModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">修改标签名称</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body">
+				<div class="row form-group">
+					<label for="updateTag" class="col-form-label col-4 offset-1 text-right">新标签名:</label>
+					<input type="text" name="updateTag" class="form-control col-5" id="updateTag" required>
+				</div>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary updConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- 添加标签模态框 -->
+<div class="modal fade" id="addTagModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">添加标签</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body">
+				<div class="row form-group">
+					<label for="newTag" class="col-form-label col-4 offset-1 text-right">标签名:</label>
+					<input type="text" name="newTag" class="form-control col-5" id="newTag" required placeholder="标签名">
+				</div>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary addConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+</body>
+</html>
