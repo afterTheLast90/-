@@ -38,12 +38,12 @@ public class GroupService extends BaseService {
                 .setGroupName(groupParams.getGroupName())
                 .setNumberOfPersones(groupParams.getUserList().size())
                 .setUserId(StpUtil.getLoginIdAsLong());
+        System.out.println(group);
         groupMapper.insert(group);
 
         for (Long userId : groupParams.getUserList()) {
             groupRelationshipMapper.insert(new GroupRelationship().setGroupId(group.getGroupId()).setUserId(userId));
         }
 
-        throw new UpdateException();
     }
 }

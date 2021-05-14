@@ -10,9 +10,11 @@
 	</th:block>
 
 	<!-- 引入bootstrap-table.css	-->
-	<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.css">
+	<link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
 	<!--	引入bootstrap-table.js -->
-	<script src="https://unpkg.com/bootstrap-table@1.18.3/dist/bootstrap-table.min.js"></script>
+	<script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+	<!--	引入bootstrap-table中文包 -->
+	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 
 	<style>
     body {
@@ -20,7 +22,7 @@
       min-width: 1400px;
       margin: 0px auto;
       padding: 0px 0px;
-      /*overflow: hidden;*/
+      overflow: hidden;
     }
 
     .rMain {
@@ -29,19 +31,15 @@
       padding-right: 15px;
       background-color: #fff;
       overflow: auto;
-      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
+    }
+
+    /*搜索框拉满*/
+    .rMain .search {
+      width: 90%;
     }
 
     #rTable tbody i {
       color: #1296db;
-      cursor: pointer;
-    }
-
-    #rTable thead tr .th-inner input {
-      cursor: pointer;
-    }
-
-    #rTable tr td label input {
       cursor: pointer;
     }
 
@@ -62,82 +60,241 @@
 
 	<script>
       $(function(){
+          // 调用函数，初始化表格
+          initTable();
+          // 自定义搜索框，进行搜索
+          $("#queryBtn").on("click", initTable);
+
+
+          // 原表格样式
           // 设置表格数据、样式
-          $('#rTable').bootstrapTable({
-              // url: 'data1.json',
-              // 表格 样式类
-              classes: 'table',
-              // 表格高度
-              height: 550,
-              // 自动去除搜索空格
-              trimOnSearch: true,
-              // 左对齐
-              searchAlign: "left",
-              // 分页
-              pagination: true,
-              // 开启查询
-              search: true,
-              data: [{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },{
-                  fileName: "java实验一",
-                  userName: "大白",
-                  createdTime: "2018-03-31",
-                  operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
-                      "<i class=\"bi bi bi-download rDownload\"></i>"
-              },]
-          })
+          // $('#rTable').bootstrapTable({
+          //     // url: 'data1.json',
+          //     // 表格 样式类
+          //     classes: 'table',
+          //     // 表格高度
+          //     height: 550,
+          //     // 自动去除搜索空格
+          //     trimOnSearch: true,
+          //     // 左对齐
+          //     searchAlign: "left",
+          //     // 分页
+          //     pagination: true,
+          //     // 开启查询
+          //     search: true,
+		      //     columns: [{
+          //         field: 'fileName',
+				  //         title: '文件名',
+				  //         align: 'center',
+				  //         searchable: true
+		      //     },{
+          //         field: 'userName',
+          //         title: '分享人',
+          //         align: 'center',
+          //         searchable: false
+          //     },{
+          //         field: 'createdTime',
+          //         title: '分享时间',
+          //         align: 'center',
+          //         searchable: false
+          //     },{
+          //         field: 'operation',
+          //         title: '下载/转存',
+          //         align: 'center',
+          //         searchable: false
+          //     },],
+          //     data: [{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },{
+          //         fileName: "java实验一",
+          //         userName: "大白",
+          //         createdTime: "2018-03-31",
+          //         operation: "<i class=\"bi bi-cloud-upload rUpload\"></i>" +
+          //             "<i class=\"bi bi bi-download rDownload\"></i>"
+          //     },]
+          // })
+
+		      // 初始化表格
+          function initTable() {
+              // 先销毁表格
+              $('#rTable').bootstrapTable('destroy');
+              $('#rTable').bootstrapTable({
+                  // url: "showConsumeRecordlList",//请求后台的URL（*）
+                  // method: 'get',
+                  // dataType: "json",
+                  // undefinedText: "-",         // 当数据为 undefined 时显示的字符
+                  pagination: true,           // 设置为 true 会在表格底部显示分页条。
+                  pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+                  // paginationPreText: '上一页',
+                  // paginationNextText: '下一页',
+                  data_local: "zh-US",        // 表格汉化
+                  // 表格 样式类
+                  classes: 'table',
+                  // 表格高度
+                  height: 550,
+		              // 查询 和 请求响应
+                  // queryParams: function (params) {  // 自定义参数
+                  //     return {//这里的params是table提供的
+                  //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
+                  //     };
+                  // },
+                  // responseHandler: function (res) {
+                  //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
+                  //     return "\"rows\":[ " + res + "]";
+                  // },
+                  columns: [{
+                      field: 'fileName',
+                      title: '文件名',
+                      align: 'center',
+                      searchable: true
+                  }, {
+                      field: 'userName',
+                      title: '分享人',
+                      align: 'center',
+                      searchable: false
+                  }, {
+                      field: 'createdTime',
+                      title: '分享时间',
+                      align: 'center',
+                      searchable: false
+                  }, {
+                      field: 'operation',
+                      title: '转存/下载',
+                      align: 'center',
+                      searchable: false
+                  },],
+                  data: [{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },{
+                      fileName: "java实验一",
+                      userName: "大白",
+                      createdTime: "2018-03-31",
+                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                          "<i class=\"bi bi bi-download rDownload\"></i>"
+                  },]
+              })
+          }
       });
 	</script>
 </head>
 <body>
-<div th:replace="common/nav-header :: nav-header"></div>
+<div th:replace="common/nav-header :: nav-header" style="background-color:#fff!important; width: 100%!important;"></div>
 <div class="row" style="margin-top:8px;">
 
 	<div class="rMain container shadow">
+		<!--	自定义搜索框	-->
+		<div class=".rSearch">
+			<div class="panel-body" style="padding-bottom: 1px;">
+				<form class="form-horizontal">
+					<div class="form-group row pb-0 m-2">
+						<div class="col-11 pr-0">
+							<!-- 自定义搜索框 -->
+							<input type="text" name="searchString" id="searchFile" class="form-control" placeholder="文件名" onkeydown="javascript:if(event.keyCode==13) searchId();" />
+						</div>
+						<div class="col-sm-1 pl-0">
+							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+								<i class="bi bi-search"></i>
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
 		<table id="rTable">
 			<thead>
-			<tr>
-				<!--				<th  data-checkbox="true"></th>-->
-				<th data-field="fileName" data-align="center">文件名</th>
-				<th data-field="userName" data-align="center">分享人</th>
-				<th data-field="createdTime" data-align="center">分享时间</th>
-				<th data-field="operation" data-align="center">下载/转存</th>
-			</tr>
 			</thead>
 		</table>
 	</div>

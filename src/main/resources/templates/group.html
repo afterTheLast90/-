@@ -31,7 +31,6 @@
       width: 20%;
       height: 100%;
       background-color: #fff;
-      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
     }
 
 
@@ -68,12 +67,33 @@
       color: #797979;
     }
 
+    .col-group #groups li {
+	    position: relative;
+    }
+
+    .col-group #groups li #updGroup {
+      position: absolute;
+      right: 10%;
+      /*margin-left: 40%;*/
+      font-size: 15px;
+      color: #12a559;
+      cursor: pointer;
+    }
+
+    .col-group #groups li #delGroup {
+      position: absolute;
+      right: 0;
+      /*margin-left: 40%;*/
+      font-size: 15px;
+      color: #c82333;
+      cursor: pointer;
+    }
+
     .col-users {
       width: 78.5%;
       height: 100%;
       margin-left: 1%;
       background-color: #fff;
-      box-shadow: 0 0.5rem 1rem rgba(18, 150, 219, .25);
     }
 
     .g_users {
@@ -135,24 +155,6 @@
 
 	</style>
 
-	<script>
-      $(function(){
-
-          let delLi;
-          // 删除 群组用户
-          $(".u_del").click(function(){
-              delLi = $(this).parent();
-          });
-          $(".delConfirm").click(function(){
-              // 从用户群组 删除该用户
-              // $.ajax();
-              // 更新页面
-              delLi.remove();
-              // 关闭模态框
-              $("#uDelModal").modal("hide");
-          });
-      });
-	</script>
 
 </head>
 <body>
@@ -162,31 +164,23 @@
 	<div class="col-my-10 g_main row">
 		<!--	个人群组	-->
 		<div class="col-group">
+
 			<!--	群组搜索框		-->
 			<div class="row">
 				<div class="col-8 ml-1">
-					<select id="groupQuery" class="selectpicker" multiple data-live-search="true">
-						<option>rew</option>
-					</select>
+					<select id="groupQuery" class="selectpicker" multiple data-live-search="true"></select>
 				</div>
+
 				<!--	添加群组按钮 	-->
 				<i class="bi bi-person-plus-fill offset-1 col-2 gAdd" data-toggle="modal" data-target="#gAddModal"></i>
 			</div>
+
 			<!--	 群组列表显示		-->
 			<ul id="groups">
-				<!--				<li>-->
-				<!--					<i class="bi bi-tags-fill g_tab"></i>家人-->
-				<!--				</li>-->
-				<!--				<li>-->
-				<!--					<i class="bi bi-tags-fill g_tab"></i>朋友-->
-				<!--				</li>-->
-				<!--				<li>-->
-				<!--					<i class="bi bi-tags-fill g_tab"></i>同事-->
-				<!--				</li>-->
 			</ul>
 		</div>
 		<!--	群组内的用户显示	-->
-		<div class="col-users">
+		<div class="col-users shadow">
 			<ul class="g_users row">
 				<li class="u_head col-md-1">
 					<img src="/static/img/logo.png" class="rounded-circle" alt="">
@@ -290,7 +284,7 @@
 
 			<!-- 模态框底部 -->
 			<div class="modal-footer">
-				<button type="button" class="btn btn-danger delConfirm">确定</button>
+				<button type="button" class="btn btn-danger uDelConfirm">确定</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
 			</div>
 
@@ -326,7 +320,7 @@
 					<div class="modal-footer">
 						<!-- 按钮	-->
 						<div class="row form-group">
-							<button type="button" class="btn pl-4 pr-4 btn-primary gAddConfirm">确定</button>
+							<button type="button" class="btn pl-4 pr-4 btn-primary uAddConfirm">确定</button>
 							<button type="button" class="btn pl-4 pr-4 ml-2 btn-secondary" data-dismiss="modal">关闭</button>
 						</div>
 					</div>
@@ -362,8 +356,6 @@
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 text-right">选择用户:</label>
 						<div class="col-md-4 col-sm-4">
 							<select class="selectpicker" id="addGroup-addUser" multiple data-live-search="true">
-								<option value="1">jack</option>
-								<option value="2">tom</option>
 							</select>
 						</div>
 					</div>
@@ -381,9 +373,116 @@
 		</div>
 	</div>
 </div>
+
+<!-- 删除群组模态框 -->
+<div class="modal fade" id="delGroupModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">确认操作</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body mt-3 mb-3 ml-2 mr-2">
+				您确定删除该群组么？<br/>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger gDelConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+<!-- 修改群组名称模态框 -->
+<div class="modal fade" id="updGroupModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">修改群组名称</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body">
+				<div class="row form-group">
+					<label for="updGroup" class="col-form-label col-4 offset-1 text-right">新群组名:</label>
+					<input type="text" name="updateTag" class="form-control col-5" id="updGroup" required>
+				</div>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-primary updConfirm" id="gUpdConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
-    $(function (){
+    $(function() {
+        // 初始化标签
+        initTag()
+        console.log($("#groupQuery").html());
+
+        // 添加群组
+        $("#addGroupConfirm").click(function (){
+            httpUtil.post("/group/groupAdd",JSON.stringify({
+                groupName: $("#nGName").val(),
+                userList: $("#addGroup-addUser").val()
+            })).then(res=>{
+                // console.log(res)
+		            // 更新标签
+		            initTag()
+                // 单击确认添加群组按钮后，进行的操作
+                $("#nGName").val("")            // 清空 群组名称
+		            $("#gAddModal").modal("hide")   // 添加模态框隐藏
+            })
+        })
+
+		    // 删除群组
+
+		    // 修改群组
+		    $("#gUpdConfirm").click(function() {
+		        httpUtil.post("/group/groupUpd",
+				        JSON.stringify({
+						        groupName: $("#updGroup").val()
+				        }).then(res => {
+				            initTag();    // 更新群组和搜索框
+				        })
+		        )
+				    $("#updGroup").val("")
+				    $("#updGroupModal").modal("hide")
+
+		    })
+
+        let delLi;
+        // 删除 群组用户
+        $(".u_del").click(function(){
+            delLi = $(this).parent();
+        });
+        $(".uDelConfirm").click(function(){
+            // 从用户群组 删除该用户
+            // $.ajax();
+            // 更新页面
+            delLi.remove();
+            // 关闭模态框
+            $("#uDelModal").modal("hide");
+        });
+    })
+
+    function initTag(){
         httpUtil.get("/group/groups"
             //     ,{
             //     params:{
@@ -395,24 +494,38 @@
             //     groupName:"44"
             // })
         ).then(res=>{
-            if (!res.data){
+            if (res.data.length == 0){
+                // 设置 没有群组 标签显示情况
+                $("#groups").append("<li data-toggle=\"modal\" data-target=\"#gAddModal\">" +
+		                " <i class='bi bi-emoji-wink' style='color: #1E9FFF'></i> 添加你的第一标签吧 " +
+		                "</li>")
 
-            }
-            for (let i = 0; i < res.data.length; i++) {
-                $("#groups").append(	'<li groupId="'+res.data[i].groupId+'"><i class="bi bi-tags-fill g_tab"></i>'+res.data[i].groupName+'</li>')
+		            // 设置标签搜索框为空
+		            $("#groupQuery").html("")
+            }else {
+              // 更新标签
+              $("#groups").html("")
+              $("#groupQuery").html("")
+
+                for (let i = 0; i < res.data.length; i++) {
+                  $("#groupQuery").append("<option groupId='" + res.data[i].groupId + "'>" +
+		                  res.data[i].groupName +
+		                  "</option>")
+
+	                $("#groups").append('<li groupId="'+res.data[i].groupId+'">' +
+	                    '<i class="bi bi-tags-fill g_tab"></i>'+
+	                    res.data[i].groupName +
+			                '<i class="bi bi-pencil-square" id="updGroup" data-toggle="modal" data-target="#updGroupModal"></i>\n' +
+                      '<i class="bi bi-x-square" id="delGroup" data-toggle="modal" data-target="#delGroupModal"></i>' +
+                      '</li>'
+	                )
+	            }
+            // 刷新下拉搜索框
+            $('#groupQuery').selectpicker('refresh');
             }
         })
-    })
+    }
 
-
-    $("#addGroupConfirm").click(function (){
-        httpUtil.post("/group",JSON.stringify({
-            groupName: $("#nGName").val(),
-            userList: $("#addGroup-addUser").val()
-        })).then(res=>{
-            console.log(res)
-        })
-    })
 </script>
 </body>
 </html>
