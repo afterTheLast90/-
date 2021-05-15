@@ -30,6 +30,4 @@ public class UserInfoVO {
     /** 是否具有管理权限 */
     private Boolean admin ;
 
-    private Double useSpacePercent;
-
 }
