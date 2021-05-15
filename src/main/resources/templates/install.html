@@ -2,10 +2,11 @@
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:include="common/header :: header(~{::title})">
-        <title>欢迎登录瀚海云盘</title>
+        <title>安装系统</title>
     </th:block>
 
     <script src="/static/plugin/jquery.wizzy.js"></script>
+    <script src="/static/regularUtils.js"></script>
     <style>
 
         @keyframes spin {
@@ -343,34 +344,6 @@
         }
     </style>
 </head>
-<body>
-<div class="modal fade" id="inputNewFolderName">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <!-- 模态框头部 -->
-            <div class="modal-header">
-                <h4 class="modal-title">输入新文件夹的名称</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-
-            <!-- 模态框主体 -->
-            <div class="modal-body">
-                请输入新文件夹的名称：<input type="text" id="newFolderName">
-            </div>
-
-            <!-- 模态框底部 -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary" id="createFolder">确定</button>
-
-            </div>
-
-
-        </div>
-    </div>
-</div>
-
 
 <form class="login-validation" novalidate action="/install" method="POST" id="installForm">
     <div class="wrapper">
@@ -448,7 +421,7 @@
                             <label for="siteUrl">网站的网址</label>
                             <div class="form-inline mb-1">
                                 <input type="text" class="form-control col-10" id="siteUrl"
-                                       name="siteName" placeholder="http(s)://demo.com">
+                                       name="siteUrl" placeholder="http(s)://demo.com">
 
                             </div>
                         </div>
@@ -529,65 +502,147 @@
 
 <script type="module">
 
+
     import httpUtil from "/static/httpUtil.js";
+
+
 
     $(".wizzy").wizzy({
         functions: [
 
-            // 点击第一个next做的事情
             function () {
-                if (!$("#dbAddress").val() || !$("#dbName").val() || !$("#dbPort").val() ||
-                    !$("#dbUserName").val() || !$("#dbPassword").val()) {
-                    layer.msg("信息不能为空");
-                    return false;
-                }
-
-                // 通过同步请求来判断是否合法
-                let r = false;
-                $.ajax({
-                    type: "POST", //请求方式
-                    async: false, // fasle表示同步请求，true表示异步请求
-                    contentType: "application/json;charset=UTF-8", //请求的媒体类型
-                    url: "/system/testDB",//请求地址
-                    data: JSON.stringify({
+                return new Promise(function (resolve, reject) {
+                    if (!$("#dbAddress").val() || !$("#dbName").val() || !$("#dbPort").val() ||
+                        !$("#dbUserName").val() || !$("#dbPassword").val()) {
+                        layer.msg("信息为空错误");
+                        reject("信息为空错误");
+                        return;
+                    }
+                    resolve("测试数据库连接中....");
+                }).then(res=>{
+                    layer.msg(res);
+                    return httpUtil.post("/system/testDB", JSON.stringify({
                         "dbAddress": $("#dbAddress").val(),
                         "dbName": $("#dbName").val(),
                         "dbPort": $("#dbPort").val(),
                         "dbUserName": $("#dbUserName").val(),
                         "dbPassword": $("#dbPassword").val()
-                    }), //数据，json字符串
-                    success: function (res) {
-                        console.log(res)
-                        layer.msg(res.msg)
-                        if (res.code === 200)
-                            r = true;
-
-                    }
-
+                    }))
                 })
-                return r;
             },
+
+
+            // function () {
+
+
+                //   // 通过同步请求来判断是否合法
+                //         let r = false;
+                //         $.ajax({
+                //             type: "POST", //请求方式
+                //             async: false, // fasle表示同步请求，true表示异步请求
+                //             contentType: "application/json;charset=UTF-8", //请求的媒体类型
+                //             url: "/system/testDB",//请求地址
+                //             data: JSON.stringify({
+                //                 "dbAddress": $("#dbAddress").val(),
+                //                 "dbName": $("#dbName").val(),
+                //                 "dbPort": $("#dbPort").val(),
+                //                 "dbUserName": $("#dbUserName").val(),
+                //                 "dbPassword": $("#dbPassword").val()
+                //             }), //数据，json字符串
+                //             success: function (res) {
+                //                 layer.msg(res.msg)
+                //         if (res.code === 200)
+                //             r = true;
+                //
+                //     },
+                //     beforeSend:function(){
+                //         layer.msg("正在测试数据库")
+                //     }
+                //
+                // })
+
+                // return r;
+            // },
             // 点击第二个next做的事情
             function () {
-                if (!$("#siteName").val() || !$("#siteUrl").val() || !$("#icp").val()) {
-                    layer.msg("信息不能为空");
-                    return false;
-                }
-                return true;
+                return new Promise(function (resolve, reject) {
+                    if (!$("#siteName").val() || !$("#siteUrl").val() || !$("#icp").val()) {
+                        layer.msg("信息不能为空");
+                        reject("信息不能为空");
+                        return;
+                    }
+                    if (!($("#siteUrl").val().startsWith("http://") ||
+                        $("#siteUrl").val().startsWith("https://"))) {
+                        layer.msg("网址须以http://或者https://开头");
+                        reject("网址须以http://或者https://开头");
+                        return;
+                    }
+                    resolve()
+                });
+
             },
             // 点击第三个next做的事情
             function () {
-                if (!$("#userName").val() || !$("#email").val() || !$("#phoneNumber").val() || !$("#password").val()) {
-                    layer.msg("信息不能为空");
-                    return false;
-                }
-                return true;
+                return new Promise(function (resolve, reject) {
+                    if (!$("#userName").val() || !$("#email").val() || !$("#phoneNumber").val() || !$("#password").val()) {
+                        layer.msg("信息不能为空");
+                        reject("信息不能为空");
+                        return;
+                    }
+                    if(!isPoneAvailable($("#phoneNumber").val()) ){
+                        layer.msg("手机号格式错误");
+                        reject("手机号格式错误");
+                        return;
+                    }
+
+                    if(!isEmailAvailable($("#email").val()) ){
+                        layer.msg("邮箱格式错误");
+                        reject("邮箱格式错误");
+                        return;
+                    }
+
+                    let password = $("#password").val();
+                    if(!(password.length>=6)){
+                        layer.msg("密码最低为6位");
+                        reject("密码最低为6位");
+                        return;
+                    }
+                    resolve();
+                });
+
 
             },
             // 点击完成做的事情
             function () {
-                console.log($("#installForm")[0].serializeObject())
-                return false;
+                return new Promise(function (resolve, reject) {
+                    if ($("#fileUploadPath").val() === "") {
+                        layer.msg("请先选择一个文件夹")
+                        reject("请先选择一个文件夹");
+                        return;
+                    }
+                    resolve();
+                }).then(res=>{
+                    layer.msg("正在设置系统，并导入数据库中。。。。")
+                    return httpUtil.post("/system/install", $("#installForm").serializeObject())
+                });
+                // let r = false;
+                // $.ajax({
+                //     type: "POST", //请求方式
+                //     async: false, // fasle表示同步请求，true表示异步请求
+                //     contentType: "application/json;charset=UTF-8", //请求的媒体类型
+                //     url: "/system/install",//请求地址
+                //     data: $("#installForm").serializeObject(), //数据，json字符串
+                //     success: function (res) {
+                //         console.log(res)
+                //         layer.msg(res.msg)
+                //         if (res.code === 200)
+                //             r = true;
+                //
+                //     }
+                //
+                // })
+                //
+                // return r;
 
             }
 

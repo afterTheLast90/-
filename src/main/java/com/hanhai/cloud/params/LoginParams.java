@@ -22,4 +22,5 @@ public class LoginParams {
     @NotNull(message = "验证码不能为空")
     @NotBlank(message = "验证码不能为空")
     private String captcha;
+//    private Boolean rememberMe=false;
 }

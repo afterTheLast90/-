@@ -21,6 +21,9 @@ public class R<T> implements Serializable {
     private T data;
 
 
+    public static R getSuccess(){
+        return new R(ResultCode.SUCCESS);
+    }
     public R(ResultCode resultCode){
         this.code=resultCode.getCode();
         this.msg=resultCode.getMsg();

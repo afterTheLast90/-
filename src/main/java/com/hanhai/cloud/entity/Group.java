@@ -15,7 +15,7 @@ import java.io.Serializable;
 
 @Data
 @Accessors(chain = true)
-@TableName("group")
+@TableName("groups")
 public class Group extends BaseEntity implements Serializable,Cloneable{
     @TableId
     /** 组id */
@@ -24,5 +24,7 @@ public class Group extends BaseEntity implements Serializable,Cloneable{
     private String groupName ;
     /** 人数 */
     private Integer numberOfPersones ;
+    /** 所属人**/
+    private Long userId;
 
 }

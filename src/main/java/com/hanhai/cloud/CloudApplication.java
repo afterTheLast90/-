@@ -3,21 +3,41 @@ package com.hanhai.cloud;
 import com.github.yitter.contract.IdGeneratorOptions;
 import com.github.yitter.idgen.YitIdHelper;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import top.wmgx.annotation.MybatisLogPlusAutoConfig;
 
+@EnableTransactionManagement
 @MybatisLogPlusAutoConfig
 @MapperScan("com.hanhai.cloud.mapper")
 @SpringBootApplication
 public class CloudApplication {
 
+    private static ConfigurableApplicationContext context;
     public static void main(String[] args) {
         idGeneratorConfig();
-        SpringApplication.run(CloudApplication.class, args);
+        context=SpringApplication.run(CloudApplication.class, args);
     }
 
+    public static void restartApplication() {
+        ApplicationArguments args = context.getBean(ApplicationArguments.class);
 
+        Thread thread = new Thread(() -> {
+            context.close();
+            try {
+                Thread.sleep(5000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            context = SpringApplication.run(CloudApplication.class, args.getSourceArgs());
+        });
+
+        thread.setDaemon(false);
+        thread.start();
+    }
     /**
      * 配置id生成
      * <a href ="https://gitee.com/yitter/idgenerator/tree/master/Java">文档</a>
