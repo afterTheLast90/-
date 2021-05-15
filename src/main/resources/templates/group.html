@@ -414,8 +414,8 @@
 			<!-- 模态框主体 -->
 			<div class="modal-body">
 				<div class="row form-group">
-					<label for="updGroup" class="col-form-label col-4 offset-1 text-right">新群组名:</label>
-					<input type="text" name="updateTag" class="form-control col-5" id="updGroup" required>
+					<label for="updGroupName" class="col-form-label col-4 offset-1 text-right">新群组名:</label>
+					<input type="text" name="updateTag" class="form-control col-5" id="updGroupName" required>
 				</div>
 			</div>
 
@@ -457,14 +457,15 @@
 		    $("#gUpdConfirm").click(function() {
 		        httpUtil.post("/group/groupUpd",
 				        JSON.stringify({
-						        groupName: $("#updGroup").val()
-				        }).then(res => {
-				            initTag();    // 更新群组和搜索框
+						        groupId: $("#updGroup").parent().attr("groupId"),
+						        groupName: $("#updGroupName").val().trim()
 				        })
-		        )
-				    $("#updGroup").val("")
-				    $("#updGroupModal").modal("hide")
+		        ).then( res => {
+                initTag();    // 更新群组和搜索框
+                $("#updGroup").val("")
+            })
 
+				    $("#updGroupModal").modal("hide")
 		    })
 
         let delLi;
@@ -502,7 +503,8 @@
 
 		            // 设置标签搜索框为空
 		            $("#groupQuery").html("")
-            }else {
+            }
+            else {
               // 更新标签
               $("#groups").html("")
               $("#groupQuery").html("")
@@ -514,7 +516,7 @@
 
 	                $("#groups").append('<li groupId="'+res.data[i].groupId+'">' +
 	                    '<i class="bi bi-tags-fill g_tab"></i>'+
-	                    res.data[i].groupName +
+	                    '<span class="gName">' + res.data[i].groupName + '</span>' +
 			                '<i class="bi bi-pencil-square" id="updGroup" data-toggle="modal" data-target="#updGroupModal"></i>\n' +
                       '<i class="bi bi-x-square" id="delGroup" data-toggle="modal" data-target="#delGroupModal"></i>' +
                       '</li>'

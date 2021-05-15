@@ -48,7 +48,7 @@
     }
 
     #rTable tbody .rUpload {
-      font-size: 23px;
+      font-size: 26px;
       margin-right: 20px;
     }
 
@@ -201,67 +201,67 @@
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },{
                       fileName: "java实验一",
                       userName: "大白",
                       createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-up-right rUpload\"></i>" +
+                      operation: "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>" +
                           "<i class=\"bi bi bi-download rDownload\"></i>"
                   },]
               })
@@ -270,18 +270,20 @@
 	</script>
 </head>
 <body>
-<div th:replace="common/nav-header :: nav-header" style="background-color:#fff!important; width: 100%!important;"></div>
+<div th:replace="common/nav-header :: nav-header"></div>
 <div class="row" style="margin-top:8px;">
 
 	<div class="rMain container shadow">
 		<!--	自定义搜索框	-->
 		<div class=".rSearch">
-			<div class="panel-body" style="padding-bottom: 1px;">
+			<div class="panel-body pt-3 pb-3">
 				<form class="form-horizontal">
 					<div class="form-group row pb-0 m-2">
 						<div class="col-11 pr-0">
 							<!-- 自定义搜索框 -->
-							<input type="text" name="searchString" id="searchFile" class="form-control" placeholder="文件名" onkeydown="javascript:if(event.keyCode==13) searchId();" />
+							<input type="text" name="searchString" id="searchFile"
+							       class="form-control" placeholder="文件名"
+							       onkeydown="javascript:if(event.keyCode==13) searchId();" />
 						</div>
 						<div class="col-sm-1 pl-0">
 							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">

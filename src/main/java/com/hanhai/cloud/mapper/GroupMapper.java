@@ -2,9 +2,11 @@ package com.hanhai.cloud.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hanhai.cloud.entity.Group;
+import com.hanhai.cloud.params.UpdGroupParams;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
@@ -15,4 +17,7 @@ import java.util.List;
 public interface GroupMapper extends BaseMapper<Group> {
     @Select("select * from groups where group_name like concat('%',#{groupName},'%') and user_id =#{userId} and deleted = false ")
     public List<Group> getByUserIdAndGroupName(@Param("userId") Long userId, @Param("groupName")String groupName);
+
+    @Update("update group set group_name = #{groupName} where user_id= #{userId}")
+    public int updGroupName(@Param("group")Group group);
 }

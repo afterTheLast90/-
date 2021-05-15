@@ -127,6 +127,11 @@
 
     .tFiles table tbody tr td .bi:first-child {
       margin-right: 10px;
+	    color: #333;
+    }
+
+    .tFiles table tbody tr td #delFile {
+	    color: #ff111f;
     }
 
     .drawer-nav ul li {
@@ -253,7 +258,8 @@
                       fileSize: "1303M",
                       createdTime: "2018-03-31",
                       operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-                          "<i class=\"bi bi-three-dots drawer-toggle\"></i>"
+                          "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
+		                      "<i class=\"bi bi-trash pl-2\" id='delFile' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
                   }]
               })
           }
@@ -320,23 +326,31 @@
 		<!--	使用标签的文件列表 	-->
 		<div class="tFiles shadow">
 
-			<!--	自定义搜索框	-->
-			<div class=".tSearch">
-				<div class="panel-body" style="padding-bottom: 1px;">
-					<form class="form-horizontal">
-						<div class="form-group row pb-0 m-2">
-							<div class="col-3 pr-0">
-								<!-- 自定义搜索框 -->
-								<input type="text" name="searchString" id="searchFile" class="form-control" placeholder="文件名" onkeydown="javascript:if(event.keyCode==13) searchId();" />
+			<div class="row">
+				<!--	自定义搜索框	-->
+				<div class=".tSearch col-10">
+					<div class="panel-body" style="padding-bottom: 1px;">
+						<form class="form-horizontal">
+							<div class="form-group row pb-0 m-2">
+								<div class="col-3 pr-0">
+									<!-- 自定义搜索框 -->
+									<input type="text" name="searchString" id="searchFile"
+									       class="form-control" placeholder="文件名"
+									       onkeydown="javascript:if(event.keyCode==13) searchId();" />
+								</div>
+								<div class="col-sm-1 pl-0">
+									<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+										<i class="bi bi-search"></i>
+									</button>
+								</div>
 							</div>
-							<div class="col-sm-1 pl-0">
-								<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
-									<i class="bi bi-search"></i>
-								</button>
-							</div>
-						</div>
-					</form>
+						</form>
+					</div>
 				</div>
+
+				<input type="button" class="btn btn-danger col-1 mt-2"
+				       style="height: 30%;" id="delAllFile" value="删除"
+				       data-toggle="modal" data-target="#delAllFileModal">
 			</div>
 
 			<!--  文件列表	-->
@@ -347,7 +361,7 @@
 					<th data-field="fileName" data-align="center">文件名</th>
 					<th data-field="fileSize" data-align="center">文件大小</th>
 					<th data-field="createdTime" data-align="center">修改时间</th>
-					<th data-field="operation" data-align="center">跳转/详情</th>
+					<th data-field="operation" data-align="center">操作</th>
 				</tr>
 				</thead>
 			</table>
@@ -439,6 +453,59 @@
 	</div>
 </div>
 
+<!--  文件删除该标签 模态框  -->
+<div class="modal fade" id="delFileModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">删除确认</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>是否将此文件从该标签下移除?</span>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger fDelConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+</div>
+</div>
+
+<!--  多文件删除该标签 模态框  -->
+<div class="modal fade" id="delAllFileModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">删除确认</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>是否将选中的文件从该标签下移除?</span>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" id="fAllDelConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
 <!--  文件详情  -->
 <nav class="drawer-nav" role="navigation" style="z-index: 20;">
 	<ul class="pl-0">
@@ -455,40 +522,39 @@
 			<span class="sInfo col-6 p-0 pr-2">内部分享</span>
 		</li>
 		<!--	分享人应该可以 加/删	-->
-		<li class="row" id="sharePeople">
-			<span class="col-5 text-right">分享人:</span>
-			<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2">
-				<li>家人</li>
-				<li>李咏</li>
-			</ul>
-		</li>
-		<hr>
-		<li class="row">
-			<span class="col-5 text-right">总转存次数:</span>
-			<span class="sInfo col-6 p-0 pr-2">15</span></li>
-		<li class="row">
-			<span class="col-5 text-right">已转存次数:</span>
-			<span class="sInfo col-6 p-0 pr-2">10</span></li>
-		<li class="row">
-			<span class="col-5 text-right">总下载次数:</span>
-			<span class="sInfo col-6 p-0 pr-2">15</span></li>
-		<li class="row">
-			<span class="col-5 text-right">已下载次数:</span>
-			<span class="sInfo col-6 p-0 pr-2">10</span></li>
-		<hr>
-		<li class="row">
-			<span class="col-5 text-right">分享密码:</span>
-			<input type="password" name="" class="sInfo col-2 p-0 pr-2 border-0" value="3Daj" id="sPwd" style="outline: none;">
-			<!--	显示密码 -->
-			<i class="bi bi-eye-fill"></i>
-			<!--	隐藏密码 -->
-			<i class="bi bi-eye-slash"></i>
-
-		</li>
-		<li class="row">
-			<div class="col-5 text-right">二维码:</div>
-			<img src="/static/img/logo.png" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">
-		</li>
+<!--		<li class="row" id="sharePeople">-->
+<!--			<span class="col-5 text-right">分享人:</span>-->
+<!--			<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2">-->
+<!--				<li>家人</li>-->
+<!--				<li>李咏</li>-->
+<!--			</ul>-->
+<!--		</li>-->
+<!--		<hr>-->
+<!--		<li class="row">-->
+<!--			<span class="col-5 text-right">总转存次数:</span>-->
+<!--			<span class="sInfo col-6 p-0 pr-2">15</span></li>-->
+<!--		<li class="row">-->
+<!--			<span class="col-5 text-right">已转存次数:</span>-->
+<!--			<span class="sInfo col-6 p-0 pr-2">10</span></li>-->
+<!--		<li class="row">-->
+<!--			<span class="col-5 text-right">总下载次数:</span>-->
+<!--			<span class="sInfo col-6 p-0 pr-2">15</span></li>-->
+<!--		<li class="row">-->
+<!--			<span class="col-5 text-right">已下载次数:</span>-->
+<!--			<span class="sInfo col-6 p-0 pr-2">10</span></li>-->
+<!--		<hr>-->
+<!--		<li class="row">-->
+<!--			<span class="col-5 text-right">分享密码:</span>-->
+<!--			<input type="password" name="" class="sInfo col-2 p-0 pr-2 border-0" value="3Daj" id="sPwd" style="outline: none;">-->
+<!--			&lt;!&ndash;	显示密码 &ndash;&gt;-->
+<!--			<i class="bi bi-eye-fill"></i>-->
+<!--			&lt;!&ndash;	隐藏密码 &ndash;&gt;-->
+<!--			<i class="bi bi-eye-slash"></i>-->
+<!--		</li>-->
+<!--		<li class="row">-->
+<!--			<div class="col-5 text-right">二维码:</div>-->
+<!--			<img src="/static/img/logo.png" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">-->
+<!--		</li>-->
 	</ul>
 </nav>
 </body>

@@ -24,6 +24,10 @@
 	<!--	引入bootstrap-table中文包 -->
 	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 
+	<!--  引入bootstrap-switch  -->
+	<link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
+	<script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
+
 	<style>
 
     body {
@@ -196,6 +200,37 @@
           initTable();
           // 自定义搜索框，进行搜索
           $("#queryBtn").on("click", initTable);
+          // 分享链接 状态开关
+          $("input[name='sStatus']").bootstrapSwitch({
+              onText: "有效",
+              offText: "失效",
+              animate: false,
+          });
+          $("input[name='sStatus']").bootstrapSwitch("state", true);
+          // 必须设置默认值，否则第一次会获取不到switch的值
+
+		      // 状态框失效确认
+		      let failConfirm = false   // 是否 确认链接失效
+          $("input[name='sStatus']").on("switchChange.bootstrapSwitch", function(event, state){
+              if(state == false) {
+                  console.log(state)
+		              if(!failConfirm){
+	                  $("input[name='sStatus']").bootstrapSwitch("toggleState");  // 转换回原状态
+	                  $("#shareFailModal").modal("show")
+                  }else {
+		                  $(this).bootstrapSwitch("disabled", true);
+		                  // 将些分享链接设为失效（未实现）
+                      failConfirm = false         // 设置回 不确定默认值
+                  }
+              }
+          })
+		      // 获取确认状态
+		      $("#shareFailConfirm").click(function() {
+              failConfirm = true
+              $("input[name='sStatus']").bootstrapSwitch("toggleState");
+              $("#shareFailModal").modal("hide")
+		      })
+
 
 					// 初始化表格
           function initTable() {
@@ -231,81 +266,11 @@
                       expireTime: '2018-11-30',
                       shareType: '内部分享',
                       // 失效开关
-                      rStatus: '<input type="button"/>',
+                      sStatus: '<input type="checkbox" name="sStatus" checked>',
                       // 查看详情图标，弹出抽屉显示信息
                       rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
                       // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }, {
-                      fileName: "Python实验2",
-                      createTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '公共分享',
-                      rStatus: 'fff',
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                  }]
+                  }, ]
               })
           }
           // 抽屉(必须先创建元素，再绑定事件）
@@ -363,7 +328,7 @@
 				<th data-field="expireTime" data-align="center">失效时间</th>
 				<th data-field="shareType" data-align="center">分享类型</th>
 				<!--	用开关实现，添加确认窗口	-->
-				<th data-field="rStatus" data-align="center">状态</th>
+				<th data-field="sStatus" data-align="center">状态</th>
 				<!--	显示文件详情（内部分享组、人；删除、添加权限）；转存、下载次数查看；查看密码~~~~弹出模态框	-->
 				<th data-field="rDetails" data-align="center">查看详情</th>
 			</tr>
@@ -395,17 +360,15 @@
 				</li>
 				<hr>
 				<li class="row">
-					<span class="col-5 text-right">总转存次数:</span>
-					<span class="sInfo col-6 p-0 pr-2">15</span></li>
+					<span class="col-5 text-right">转存次数:</span>
+					<span class="sInfo p-0 pr-2">10</span> /
+					<span class="sInfo pl-2 p-0">15</span>
+				</li>
 				<li class="row">
-					<span class="col-5 text-right">已转存次数:</span>
-					<span class="sInfo col-6 p-0 pr-2">10</span></li>
-				<li class="row">
-					<span class="col-5 text-right">总下载次数:</span>
-					<span class="sInfo col-6 p-0 pr-2">15</span></li>
-				<li class="row">
-					<span class="col-5 text-right">已下载次数:</span>
-					<span class="sInfo col-6 p-0 pr-2">10</span></li>
+					<span class="col-5 text-right">下载次数:</span>
+					<span class="sInfo p-0 pr-2">3</span> /
+					<span class="sInfo pl-2 p-0">15</span>
+				</li>
 				<hr>
 				<li class="row">
 					<span class="col-5 text-right">分享密码:</span>
@@ -426,5 +389,32 @@
 	</div>
 
 </div>
+
+<!--  链接失效确认 模态框  -->
+<div class="modal fade" id="shareFailModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">操作确认</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>是否取消该链接的分享？</span>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" id="shareFailConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
 </body>
 </html>

@@ -6,7 +6,9 @@ import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.entity.Group;
 import com.hanhai.cloud.entity.GroupRelationship;
 import com.hanhai.cloud.exception.UpdateException;
-import com.hanhai.cloud.params.GroupParams;
+import com.hanhai.cloud.params.AddGroupParams;
+import com.hanhai.cloud.params.AddGroupParams;
+import com.hanhai.cloud.params.UpdGroupParams;
 import com.hanhai.cloud.utils.BeanUtils;
 import com.hanhai.cloud.vo.GroupVO;
 import org.springframework.stereotype.Service;
@@ -33,17 +35,23 @@ public class GroupService extends BaseService {
     }
 
     @Transactional
-    public void insertGroup(GroupParams  groupParams) throws UpdateException {
+    public void insertGroup(AddGroupParams groupParams) throws UpdateException {
         Group group = new Group()
                 .setGroupName(groupParams.getGroupName())
                 .setNumberOfPersones(groupParams.getUserList().size())
                 .setUserId(StpUtil.getLoginIdAsLong());
-        System.out.println(group);
         groupMapper.insert(group);
 
         for (Long userId : groupParams.getUserList()) {
             groupRelationshipMapper.insert(new GroupRelationship().setGroupId(group.getGroupId()).setUserId(userId));
         }
+    }
 
+    @Transactional
+    public void updGroupName(UpdGroupParams groupParams) throws UpdateException {
+        Group group = new Group()
+                .setGroupId(groupParams.getGroupId())
+                .setGroupName(groupParams.getGroupName());
+        groupMapper.updGroupName(group);
     }
 }
