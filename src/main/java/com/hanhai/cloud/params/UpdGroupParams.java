@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @Accessors(chain = true)
 public class UpdGroupParams {
-    @NotBlank(message = "组id不能为空")
+
     @NotNull(message = "组id不能为空")
     private Long groupId;
 
