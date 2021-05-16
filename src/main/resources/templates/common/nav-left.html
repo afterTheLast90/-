@@ -59,10 +59,12 @@
         .col-my-1 {
             width: 13%;
             min-width: 200px;
+            max-width: 200px;
         }
 
         .col-my-10 {
-            width: 85%;
+            width: 87%;
+
         }
 
         .navbar {
@@ -81,6 +83,17 @@
             text-decoration: none;
         }
 
+        .progress {
+            margin-top: 360px;
+            margin-left: 20px;
+            height: 10px;
+            width: 160px;
+        }
+
+        .capacity {
+            margin-top: 1rem;
+            margin-left: 50px;
+        }
     </style>
 
     <div class="col-my-1 left-nav">
@@ -89,7 +102,6 @@
                 <li data-toggle="collapse" data-parent="#accordion" href="#item-Myfile" id="headMyfile"
                     class="nav-item">
                     <i class="bi bi-file-earmark-text navigation"></i>我的文件
-
                 </li>
                 <div id="item-Myfile" class="panel-collapse collapse">
                     <div class="item-body">
@@ -108,35 +120,55 @@
 
                             <li class="item-second" id='e'><a href="e.html" style="text-align: center"><i
                                     class="bi bi-question"></i>其他</a></li>
-
                         </ul>
                     </div>
                 </div>
                 <li href="#item-Inbox" id="headInbox" class="nav-item">
                     <i class="bi bi-inbox navigation"></i>收件箱
                 </li>
-                <li href="#item-Sharetherecord" id="Sharetherecord" class="nav-item">
-                    <i class="bi bi-share navigation"></i>分享记录
-                </li>
-
-                <li href="#item-group" id="headgroup" class="nav-item">
-                    <i class="bi bi-people-fill navigation"></i>群组
-                </li>
-
-                <li href="#item-Labelmanagement" id="headLabelmanagement" class="nav-item">
-                    <i class="bi bi-tags navigation"></i>标签管理
-                </li>
-
-                <li href="#item-Recyclebin" id="headRecyclebin" class="nav-item">
-                    <i class="bi bi-trash navigation"></i>回收站
-                </li>
+                <a href="/share">
+                    <li href="#item-Sharetherecord" id="Sharetherecord" class="nav-item">
+                        <i class="bi bi-share navigation"></i>分享记录
+                    </li>
+                </a>
+                <a href="/group">
+                    <li href="#item-group" id="headgroup" class="nav-item">
+                        <i class="bi bi-people-fill navigation"></i>群组
+                    </li>
+                </a>
+                <a href="/tag">
+                    <li href="#item-Labelmanagement" id="headLabelmanagement" class="nav-item">
+                        <i class="bi bi-tags navigation"></i>标签管理
+                    </li>
+                </a>
+                <a href="/RecycleBin">
+                    <li id="headRecyclebin" class="nav-item">
+                        <i class="bi bi-trash navigation"></i>回收站
+                    </li>
+                </a>
 
                 <li href="#item-Search" id="headsearch" class="nav-item">
                     <i class="bi bi-search navigation"></i>搜索
                 </li>
             </ul>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                     aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%" id="progressBar"></div>
+            </div>
+            <div class="capacity">
+                <span id="usedsize">2048G</span> /
+                <span id="spacesize">4096G</span>
+            </div>
         </div>
     </div>
-</div>
 
+    <script>
+        // $(function (){
+        //     $("#usedsize").text("[[${userInfo.usedSize}]  ]");
+        //     $("#spacesize").text("[[${userInfo.spaceSize}]   ]");
+        //     $("#progressBar")[0].style.width="[[${userInfo.useSpacePercent}]    ]";
+        // })
+
+    </script>
+</div>
 </html>
