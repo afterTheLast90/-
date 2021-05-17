@@ -61,6 +61,7 @@ public class LoginController {
 
         if (PasswordEncryptionUtils.checkPassword(loginParams.getPassword(),user.getUserPassword())) {
             StpUtil.setLoginId(user.getUserId());
+//            StpUtil.setLoginId(user.getUserId(),loginParams.getRememberMe());
             return new R(ResultCode.SUCCESS).setMsg("登录成功");
         }
 

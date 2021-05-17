@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+
+<div th:fragment="shareModal">
+	<!-- 测试时需要的js和css文件	-->
+	<!-- 引入popper.js（需要在bootstrap.js之前引入） -->
+<!--	<script src="/static/popper/popper.min.js"></script>-->
+	<!--  <th:block th:include="common/header :: header(~{::title})">-->
+	<!--    <title>瀚海云盘</title>-->
+	<!--  </th:block>-->
+
+	<!-- 引入bootstrop-select.css -->
+	<link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
+	<!-- 引入bootstrop-select.js -->
+	<script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
+
+	<!-- 自定义css文件 -->
+	<style>
+    a {
+      text-decoration: none;
+    }
+
+    .s_title {
+      opacity: 1;
+      font-size: 16px;
+      text-align: left;
+      color: #333333;
+    }
+
+    #shareTab a:hover {
+      text-decoration: none;
+    }
+
+    #shareTab .active {
+      border-bottom: 2px solid #007bff;
+    }
+
+    #shareSelect {
+      margin: 5px auto;
+      width: 80%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .s_pwd_check {
+      display: inline-block;
+      margin-left: 10px;
+      margin-top: 13px;
+    }
+	</style>
+	<!-- 自定义js -->
+	<script>
+      $(function () {
+          // 首先选择第一个标签页
+          $("#shareTab a:first").tab("show");
+          // 切换标签页
+          $("#shareTab a").click(function (e) {
+              // 显示标签内
+              e.preventDefault();
+              $(this).tab("show");
+              // 当前页添加效果
+              $(this).parent().siblings().removeClass("active");
+              $(this).parent().addClass("active")
+          });
+
+          // 是否使用密码
+          // 密码文本框默认隐藏
+          $("#sharePassword").hide();
+          // 单击复选框时，对文本框进行 显示/隐藏
+          $(".havePwd").click(function () {
+              let havePwd = $(".havePwd").prop("checked");
+              if (!havePwd) {
+                  $("#sharePassword").fadeOut("fast");
+                  // 取消设置密码选项，则把密码框清空
+                  $("#sharePassword").val("");
+              } else {
+                  $("#sharePassword").fadeIn("fast");
+                  $("#sharePassword").prop("disabled", false);
+              }
+          });
+
+          // 非负判断
+          $("#maxFileDumpTimes").on("input", function () {
+              let num = $(this).val() > 0 ? $(this).val() : 0;
+              $(this).val(num);
+          });
+          $("#maxDownloadTimes").on("input", function () {
+              let num = $(this).val() > 0 ? $(this).val() : 0;
+              $(this).val(num);
+          });
+
+          // 单击 分享按钮 时，隐藏主分享页面
+          $(".linkBtn").click(function () {
+              $("#shareMain").modal('hide');
+              reSet();
+          });
+          $(".codeBtn").click(function () {
+              $("#shareMain").modal('hide');
+              reSet();
+          });
+          $(".guShare").click(function () {
+              $("#shareMain").modal('hide');
+              $("#guShare").modal("show");
+              reSet();
+              // 默认行为（button默认为submit类型）
+              return false;
+          });
+
+          // 提交信息后，把消息框置空(还差一些控制未清空)
+          function reSet() {
+              $(".publicShare").prop("checked", true);
+              $(".initTime").prop("selected", true);
+              $(".s_pwd_check").prop("checked", false);
+              $("#sharePassword").val("");
+              $("#sharePassword").hide();
+              $("#maxFileDumpTimes").val("");
+              $("#maxDownloadTimes").val("");
+              // 清空选择好友/组 模态框
+              $(".sUserSelect").selectpicker("deselectAll");
+              $(".sGroupSelect").selectpicker("deselectAll");
+          }
+      });
+      // 设置默认使用的bootstrap版本为4.
+      $.fn.selectpicker.Constructor.BootstrapVersion = '4';
+	</script>
+
+	<div class="container">
+		<!-- 模态框 -->
+		<div class="modal fade" id="shareMain">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+						<!-- 后期需根据 user_file_id得到文件名 -->
+						<span class="s_title">
+              分享文件(夹)：java_t7.docx
+            </span>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+
+					</div>
+					<div class="modal-body">
+						<!-- 标签页头 -->
+						<ul class="nav nav-tabs border-bottom-0" id="shareTab">
+							<li class="active mr-4"><a href="#shareConfig">分享</a></li>
+							<li><a href="#shareSelect">发送给好友</a></li>
+						</ul>
+					</div>
+
+					<!-- 标签内容页 -->
+					<div class="tab-content">
+						<!-- 分享子页 -->
+						<form action="" method="post" id="shareConfig" class="tab-pane">
+							<div class="form-group row">
+								<label class="col-form-label col-md-3 col-sm-3 ml-2 mr-1 text-right">分享范围：</label>
+								<label class="radio-inline mr-3 pt-1"><input type="radio" name="shareType" value="0" class="publicShare"
+								                                             checked>公共分享</label>
+								<label class="radio-inline pt-1"><input type="radio" name="shareType" value="1">内部分享</label>
+							</div>
+
+							<div class="form-group row ">
+								<label for="validtime" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">有效期:</label>
+								<select class="form-control col-md-5 col-sm-5" name="validtime" id="validtime">
+									<option class="initTime" value="1">1天</option>
+									<option value="7">7天</option>
+									<option value="30">30天</option>
+									<option value="-1">永久</option>
+								</select>
+							</div>
+
+							<div class="row">
+								<label for="sharePassword" class="col-form-label col-md-3 col-sm-3 text-right">
+									密码:
+								</label>
+								<input type="checkbox" class="s_pwd_check havePwd offset-md-1" value=""/>
+							</div>
+							<!-- 密码输入框(默认隐藏) -->
+							<div class="form-group row">
+								<div class="col-md-3 mr-1 col-sm-3"></div>
+								<input type="password" class="form-control col-md-5 col-sm-5" name="sharePassword" id="sharePassword"
+								       placeholder="输入密码">
+							</div>
+
+							<div class="form-group row">
+								<label for="maxDownloadTimes" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">下载次数:</label>
+								<input type="number" class="form-control col-md-5 col-sm-5" id="maxDownloadTimes"
+								       name="maxDownloadTimes" placeholder="省略或0则不限制">
+							</div>
+
+							<div class="form-group row">
+								<label for="maxFileDumpTimes" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">转存次数:</label>
+								<input type="number" class="form-control col-md-5 col-sm-5" id="maxFileDumpTimes"
+								       name="maxFileDumpTimes" placeholder="省略或0则不限制">
+							</div>
+
+							<!-- 创建链接/取件码 按钮 -->
+							<div class="row mb-2">
+								<a href="#" class="btn btn-primary offset-md-2 offset-sm-2 col-md-3 col-sm-3 linkBtn"
+								   data-toggle="modal" data-target="#shareLink">创建链接</a>
+								<a href="#" class="btn btn-primary offset-md-2 offset-sm-2 col-md-3 col-sm-3 codeBtn"
+								   data-toggle="modal" data-target="#shareCode">生成取件码</a>
+							</div>
+						</form>
+
+						<!-- 发送给好友 子页 -->
+						<section class="tab-pane" id="shareSelect">
+							<form action="" class="mt-2">
+								<!-- 选择用户 搜索框 -->
+								<div class="form-group">
+									<label for="sUserSelect"
+									       class="col-form-label offset-md-2 offset-sm-1 col-md-3 col-sm-3 mr-1 text-right">选择用户:</label>
+									<!-- 下拉搜索框 -->
+									<select id="sUserSelect" class="selectpicker sUserSelect" multiple data-live-search="true">
+										<!-- <optgroup> -->
+										<option>rew</option>
+									</select>
+								</div>
+
+								<hr/>
+
+								<!-- 组名 可多选下拉框 -->
+								<div class="form-group row">
+									<label for="sGroupSelect"
+									       class="col-form-label offset-md-2 offset-sm-1 col-md-3 col-sm-3 mr-1 text-right">选择群组:</label>
+									<!-- 多选下拉框 -->
+									<select id="sGroupSelect" class="selectpicker sGroupSelect" multiple data-live-search="true">
+										<option>rew</option>
+									</select>
+								</div>
+
+								<!-- 分享按钮 -->
+								<div class="row mt-1 mb-2">
+									<button class="btn btn-primary m-auto pl-4 pr-4 guShare" data-toggle="modal" data-target="#guShare">
+										分享
+									</button>
+								</div>
+							</form>
+						</section>
+						<!-- end tab-content -->
+					</div>
+
+					<!-- 模态框底部 -->
+					<div class="modal-footer ">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- shareLink模态框 -->
+	<div class="container">
+		<div class="modal fade" id="shareLink">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+            <span class="s_title">
+              生成链接和二维码
+            </span>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-content">
+						<!-- 创建成功提示 -->
+						<div class="row mt-3" style="color: #06a7ff;font-size: 10px">
+							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2"></i>
+							<span class="ml-2"> 成功创建私密链接</span>
+						</div>
+						<!-- 分享链接 -->
+						<div class="form-group row mt-1">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">链接:</label>
+							<!--      生成链接      -->
+							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
+							       name="sLink" value="">
+						</div>
+						<!-- 分享密码 -->
+						<div class="form-group row">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1">密码:</label>
+							<!--      随机生成密码      -->
+							<input type="text" class="form-control col-md-2 col-sm-2" name="sPwd" disabled value="">
+							<input type="button" class="btn btn-primary offset-md-1 offset-sm-1 col-md-3 col-sm-3"
+							       style="font-size: 10px;" value="复制链接及密码"/>
+						</div>
+						<!-- 分享二维码 -->
+						<div class="form-group row" style="height: 150px;">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1 pt-5">二维码:</label>
+							<!--      生成二维码图片      -->
+							<img src="" style="height: 100%;" alt="二维码">
+							<span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>
+                对方扫描二维码即可访问提取文件链接</span>
+						</div>
+						<!-- 提示失效时间 -->
+						<div class="form-group row">
+            <span class="offset-md-2 offset-md-3 offset-sm-3">
+              链接
+              <b class="font-weight-normal overdueTime" style="color: #06a7ff;">7天</b>
+              后失效
+            </span>
+						</div>
+
+					</div>
+					<div class="modal-footer ">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- shareCode模态框 -->
+	<div class="container">
+		<div class="modal fade" id="shareCode">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+            <span class="s_title">
+              生成取件码
+            </span>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-content">
+						<!-- 分享链接 -->
+						<div class="form-group row mt-4">
+							<label for="sCode" class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">取件码:</label>
+							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" id="sCode"
+							       style="font-size: 16px;" name="sCode" value="03eD4z">
+						</div>
+						<!-- 创建成功提示 -->
+						<div class="row mt-2" style="color: #06a7ff">
+							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-3" style="font-size: 10px;"></i>
+							<span class="ml-2" style="font-size: 10px;"> 成功生成取件码</span>
+						</div>
+						<!-- 提示失效时间 -->
+						<div class="form-group row mt-3">
+							<span class="offset-md-3  offset-sm-3">链接 <b class="font-weight-normal" style="color: #06a7ff;">7天</b> 后失效</span>
+						</div>
+
+						<div class="modal-footer ">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- 群组/好友分享guShare模态框 -->
+	<div class="container">
+		<div class="modal fade" id="guShare">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+            <span class="s_title">
+              生成链接和二维码
+            </span>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-content">
+						<!-- 创建成功提示 -->
+						<div class="row mt-3" style="color: #06a7ff;font-size: 10px">
+							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2"></i>
+							<span class="ml-2"> 成功创建私密链接</span>
+						</div>
+						<!-- 分享链接 -->
+						<div class="form-group row mt-1">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">链接:</label>
+							<!--      生成链接      -->
+							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
+							       name="sLink" value="">
+						</div>
+						<!-- 分享密码 -->
+						<div class="form-group row">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1">密码:</label>
+							<!--      随机生成密码      -->
+							<input type="text" class="form-control col-md-2 col-sm-2" name="sPwd" disabled value="">
+							<input type="button" class="btn btn-primary offset-md-1 offset-sm-1 col-md-3 col-sm-3"
+							       style="font-size: 10px;" value="复制链接及密码"/>
+						</div>
+						<!-- 分享二维码 -->
+						<div class="form-group row" style="height: 150px;">
+							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1 pt-5">二维码:</label>
+							<img src="" style="height: 100%;" alt="二维码">
+							<span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>
+                只有您选中的好友才能访问该链接</span>
+						</div>
+						<!-- 提示失效时间 -->
+						<div class="form-group row">
+            <span class="offset-md-2 offset-md-3 offset-sm-3">
+              链接
+              <b class="font-weight-normal overdueTime" style="color: #06a7ff;">7天</b>
+              后失效
+            </span>
+						</div>
+
+					</div>
+					<div class="modal-footer ">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</html>

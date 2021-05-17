@@ -1,11 +1,13 @@
 package com.hanhai.cloud.base;
 
 
+import com.hanhai.cloud.constant.ResultCode;
+
 /**
  * @author wmgx
  * @create 2021-02-01-19:21
  **/
-public class BaseException extends Exception{
+public class BaseException extends RuntimeException {
     private Integer code;
     private String msg;
 
@@ -14,21 +16,30 @@ public class BaseException extends Exception{
         this.msg = msg;
     }
 
+    public BaseException(ResultCode r) {
+        this.code = r.getCode();
+        this.msg = r.getMsg();
+    }
+
     public BaseException() {
     }
+
     public Integer getCode() {
         return code;
     }
 
-    public void setCode(Integer code) {
+    public BaseException setCode(Integer code) {
         this.code = code;
+
+        return this;
     }
 
     public String getMsg() {
         return msg;
     }
 
-    public void setMsg(String msg) {
+    public BaseException setMsg(String msg) {
         this.msg = msg;
+        return this;
     }
 }

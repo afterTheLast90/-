@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入 popper.js(bootstrap-table需要)	-->
+	<script src="/static/popper/popper.min.js"></script>
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>分享纪录</title>
+	</th:block>
+
+
+	<!-- drawer.css -->
+	<link rel="stylesheet" href="/static/drawer/drawer.min.css">
+	<!-- iScroll.js -->
+	<script src="/static/iScroll/iscroll.js"></script>
+	<!-- drawer.js -->
+	<script src="/static/drawer/drawer.min.js"></script>
+
+	<!-- 引入bootstrap-table.css	-->
+	<link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
+	<!--	引入bootstrap-table.js -->
+	<script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+	<!--	引入bootstrap-table中文包 -->
+	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
+	<!--  引入bootstrap-switch  -->
+	<link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
+	<script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
+
+	<style>
+
+    body {
+      background-color: #efefef;
+      min-width: 1400px;
+      margin: 0px auto;
+      padding: 0px 0px;
+      overflow: hidden;
+    }
+
+    .rMain {
+      width: 84%;
+      margin-left: 2%;
+      padding-top: 10px;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+    }
+
+    .detailIcon {
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .rMain nav li {
+      list-style: none;
+    }
+
+    .rMain nav .sInfo {
+      margin-left: 1px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: rgb(21,151,219);
+    }
+
+    .drawer-nav>ul>li {
+      margin-top: 10px;
+    }
+
+    .drawer-nav li .bi {
+      margin-top: -5px;
+      padding-left: 5px;
+	    font-size: 20px;
+      color: #5a6268;
+      cursor: pointer;
+    }
+
+    .drawer-nav li .bi-eye-fill {
+      color: #1296db;
+    }
+
+    #sTable tbody tr:hover {
+      background-color: rgba(18, 150, 219, .15);
+    }
+	</style>
+
+	<script>
+      $(function() {
+          // 表格参数
+          // $("#sTable").bootstrapTable({
+          //     // 表格 样式类
+          //     classes: 'table',
+          //     pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+          //     // 表格高度
+          //     height: 550,
+          //     // 开启搜索
+          //     search: true,
+          //     // 回车后搜索
+          //     // searchOnEnterKey: true,
+          //     // 自动去除搜索空格
+          //     trimOnSearch: true,
+          //     searchAlign: "left",
+          //     //ustomSearch:customSearch,//自定义搜索，比如只搜索ID字段
+          //     // function  customSearch(data, text) {
+          //     //   return data.filter(function (row) {
+          //     //       return (row.Id+"").indexOf(text) > -1
+          //     //   })
+          //     data: [{
+          //         fileName: "java实验1",
+          //         createdTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '内部分享',
+          //         // 失效开关
+          //         rStatus: '<input type="button"/>',
+          //         // 查看详情图标，弹出抽屉显示信息
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //         // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }, {
+          //         fileName: "Python实验2",
+          //         createTime: '2018-11-30',
+          //         expireTime: '2018-11-30',
+          //         shareType: '公共分享',
+          //         rStatus: 'fff',
+          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+          //     }]
+          // });
+          // 得到数据
+          // function ajaxRequest(params) {
+          //   var url = 'https://examples.wenzhixin.net.cn/examples/bootstrap_table/data'
+          //   $.get(url + '?' + $.param(params.data)).then(function (res) {
+          //       params.success(res)
+          //   })
+          // }
+
+          // 调用函数，初始化表格
+          initTable();
+          // 自定义搜索框，进行搜索
+          $("#queryBtn").on("click", initTable);
+          // 分享链接 状态开关
+          $("input[name='sStatus']").bootstrapSwitch({
+              onText: "有效",
+              offText: "失效",
+              animate: false,
+          });
+          $("input[name='sStatus']").bootstrapSwitch("state", true);
+          // 必须设置默认值，否则第一次会获取不到switch的值
+
+		      // 状态框失效确认
+		      let failConfirm = false   // 是否 确认链接失效
+          $("input[name='sStatus']").on("switchChange.bootstrapSwitch", function(event, state){
+              if(state == false) {
+                  console.log(state)
+		              if(!failConfirm){
+	                  $("input[name='sStatus']").bootstrapSwitch("toggleState");  // 转换回原状态
+	                  $("#shareFailModal").modal("show")
+                  }else {
+		                  $(this).bootstrapSwitch("disabled", true);
+		                  // 将些分享链接设为失效（未实现）
+                      failConfirm = false         // 设置回 不确定默认值
+                  }
+              }
+          })
+		      // 获取确认状态
+		      $("#shareFailConfirm").click(function() {
+              failConfirm = true
+              $("input[name='sStatus']").bootstrapSwitch("toggleState");
+              $("#shareFailModal").modal("hide")
+		      })
+
+
+					// 初始化表格
+          function initTable() {
+              // 先销毁表格
+              $('#sTable').bootstrapTable('destroy');
+              $('#sTable').bootstrapTable({
+                  // url: "showConsumeRecordlList",//请求后台的URL（*）
+                  // method: 'get',
+                  // dataType: "json",
+                  // undefinedText: "-",         // 当数据为 undefined 时显示的字符
+                  pagination: true,           // 设置为 true 会在表格底部显示分页条。
+                  pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+                  // paginationPreText: '上一页',
+                  // paginationNextText: '下一页',
+                  data_local: "zh-US",        // 表格汉化
+                  // 表格 样式类
+                  classes: 'table',
+                  // 表格高度
+                  height: 550,
+                  // 查询 和 请求响应
+                  // queryParams: function (params) {  // 自定义参数
+                  //     return {//这里的params是table提供的
+                  //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
+                  //     };
+                  // },
+                  // responseHandler: function (res) {
+                  //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
+                  //     return "\"rows\":[ " + res + "]";
+                  // },
+                  data: [{
+                      fileName: "java实验1",
+                      createdTime: '2018-11-30',
+                      expireTime: '2018-11-30',
+                      shareType: '内部分享',
+                      // 失效开关
+                      sStatus: '<input type="checkbox" name="sStatus" checked>',
+                      // 查看详情图标，弹出抽屉显示信息
+                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
+                      // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
+                  }, ]
+              })
+          }
+          // 抽屉(必须先创建元素，再绑定事件）
+          $('.drawer').drawer();
+
+          $(".bi-eye-fill").hide();
+          // 密码显示
+					$(".bi-eye-slash").click(function(){
+            $("#sPwd").attr("type", "text");
+            $(".bi-eye-fill").show();
+            $(this).hide();
+					})
+		      // 密码隐藏
+          $(".bi-eye-fill").click(function(){
+              $("#sPwd").attr("type", "password");
+              $(".bi-eye-slash").show();
+              $(this).hide();
+          })
+      });
+	</script>
+</head>
+<body >
+<!--页头-->
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+	<div th:replace="common/nav-left :: nav-left"></div>
+
+	<div class="rMain drawer drawer--right shadow">
+
+		<!--	自定义搜索框	-->
+		<div class=".sSearch">
+			<div class="panel-body" style="padding-bottom: 1px;">
+				<form class="form-horizontal">
+					<div class="form-group row pb-0 m-2">
+						<div class="col-3 pr-0">
+							<!-- 自定义搜索框 -->
+							<input type="text" name="searchString" id="searchFile" class="form-control" placeholder="文件名" onkeydown="javascript:if(event.keyCode==13) searchId();" />
+						</div>
+						<div class="col-sm-1 pl-0">
+							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+								<i class="bi bi-search"></i>
+							</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+
+		<!--	ShareTable	-->
+		<table id="sTable" data-pagination="true">
+			<thead>
+			<tr>
+				<th data-field="fileName" data-align="center">文件名</th>
+				<th data-field="createdTime" data-align="center">分享时间</th>
+				<th data-field="expireTime" data-align="center">失效时间</th>
+				<th data-field="shareType" data-align="center">分享类型</th>
+				<!--	用开关实现，添加确认窗口	-->
+				<th data-field="sStatus" data-align="center">状态</th>
+				<!--	显示文件详情（内部分享组、人；删除、添加权限）；转存、下载次数查看；查看密码~~~~弹出模态框	-->
+				<th data-field="rDetails" data-align="center">查看详情</th>
+			</tr>
+			</thead>
+		</table>
+
+		<!--	ShareDetails	-->
+		<nav class="drawer-nav" role="navigation" style="z-index: 20;">
+			<ul class="pl-0">
+				<li class="text-center" style="width: 100%">
+					<img src="/static/img/logo.png" alt="" style="width: 40%;">
+				</li>
+				<li class="row">
+					<span class="col-5 text-right">文件名:</span>
+					<span class="sInfo col-6 p-0 pr-2">地觅仙泉灾夏无酷暑鄙厅里淡标题</span>
+				</li>
+				<hr>
+				<li class="row">
+					<span class="col-5 text-right">分享方式:</span>
+					<span class="sInfo col-6 p-0 pr-2">内部分享</span>
+				</li>
+				<!--	分享人应该可以 加/删	-->
+				<li class="row" id="sharePeople">
+					<span class="col-5 text-right">分享人:</span>
+					<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2">
+						<li>家人</li>
+						<li>李咏</li>
+					</ul>
+				</li>
+				<hr>
+				<li class="row">
+					<span class="col-5 text-right">转存次数:</span>
+					<span class="sInfo p-0 pr-2">10</span> /
+					<span class="sInfo pl-2 p-0">15</span>
+				</li>
+				<li class="row">
+					<span class="col-5 text-right">下载次数:</span>
+					<span class="sInfo p-0 pr-2">3</span> /
+					<span class="sInfo pl-2 p-0">15</span>
+				</li>
+				<hr>
+				<li class="row">
+					<span class="col-5 text-right">分享密码:</span>
+					<input type="password" name="" class="sInfo col-2 p-0 pr-2 border-0" value="3Daj" id="sPwd" style="outline: none">
+					<!--	显示密码 -->
+					<i class="bi bi-eye-fill"></i>
+					<!--	隐藏密码 -->
+					<i class="bi bi-eye-slash"></i>
+
+				</li>
+				<li class="row">
+					<div class="col-5 text-right">二维码:</div>
+					<img src="/static/img/logo.png" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">
+				</li>
+			</ul>
+		</nav>
+		<!--	rMain:end	-->
+	</div>
+
+</div>
+
+<!--  链接失效确认 模态框  -->
+<div class="modal fade" id="shareFailModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">操作确认</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>是否取消该链接的分享？</span>
+			</div>
+
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" id="shareFailConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+</body>
+</html>
