@@ -21,6 +21,7 @@ public interface GroupMapper extends BaseMapper<Group> {
     @Update("update groups set group_name = #{group.groupName} where group_id = #{group.groupId}")
     public int updGroupName(@Param("group")Group group);
 
-//    @Update("update groups set deleted = true where group_id = #{groupId}")
-//    public int delGroup(Group group);
+    @Select("select * from groups where user_id = #{userId} and group_name = #{groupName} and deleted = false")
+    public Group getGroupByName(@Param("groupName") String groupName,
+                              @Param("userId") Long userId);
 }

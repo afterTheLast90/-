@@ -73,6 +73,7 @@
 
       .col-group #groups li .updGroup {
           position: absolute;
+	        top: 20%;
           right: 10%;
           /*margin-left: 40%;*/
           font-size: 15px;
@@ -82,6 +83,7 @@
 
       .col-group #groups li .delGroup {
           position: absolute;
+	        top: 20%;
           right: 0;
           /*margin-left: 40%;*/
           font-size: 15px;
@@ -107,6 +109,10 @@
           margin-right: 1.5%;
           /*width: 8%;*/
           list-style: none;
+	        /*超出部分省略号代替*/
+	        white-space: nowrap;
+	        overflow: hidden;
+	        text-overflow: ellipsis;
       }
 
       .g_users .u_add {
@@ -144,7 +150,6 @@
       }
 
       .g_users .u_name {
-          display: inline-block;
           width: 100%;
           text-align: center;
           /*溢出文件用引号表示*/
@@ -153,6 +158,9 @@
           text-overflow: ellipsis;
       }
 
+      .modal {
+	      font-size: 1rem;
+      }
 	</style>
 
 
@@ -185,17 +193,17 @@
 				<li class="u_head col-md-1">
 					<img src="/static/img/logo.png" class="rounded-circle" alt="">
 					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
+					<div class="u_name" title="tom土ffffffffffffff">tom土ffffffffffffff</div>
 				</li>
 				<li class="u_head col-md-1">
 					<img src="/static/img/logo.png" class="rounded-circle" alt="">
 					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">jack</div>
+					<div class="u_name" title="jack">jack</div>
 				</li>
 				<li class="u_head col-md-1">
 					<img src="/static/img/logo.png" class="rounded-circle" alt="">
 					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">Jenny</div>
+					<div class="u_name" title="Jenny">Jenny</div>
 				</li>
 				<li class="u_head col-md-1">
 					<img src="/static/img/logo.png" class="rounded-circle" alt="">
@@ -357,6 +365,8 @@
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 text-right">选择用户:</label>
 						<div class="col-md-4 col-sm-4">
 							<select class="selectpicker" id="addGroup-addUser" multiple data-live-search="true">
+								<option value="1111">xixi</option>
+								<option value="2222">hahah</option>
 							</select>
 						</div>
 					</div>
@@ -442,53 +452,39 @@
         initTag()
         console.log($("#groupQuery").html());
 
-        // 添加群组
+        // 添加群组(未实现，同时添加用户列表）
         $("#addGroupConfirm").click(function () {
             httpUtil.post("/group/groupAdd", JSON.stringify({
                 groupName: $("#nGName").val(),
                 userList: $("#addGroup-addUser").val()
             })).then(res => {
-                // console.log(res)
                 // 更新标签
                 initTag()
-                // 单击确认添加群组按钮后，进行的操作
-                $("#nGName").val("")            // 清空 群组名称
-                $("#gAddModal").modal("hide")   // 添加模态框隐藏
             })
+            // 单击确认添加群组按钮后，进行的操作
+            $("#nGName").val("")            // 清空 群组名称
+            $("#gAddModal").modal("hide")   // 添加模态框隐藏
         })
 
         // // 删除群组确认
         $("#gDelConfirm").click(function () {
-
             httpUtil.delete("/group/"+delGroupLi.attr("groupId")).then(res=>{
                 initTag();
             })
-            // httpUtil.post("/group/groupDel",
-            //     JSON.stringify({
-            //         groupId: Number(delGroupLi.attr("groupId"))
-            //     }))
-            //     .then(res => {
-            //         initTag()
-            //     })
             $("#delGroupModal").modal("hide")
         })
 
         // 修改群组
         $("#gUpdConfirm").click(function () {
-            // 输出测试
-            console.log(updGroupLi.attr("groupId"))
-            console.log($("#updGroupName").val().trim())
-
-            httpUtil.post("/group/groupUpd",
+            httpUtil.put("/group/groupUpd",
                 JSON.stringify({
                     groupId: updGroupLi.attr("groupId").trim(),
                     groupName: $("#updGroupName").val().trim()
                 }))
                 .then(res => {
                     initTag();    // 更新群组和搜索框
-                    $("#updGroupName").val("")
                 })
-
+            $("#updGroupName").val("")
             $("#updGroupModal").modal("hide")
         })
 
@@ -536,7 +532,7 @@
 
                     $("#groups").append('<li groupId="' + res.data[i].groupId + '">' +
                         '<i class="bi bi-tags-fill g_tab"></i>' +
-                        '<span class="gName">' + res.data[i].groupName + '</span>' +
+                        '<span class="gName" title="'+ res.data[i].groupName +'">' + res.data[i].groupName + '</span>' +
                         '<i class="bi bi-pencil-square updGroup" data-toggle="modal" data-target="#updGroupModal"></i>\n' +
                         '<i class="bi bi-x-square delGroup" data-toggle="modal" data-target="#delGroupModal"></i>' +
                         '</li>'
@@ -547,14 +543,10 @@
                 // 修改群组按钮绑定事件，得到当前标签
                 $(".updGroup").click(function () {
                     updGroupLi = $(this).parent()
-                    // 输出测试
-                    console.log(updGroupLi.attr("groupId"))
                 })
                 // 删除群组按钮绑定事件
                 $(".delGroup").click(function () {
                     delGroupLi = $(this).parent()
-                    // 输出测试
-                    console.log(delGroupLi.attr("groupId"))
                 })
 
                 // 刷新下拉搜索框

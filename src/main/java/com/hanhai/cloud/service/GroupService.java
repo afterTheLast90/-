@@ -47,16 +47,19 @@ public class GroupService extends BaseService {
         }
     }
 
-    public void updGroupName(UpdGroupParams groupParams) throws UpdateException {
-        Group group = BeanUtils.convertTo(groupParams, Group.class);
+    public void updGroupName(Group group) {
         groupMapper.updGroupName(group);
     }
 
-    public void delGroup(Long groupId) throws UpdateException {
+    public void delGroup(Long groupId) {
         groupMapper.deleteById(groupId);
     }
 
     public Group getGroupById(Long groupId){
         return groupMapper.selectById(groupId);
+    }
+
+    public Group getGroupByName(String groupName, Long userId) {
+        return groupMapper.getGroupByName(groupName, userId);
     }
 }

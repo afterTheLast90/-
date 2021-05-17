@@ -11,11 +11,11 @@
 
 
 	<!-- drawer.css -->
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/drawer/3.2.2/css/drawer.min.css">
+	<link rel="stylesheet" href="/static/drawer/drawer.min.css">
 	<!-- iScroll.js -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/iScroll/5.2.0/iscroll.min.js"></script>
+	<script src="/static/iScroll/iscroll.js"></script>
 	<!-- drawer.js -->
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/drawer/3.2.2/js/drawer.min.js"></script>
+	<script src="/static/drawer/drawer.min.js"></script>
 
 	<!-- 引入bootstrap-table.css	-->
 	<link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
@@ -49,7 +49,7 @@
       background-color: #fff;
     }
 
-    .tLists .row .tAdd {
+    .tLists .row #tAdd {
       padding: 0;
       margin-left: 15%;
       margin-top: 1%;
@@ -77,6 +77,10 @@
       padding-left: 30px;
       width: 95%;
       list-style: none;
+	    /*超出部分省略号代替*/
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tLists ul li:hover {
@@ -96,6 +100,7 @@
     .tLists .tTags .updTag {
       position: absolute;
       right: 10%;
+	    top: 20%;
       /*margin-left: 40%;*/
       font-size: 15px;
       color: #12a559;
@@ -105,6 +110,7 @@
     .tLists .tTags .delTag {
       position: absolute;
       right: 0;
+      top: 20%;
       /*margin-left: 3%;*/
       font-size: 15px;
       color: #c82333;
@@ -165,123 +171,12 @@
     tbody tr:hover {
       background-color: rgba(18, 150, 219, .15);
     }
+
+    .modal {
+	    font-size: 1rem;
+    }
 	</style>
 
-	<script>
-      $(function() {
-          // 设置表格数据、样式
-          // $('#tTable').bootstrapTable({
-          //     // url: 'data1.json',
-          //     // 表格 样式类
-          //     classes: 'table',
-          //     // 表格高度
-          //     height: 550,
-          //     // 自动去除搜索空格
-          //     trimOnSearch: true,
-          //     // 左对齐
-          //     searchAlign: "left",
-          //     // 分页
-          //     pagination: true,
-          //     // 开启查询
-          //     search: true,
-          //     data: [{
-          //         fileName: "java实验一",
-          //         fileSize: "1303M",
-          //         createdTime: "2018-03-31",
-		      //         operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-				  //             "<i class=\"bi bi-three-dots drawer-toggle\"></i>"
-          //     }]
-          // });
-
-          let delLi;
-          // 点删除标签后，取到当前标签对象
-          $(".delTag").click(function() {
-              delLi = $(this).parent();
-          });
-          // 再点击确定按钮，把标签删除
-          $(".delConfirm").click(function(){
-              // 删除标签，并把文件带有的该标签去除
-              // $.ajax();
-              $("#delTagModal").modal("hide");
-              delLi.remove();
-          });
-
-          // 更改标签 确认操作
-          $(".addConfirm").click(function(){
-              $("#addTagModal").modal("hide");
-          });
-
-
-          // 修改按钮，自动把值插入修改框
-          $(".updTag").click(function(){
-              $("#updateTag").val($(this).parent().text().trim());
-          });
-          // 修改标签 确认操作
-          $(".updConfirm").click(function() {
-              $("#updTagModal").modal("hide");
-          })
-
-          // 调用函数，初始化表格
-          initTable();
-          // 自定义搜索框，进行搜索
-          $("#queryBtn").on("click", initTable);
-          // 初始化表格
-          function initTable() {
-              // 先销毁表格
-              $('#tTable').bootstrapTable('destroy');
-              $('#tTable').bootstrapTable({
-                  // url: "showConsumeRecordlList",//请求后台的URL（*）
-                  // method: 'get',
-                  // dataType: "json",
-                  // undefinedText: "-",         // 当数据为 undefined 时显示的字符
-                  pagination: true,           // 设置为 true 会在表格底部显示分页条。
-                  pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
-                  // paginationPreText: '上一页',
-                  // paginationNextText: '下一页',
-                  data_local: "zh-US",        // 表格汉化
-                  // 表格 样式类
-                  classes: 'table',
-                  // 表格高度
-                  height: 550,
-                  // 查询 和 请求响应
-                  // queryParams: function (params) {  // 自定义参数
-                  //     return {//这里的params是table提供的
-                  //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
-                  //     };
-                  // },
-                  // responseHandler: function (res) {
-                  //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
-                  //     return "\"rows\":[ " + res + "]";
-                  // },
-                  data: [{
-                      fileName: "java实验一",
-                      fileSize: "1303M",
-                      createdTime: "2018-03-31",
-                      operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-                          "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
-		                      "<i class=\"bi bi-trash pl-2\" id='delFile' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
-                  }]
-              })
-          }
-
-          // 抽屉(必须先创建元素，再绑定事件）
-          $('.drawer').drawer();
-
-          $(".bi-eye-fill").hide();
-          // 密码显示
-          $(".bi-eye-slash").click(function(){
-              $("#sPwd").attr("type", "text");
-              $(".bi-eye-fill").show();
-              $(this).hide();
-          })
-          // 密码隐藏
-          $(".bi-eye-fill").click(function(){
-              $("#sPwd").attr("type", "password");
-              $(".bi-eye-slash").show();
-              $(this).hide();
-          })
-      })
-	</script>
 </head>
 
 <body class="drawer drawer--right">
@@ -300,25 +195,11 @@
 					</select>
 				</div>
 				<!--	添加标签按钮 	-->
-				<i class="bi bi-plus-square offset-1 col-2 tAdd" data-toggle="modal" data-target="#addTagModal"></i>
+				<i class="bi bi-plus-square offset-1 col-2" id="tAdd" data-toggle="modal" data-target="#addTagModal"></i>
 			</div>
 			<div class="row tTags">
 				<!--	 标签列表显示		-->
 				<ul>
-					<li>
-						<span class="info"><i class="bi bi-tags tTag"></i>家人</span>
-						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
-						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
-					</li>
-					<li>
-						<span class="info"><i class="bi bi-tags tTag"></i>朋友</span>
-						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
-						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
-					</li>
-					<li>
-						<span class="info"><i class="bi bi-tags tTag"></i>同事</span>
-						<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>
-						<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>
 				</ul>
 			</div>
 		</div>
@@ -416,7 +297,7 @@
 
 			<!-- 模态框底部 -->
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary updConfirm">确定</button>
+				<button type="button" class="btn btn-primary" id="updConfirm">确定</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
 			</div>
 
@@ -445,7 +326,7 @@
 
 			<!-- 模态框底部 -->
 			<div class="modal-footer">
-				<button type="button" class="btn btn-primary addConfirm">确定</button>
+				<button type="button" class="btn btn-primary" id="addTagConfirm">确定</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
 			</div>
 
@@ -557,5 +438,178 @@
 <!--		</li>-->
 	</ul>
 </nav>
+
+<script type="module">
+		import httpUtil from "/static/httpUtil.js";
+		import httpUtilFormDate from "/static/httpUtilFormDate.js";
+		// 要删除的标签
+    let delTagLi
+		let updTagLi
+
+    $(function() {
+        initTag()
+
+		    // 新增标签（未实现 查重）
+		    $("#addTagConfirm").click(function() {
+		        // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
+            let data = new URLSearchParams()
+            data.append('tagName',$("#newTag").val())
+
+            httpUtilFormDate.post("/tag/tagAdd", data
+						).then(res => {
+						    // if (res.code)
+						    // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
+						    $(".tTags ul").append('<li tagId="' + res.data.data + '">' +
+                    '<i class="bi bi-tags tTag"></i><span class="info" title="'+ $("#newTag").val() +'">' + $("#newTag").val() + '</span>' +
+                    '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
+                    '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
+                    '</li>')
+                $("#newTag").val("")
+            }).catch(e=>{})
+				    $("#addTagModal").modal("hide");
+		    })
+
+
+        // 设置表格数据、样式
+        // $('#tTable').bootstrapTable({
+        //     // url: 'data1.json',
+        //     // 表格 样式类
+        //     classes: 'table',
+        //     // 表格高度
+        //     height: 550,
+        //     // 自动去除搜索空格
+        //     trimOnSearch: true,
+        //     // 左对齐
+        //     searchAlign: "left",
+        //     // 分页
+        //     pagination: true,
+        //     // 开启查询
+        //     search: true,
+        //     data: [{
+        //         fileName: "java实验一",
+        //         fileSize: "1303M",
+        //         createdTime: "2018-03-31",
+        //         operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
+        //             "<i class=\"bi bi-three-dots drawer-toggle\"></i>"
+        //     }]
+        // });
+
+
+
+        // 删除标签
+        $(".delConfirm").click(function(){
+            httpUtil.delete("/tag/"+delTagLi.attr("tagId"))
+		          .then(res => {
+		              delTagLi.remove()
+		          })
+            $("#delTagModal").modal("hide");
+        });
+
+
+        // 修改标签
+        // 修改标签 确认操作
+        $("#updConfirm").click(function() {
+
+            $("#updTagModal").modal("hide");
+        })
+
+        // 调用函数，初始化表格
+        initTable();
+        // 自定义搜索框，进行搜索
+        $("#queryBtn").on("click", initTable);
+        // 初始化表格
+        function initTable() {
+            // 先销毁表格
+            $('#tTable').bootstrapTable('destroy');
+            $('#tTable').bootstrapTable({
+                // url: "showConsumeRecordlList",//请求后台的URL（*）
+                // method: 'get',
+                // dataType: "json",
+                // undefinedText: "-",         // 当数据为 undefined 时显示的字符
+                pagination: true,           // 设置为 true 会在表格底部显示分页条。
+                pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+                // paginationPreText: '上一页',
+                // paginationNextText: '下一页',
+                data_local: "zh-US",        // 表格汉化
+                // 表格 样式类
+                classes: 'table',
+                // 表格高度
+                height: 530,
+                // 查询 和 请求响应
+                // queryParams: function (params) {  // 自定义参数
+                //     return {//这里的params是table提供的
+                //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
+                //     };
+                // },
+                // responseHandler: function (res) {
+                //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
+                //     return "\"rows\":[ " + res + "]";
+                // },
+                data: [{
+                    fileName: "java实验一",
+                    fileSize: "1303M",
+                    createdTime: "2018-03-31",
+                    operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
+                        "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
+                        "<i class=\"bi bi-trash pl-2\" id='delFile' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
+                }]
+            })
+        }
+
+        // 抽屉(必须先创建元素，再绑定事件）
+        $('.drawer').drawer();
+
+        $(".bi-eye-fill").hide();
+        // 密码显示
+        $(".bi-eye-slash").click(function(){
+            $("#sPwd").attr("type", "text");
+            $(".bi-eye-fill").show();
+            $(this).hide();
+        })
+        // 密码隐藏
+        $(".bi-eye-fill").click(function(){
+            $("#sPwd").attr("type", "password");
+            $(".bi-eye-slash").show();
+            $(this).hide();
+        })
+    })
+
+		function initTag() {
+        httpUtil.get("/tag/getTags")
+		        .then(res => {
+                if(res.data.length == 0){
+                    $(".tTags ul").append('<li>' +
+			                    '<i class="bi bi-tags tTag"></i><span class="info" style="color: #1698dc" data-toggle="modal" data-target="#addTagModal" title="添加你的第一个标签吧！">添加你的第一个标签吧！</span>' +
+		                    '</li>')
+                }
+                else {
+                    $(".tTags ul").html("")
+                    $("#groupQuery").html("")
+                    for (let i = 0; i < res.data.length; i++) {
+                        $(".tTags ul").append('<li tagId="' + res.data[i].tagId + '">' +
+                            '<i class="bi bi-tags tTag"></i>' +
+		                        '<span class="info" title="'+ res.data[i].tagName +'">' + res.data[i].tagName + '</span>' +
+                            '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
+                            '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
+                            '</li>')
+                        $("#groupQuery").append("<option>" + res.data[i].tagName + "</option>")
+                    }
+
+                    // 删除标签按钮 绑定事件
+                    $(".delTag").click(function() {
+                        delTagLi = $(this).parent();
+                    })
+
+		                // 修改标签按钮 绑定事件
+                    $(".updTag").click(function(){
+                        updTagLi = $(this).parent()
+                        console.log(updTagLi.attr("tagId"))
+                    });
+                }
+		        })
+
+		}
+
+</script>
 </body>
 </html>
