@@ -15,7 +15,7 @@ import java.io.Serializable;
 @TableName("files")
 @Data
 @Accessors(chain = true)
-public class File extends BaseEntity implements Serializable,Cloneable {
+public class Files extends BaseEntity implements Serializable,Cloneable {
 
     @TableId
     /** 文件ID */

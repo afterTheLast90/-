@@ -1,0 +1,280 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org">
+<head >
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>文件上传</title>
+    </th:block>
+    <style type="text/css">
+        ul li{
+            list-style: none;
+        }
+    </style>
+</head>
+<div id="content" hidden="hidden" style="overflow: auto;width: 500px;height: 350px ;padding-right: 20px" >
+    <ul id="ul">
+
+    </ul>
+</div>
+
+<body>
+<script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="/static/spark-md5.js"></script>
+    <button id="con">进度条</button><br>
+    <button id="b_file">上 传 文 件</button>
+    <input type="file" id="file" hidden="hidden" onchange="document.getElementById('s_file').innerText=this.files[0].name">
+    <span id="s_file"></span><br>
+    <button id="b_files">上传文件夹</button>
+    <input type="file" id="files" hidden="hidden" webkitdirectory directory multiple
+           onchange="document.getElementById('s_files').innerText=this.files.length.toString()"/>
+    <span id="s_files"></span><br/>
+    <span id="flag">false</span>
+    <br>
+    <span id="uuid"></span>
+
+    <script>
+        var chunk=-1;   //分片数
+        var succeed=0;  //成功表示
+        var action=false;   //false检验分片是否上传(默认);true表示上传文件
+        const shardSize=1*1024*1024;   //以1M为一个分片
+        var files_i=0;    //文件夹上传；i表示文件序号（从0开始）
+
+        $("#b_file").click(function (){
+            $("#file").click();
+        })
+        $("#b_files").click(function (){
+            $("#files").click();
+        })
+        $("#file").change(function (){
+            $("#uuid").text("UUID上传文件");
+            var file=$("#file")[0].files[0]; //文件对象
+            CheckIsUpload(file);
+            $("#ul").append('<li>' +file.name+
+                '<div id="progress" class="progress">\n' +
+                '    <div id="bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
+                '</div></li>');
+        })
+        $("#files").change(function (){
+            $("#uuid").text("md5上传文件夹");
+            var flag=$("#flag").text();
+            files_i=0;
+            $("#flag").text("true");
+            filesUpload();
+        })
+
+        function filesUpload(){     //文件夹上传
+            var len=$("#files")[0].files.length;
+            if(files_i==len-1){
+                $("#flag").text("false");
+            }
+            if(files_i<len){
+                var file=$("#files")[0].files[files_i];
+                $("#ul").append('<li>' +file.name+
+                    '<div id="progress" class="progress">\n' +
+                    '    <div id="bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
+                    '</div></li>');
+                $("#uuid").append("  "+file.name); //文件对象
+                CheckIsUpload(file);
+            }
+
+        }
+
+        /*
+         * 检查文件是否上传
+         */
+        function CheckIsUpload(file){
+            chunk=-1;   //分片数
+            succeed=0;  //成功标识
+            action=false; //检验分片是否上传
+            //构建一个表单 FoemData HTML5新增
+            var form=new FormData();
+            var r=new FileReader();
+            r.readAsArrayBuffer(file);
+            $(r).load(function(e){
+                var blob=e.target.result;
+                var fileMd5=SparkMD5.ArrayBuffer.hash(blob);
+                console.log("fileMd5="+fileMd5);
+                form.append("md5",fileMd5);
+                //Ajax提交
+                $.ajax({
+                    url: "/isUpload",
+                    type: "POST",
+                    data: form,
+                    async: true,
+                    processData: false,//很重要，告诉jquery不要对form进行处理
+                    contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                    success: function (data) {
+                        handleCheckIsUploadResult(file,fileMd5,data);
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert("服务器出错!@@@/isUpload");
+                    }
+                })
+            })
+        }
+
+        /**
+         * 处理检查是否上传的结果
+         *  @param file 当前文件
+         *  @param flag 0未上传 1部分上传(断点续传) 2秒传
+         */
+        function handleCheckIsUploadResult(file,fileMd5,data){
+            let id=data.fileId;
+            let flag=data.flag;
+            if(flag==="0") {
+                //没有上传该文件
+                upload(file,id,fileMd5);
+            }else if(flag==="1" ){
+                //部分上传
+                chunk=data.chunk;
+                action=true; //不用检测，直接上传
+                console.log("断点续传");
+                console.log("chunk="+chunk);
+                console.log("index="+(chunk+1));
+                upload(file,id,fileMd5);
+            }else if(flag==="2"){
+                //秒传
+                alert("文件已秒传");
+                $("#uuid").text("文件已秒传");
+                $("ul li:last .progress .progress-bar").css("width","100%");
+                $("ul li:last .progress .progress-bar").text("100%");
+                if("true"===$("#flag").text()){
+                    files_i++;
+                    filesUpload();
+                }
+            }
+        }
+
+        /**
+         * @param file 当前文件
+         * @param id 文件id
+         * @param filemd5 文件md5值
+         */
+        function upload(file,id,filemd5){
+            let name=file.name;
+            let size=file.size;
+            let shardCount=Math.ceil(size/shardSize);//总片数
+            $("#uuid").text("") ;
+            $("#uuid").append(" 文件名："+name) ;
+            $("#uuid").append(" ，大小："+size) ;
+            $("#uuid").append(" ，分片数："+shardCount) ;
+            $("#file_name").text(name) ;
+            //分片数>分片总数 结束本次方法调用
+            if (chunk> shardCount) return;
+            if(!action){
+                chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
+            }
+            //计算每一片的起始和结束位置
+            let start=chunk*shardSize;
+            let end=Math.min(size,start+shardSize); //如果是最后一片不足shardSize，则取size作为结束位置
+            //构造一个表单，FormData是HTML5新增的
+            var form = new FormData();
+            if(!action){
+                form.append("action", "check");  //检测分片是否上传
+            }else{
+                form.append("action", "upload");  //直接上传分片
+                form.append("data", file.slice(start,end));  //slice方法用于切出文件的一部分
+            }
+            form.append("id", id);
+            form.append("md5", filemd5);
+            form.append("name", name);
+            form.append("size", size);
+            form.append("total", shardCount);  //总片数
+            form.append("index", chunk+1);     //当前是第几片(从1开始)
+            var index = chunk+1;
+            //按大小切割文件段
+            var data = file.slice(start, end);
+            var r = new FileReader();
+            r.readAsArrayBuffer(data);  //文件分片
+            $(r).load(function (e) {
+                var bolb = e.target.result;
+                var partMd5=SparkMD5.ArrayBuffer.hash(bolb);
+                form.append("partMd5", partMd5);
+                //Ajax提交
+                $.ajax({
+                    url: "/upload",
+                    type: "POST",
+                    data:form,
+                    async: true,
+                    processData: false,  //很重要，告诉jquery不要对form进行处理
+                    contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                    success: function (data) {
+                        handleUploadResult(file,id,filemd5,shardCount,data);
+                    },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert("服务器出错!@@@/upload");
+                    }
+                })
+            })
+        }
+
+        /**
+         * 处理上传的结果
+         * @param file 当前文件
+         * @param id 文件id
+         * @param filemd5 文件MD5值
+         * @param shardCount 分片总片数
+         * @param data 文件分片
+         */
+        function handleUploadResult(file,id,filemd5,shardCount,data) {
+            var id = data.fileId;
+            var flag = data.flag;
+            succeed=data.succeed;
+            // var success=data.success;
+            //服务器返回该分片是否上传过
+            if (flag==="2"){
+                $("ul li:last .progress .progress-bar").css("width","100%");
+                $("ul li:last .progress .progress-bar").text("100%");
+                //服务器返回分片是否上传成功
+                // if (succeed  >= shardCount) {
+                    alert("上传成功！");
+                    $("#uuid").append("<br>上传成功！");
+                    chunk=-1;
+                    if("true"===$("#flag").text()){
+                        files_i++;
+                        filesUpload();
+                    }
+                    return;
+
+                // }
+            } else if (flag==="0"){
+                //未上传,继续上传
+                action = true;
+            } else if (flag==="1"){
+                //该分片已上传
+                action=false;
+                var num=succeed/shardCount*100;
+                num = Math.floor(num);
+                $("ul li:last .progress .progress-bar").css("width",succeed/shardCount*100+"%");
+                $("ul li:last .progress .progress-bar").text(num+"%");
+            }
+            console.log("fileId="+id);
+            upload(file, id, filemd5);
+        }
+
+    </script>
+    <script>
+        //页面初始化加载
+        $("#con").click(function () {
+            $("#content")[0].removeAttribute("hidden");
+            layer.open({
+                type: 1,
+                title: false,
+                closeBtn: 0,
+                shade: 0,
+                area: ['500px', '350px'],
+                offset: 'rb', //右下角弹出
+                scrollbar: true,
+                closeBtn: 1,
+                content: $('#content'),
+                cancel: function(index, layero){
+                    // if(confirm('确定要关闭么')){ //只有当点击confirm框的确定时，该层才会关闭
+                    //     layer.close(index)
+                    // }
+                    // return false;
+                    $("#content")[0].setAttribute("hidden","hidden");
+                    layer.close(index)
+                }
+            });
+        })
+    </script>
+</body>
+</html>
