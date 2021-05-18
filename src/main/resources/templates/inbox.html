@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- 引入 popper.js(bootstrap-table需要)	-->
+    <script src="/static/popper/popper.min.js"></script>
+
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>inbox(收件箱)</title>
+    </th:block>
+
+    <!-- 引入bootstrap-table.css	-->
+    <link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
+    <!--	引入bootstrap-table.js -->
+    <script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+    <!--	引入bootstrap-table中文包 -->
+    <script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
+    <style>
+        body {
+            background-color: #efefef;
+            min-width: 1400px;
+            margin: 0px auto;
+            padding: 0px 0px;
+            overflow: hidden;
+        }
+
+        .rMain {
+            width: 84%;
+            margin-left: 2%;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
+            background-color: #fff;
+        }
+    </style>
+
+    <script>
+        // $(function () {
+        //     initTable();
+        //     // addTable();
+        //
+        // });
+        //
+        // function initTable() {
+        //     // 先销毁表格
+        //     $('#s_table').bootstrapTable('destroy');
+        //     $("#s_table").bootstrapTable({
+        //         pagination: true,           // 设置为 true 会在表格底部显示分页条。
+        //         pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+        //         data_local: "zh-US",        // 表格汉化
+        //         // 表格 样式类
+        //         classes: 'table',
+        //         // 表格高度
+        //         height: 530,
+        //         data: [{
+        //             title: "jsp实验9——JDBC操作1",
+        //             commit_count: '10',
+        //             create_time: '2021-5-17 11:15:00',
+        //             end_time: '2021-5-19 11:59:30',
+        //             op: '<button type="button" class="btn btn-primary btn_end" inBoxId = >截止提交</button>&nbsp;&nbsp;&nbsp;' +
+        //                 '<button type="button" class="btn btn-primary">修改</button>&nbsp;&nbsp;&nbsp;' +
+        //                 '<button type="button" class="btn btn-primary">提交详情</button>',
+        //         },]
+        //     })
+        // }
+
+        // $("").click(function() {
+        //     $("#inbox_detailModal").modal();
+        // });
+
+        /*
+        function addTable(){
+            //获取对象
+            var obj=$('#s_table');
+            //插入数据到第一行
+            obj.bootstrapTable('append', {
+                title: "jsp实验10——JDBC操作2",
+                commit_count: '20',
+                create_time: '2021-5-17 12:30:23',
+                end_time: '2021-5-20 19:25:00',
+                op: '<button type="button" id="" class="btn btn-primary">截止提交</button>&nbsp;&nbsp;&nbsp;' +
+                    '<button type="button" id="" class="btn btn-primary">修改</button>&nbsp;&nbsp;&nbsp;'+
+                    '<button type="button" id="" class="btn btn-primary">提交详情</button>',
+            });
+        }*/
+
+    </script>
+
+</head>
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+    <div th:replace="common/nav-left :: nav-left"></div>
+    <div class="rMain">
+        <button type="button" id="btn_new" name="btn_new" class="btn btn-primary">发起收件申请</button>
+        <table id="s_table" data-pagination="true" data-align="center">
+            <thead>
+            <tr>
+                <th data-field="title" data-align="center">收件任务(标题)</th>
+                <th data-field="commit_count" data-align="center">提交人数</th>
+                <th data-field="create_time" data-align="center">创建时间</th>
+                <th data-field="end_time" data-align="center">截止时间</th>
+                <th data-field="op" data-align="center">操作</th>
+            </tr>
+            </thead>
+        </table>
+
+        <!--	rMain:end	-->
+    </div>
+</div>
+
+<!-- 新建收件模态框 -->
+<div class="modal" tabindex="-1" id="inbox_newModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <!-- 标题 -->
+            <div class="modal-header">
+                <h5 class="modal-title">发起收件申请</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <!-- 内容 -->
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="textTitle">收件主题：</label>
+                    <input type="email" class="form-control" id="textTitle">
+                </div>
+                <div class="form-group">
+                    <label for="textInput">输入提示：</label>
+                    <input type="email" class="form-control" id="textInput">
+                </div>
+                <div class="form-group">
+                    <label for="selectType">提交类型(全部用户/登陆用户)：</label>
+                    <select class="form-control" id="selectType">
+                        <option>全部用户</option>
+                        <option>登陆用户</option>
+                    </select>
+                </div>
+                保存路径：<br/>
+                截止时间：<br/>
+                <div class="form-group">
+                    <label for="exampleFormControlTextarea1">收集内容：</label>
+                    <textarea class="form-control" id="exampleFormControlTextarea1" rows="3"></textarea>
+                </div>
+            </div>
+            <!-- 模态框尾部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 详情模态框 -->
+<div class="modal" tabindex="-1" id="inbox_detailModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">收件详情</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table id="detail_table" data-pagination="true" data-align="center">
+                    <thead>
+                    <tr>
+                        <th data-field="input_fileName" data-align="center">文件名(输入名)</th>
+                        <th data-field="comm_person" data-align="center">提交人</th>
+                        <th data-field="ori_fileName" data-align="center">原文件名</th>
+                        <th data-field="comm_date" data-align="center">提交时间</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $("#btn_new").click(function () {
+        $("#inbox_newModal").modal();
+    });
+
+
+    $(function () {
+
+        $('#s_table').bootstrapTable({
+            url: "/inboxList",
+            dataType: "json",//数据类型
+            sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
+            pagination: true,//是否显示分页（*）
+            idField: 'inbox_id',//主键
+            dataField: 'list',
+            totalField:"total",
+            responseHandler: function (res){
+                console.log(res);
+                return res.data;
+            },
+            columns: [
+                {
+                    field: 'inboxId',
+                    align: 'center',
+                    title: 'id',
+                    visible: false
+                },
+                {
+                    field: 'title',
+                    align: 'center',
+                    title: '标题',
+                }, {
+                    field: 'commitCount',
+                    align: 'center',
+                    title: '提交人数',
+                }, {
+                    field: 'createdTime',
+                    align: 'center',
+                    title: '创建时间',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        // console.log(value)
+                        // console.log(row)
+                        // console.log(index)
+                        return value.replace("T"," ");
+                    }
+                }, {
+                    field: 'endTime',
+                    align: 'center',
+                    title: '截止时间',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+
+                        return value.replace("T"," ");
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+                }
+                , {
+                    // field: 'endTime',
+                    align: 'center',
+                    title: '操作',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+
+                        return '<button type="button" inboxId="'+row.inboxId+'"  class="btn btn-primary">截止提交</button>&nbsp;&nbsp;&nbsp;' +
+                        '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary">修改</button>&nbsp;&nbsp;&nbsp;'+
+                        '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary">提交详情</button>';
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+                }
+                // , {
+                //     field: 'newRechargeCount',
+                //     align: 'center',
+                //     title: '新增充值用户数',
+                //     formatter: function indexFormatter(value, row, index) {
+                //         if (row.date != '总计') {
+                //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount + '</span>' : row.newRechargeCount;
+                //         } else {
+                //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount1 + '</span>' : row.newRechargeCount1;
+                //         }
+                //     }
+
+            ],
+            pageSize: 3,//首页显示多少行数据
+            // pageList: [10,20, 50],
+            queryParams: function (params) {//发送请求的参数
+                //layer.load();//layui前端框架里的，当数据没有加载完，会出现等待图标，加载完消失
+                return {
+                    //key: $('#templateKey').val(),
+                    pageNum: params.offset / params.limit + 1,//页码
+                    pageSize: params.limit, //页面大小
+                    // startDate: start_time,
+                    // endDate: end_time,
+                    // agents: agent,
+                    // qbsources: qbsource
+                };
+            },
+            // responseHandler: $util.fn.table.response,
+            // onLoadSuccess: $util.fn.table.onLoadSuccess,
+            // onLoadError: $util.fn.table.onLoadError,
+            onClickRow: function (row, $element) {//给表格添加斑马效果
+                $element.siblings().css('background-color', 'white');
+                $element.css("background-color", "rgb(243, 247, 249)");
+            }
+        })
+    });
+
+</script>
+
+</body>
+</html>

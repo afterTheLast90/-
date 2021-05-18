@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>inbox_commit(收件提交)</title>
+    </th:block>
+
+    <style>
+        body {
+            background-color: #efefef;
+            min-width: 1400px;
+            margin: 0px auto;
+            padding: 0px 0px;
+            overflow: hidden;
+        }
+        .rMain {
+            width: 84%;
+            margin-left: 2%;
+            padding-top: 10px;
+            padding-left: 15px;
+            padding-right: 15px;
+            background-color: #fff;
+        }
+    </style>
+
+
+</head>
+<body>
+
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;">
+    <div th:replace="common/nav-left :: nav-left"></div>
+    <div class="rMain">
+        <h2 align="center">收件标题：</h2><br/><br/>
+        输入提示：
+        <input type="text" id="input_name" value="输入名"/><br/><br/><br/>
+        <input type="file"/>
+        <input type="button" id="commit" value="提交"/><br/><br/><br/>
+        截止时间：
+    </div>
+        <!--	rMain:end	-->
+</div>
+
+</body>
+</html>
