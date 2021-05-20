@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.hanhai.cloud.base.BaseEntity;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 
 import java.io.Serializable;
 
@@ -21,6 +20,8 @@ public class ReceivingRecord extends BaseEntity  implements Serializable,Cloneab
     /** 收件ID */
     @TableId
     private Long receivingId ;
+    /** 用户id */
+    private Long userId ;
     /** 文件id */
     private Long fileId ;
     /** 用户文件id */
