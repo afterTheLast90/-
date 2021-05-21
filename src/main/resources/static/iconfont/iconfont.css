@@ -1,0 +1,183 @@
+@font-face {
+  font-family: "iconfont"; /* Project id 2539461 */
+  src: url('iconfont.woff2?t=1621520772745') format('woff2'),
+       url('iconfont.woff?t=1621520772745') format('woff'),
+       url('iconfont.ttf?t=1621520772745') format('truetype');
+}
+
+.iconfont {
+  font-family: "iconfont" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-dir:before {
+  content: "\e80c";
+}
+
+.icon-swf:before {
+  content: "\e65d";
+}
+
+.icon-c:before {
+  content: "\e60d";
+}
+
+.icon-html:before {
+  content: "\e8b1";
+}
+
+.icon-htm:before {
+  content: "\e8b2";
+}
+
+.icon-m3u:before {
+  content: "\ed8a";
+}
+
+.icon-m3u8:before {
+  content: "\e63f";
+}
+
+.icon-wps:before {
+  content: "\e607";
+}
+
+.icon-xls:before {
+  content: "\ed80";
+}
+
+.icon-zip:before {
+  content: "\e60c";
+}
+
+.icon-xlsx:before {
+  content: "\e6c4";
+}
+
+.icon-ico:before {
+  content: "\e617";
+}
+
+.icon-bat:before {
+  content: "\e8a8";
+}
+
+.icon-com:before {
+  content: "\e8aa";
+}
+
+.icon-dll:before {
+  content: "\e8ab";
+}
+
+.icon-exe:before {
+  content: "\e605";
+}
+
+.icon-iso:before {
+  content: "\e638";
+}
+
+.icon-lnk:before {
+  content: "\e63e";
+}
+
+.icon-tmp:before {
+  content: "\e662";
+}
+
+.icon-ttf:before {
+  content: "\e666";
+}
+
+.icon-bak:before {
+  content: "\e693";
+}
+
+.icon-js:before {
+  content: "\e688";
+}
+
+.icon-obj:before {
+  content: "\e602";
+}
+
+.icon-rar:before {
+  content: "\ed88";
+}
+
+.icon-mp4:before {
+  content: "\ed83";
+}
+
+.icon-avi:before {
+  content: "\ed89";
+}
+
+.icon-png:before {
+  content: "\ed82";
+}
+
+.icon-bmp:before {
+  content: "\ed87";
+}
+
+.icon-gif:before {
+  content: "\e616";
+}
+
+.icon-doc:before {
+  content: "\e640";
+}
+
+.icon-ppt:before {
+  content: "\e642";
+}
+
+.icon-mov:before {
+  content: "\e65b";
+}
+
+.icon-md:before {
+  content: "\e665";
+}
+
+.icon-pdf:before {
+  content: "\e60a";
+}
+
+.icon-mp3:before {
+  content: "\e60b";
+}
+
+.icon-txt:before {
+  content: "\ed7d";
+}
+
+.icon-wav:before {
+  content: "\ed7f";
+}
+
+.icon-docx:before {
+  content: "\ed84";
+}
+
+.icon-dot:before {
+  content: "\ed86";
+}
+
+.icon-pptx:before {
+  content: "\ed85";
+}
+
+.icon-jpeg:before {
+  content: "\ed81";
+}
+
+.icon-rmvb:before {
+  content: "\ed7e";
+}
+
