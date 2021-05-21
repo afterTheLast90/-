@@ -85,151 +85,24 @@
     }
 	</style>
 
-	<script>
+	<script type="module">
+
+      import httpUtil from "../static/httpUtil.js";
+
+      let failConfirm = false   // 是否 确认链接失效
+      let closeShareSwitch      // 关闭哪个分享
       $(function() {
-          // 表格参数
-          // $("#sTable").bootstrapTable({
-          //     // 表格 样式类
-          //     classes: 'table',
-          //     pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
-          //     // 表格高度
-          //     height: 550,
-          //     // 开启搜索
-          //     search: true,
-          //     // 回车后搜索
-          //     // searchOnEnterKey: true,
-          //     // 自动去除搜索空格
-          //     trimOnSearch: true,
-          //     searchAlign: "left",
-          //     //ustomSearch:customSearch,//自定义搜索，比如只搜索ID字段
-          //     // function  customSearch(data, text) {
-          //     //   return data.filter(function (row) {
-          //     //       return (row.Id+"").indexOf(text) > -1
-          //     //   })
-          //     data: [{
-          //         fileName: "java实验1",
-          //         createdTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '内部分享',
-          //         // 失效开关
-          //         rStatus: '<input type="button"/>',
-          //         // 查看详情图标，弹出抽屉显示信息
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //         // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }, {
-          //         fileName: "Python实验2",
-          //         createTime: '2018-11-30',
-          //         expireTime: '2018-11-30',
-          //         shareType: '公共分享',
-          //         rStatus: 'fff',
-          //         rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-          //     }]
-          // });
-          // 得到数据
-          // function ajaxRequest(params) {
-          //   var url = 'https://examples.wenzhixin.net.cn/examples/bootstrap_table/data'
-          //   $.get(url + '?' + $.param(params.data)).then(function (res) {
-          //       params.success(res)
-          //   })
-          // }
 
           // 调用函数，初始化表格
           initTable();
           // 自定义搜索框，进行搜索
           $("#queryBtn").on("click", initTable);
-          // 分享链接 状态开关
-          $("input[name='sStatus']").bootstrapSwitch({
-              onText: "有效",
-              offText: "失效",
-              animate: false,
-          });
-          $("input[name='sStatus']").bootstrapSwitch("state", true);
-          // 必须设置默认值，否则第一次会获取不到switch的值
-
-		      // 状态框失效确认
-		      let failConfirm = false   // 是否 确认链接失效
-          $("input[name='sStatus']").on("switchChange.bootstrapSwitch", function(event, state){
-              if(state == false) {
-                  console.log(state)
-		              if(!failConfirm){
-	                  $("input[name='sStatus']").bootstrapSwitch("toggleState");  // 转换回原状态
-	                  $("#shareFailModal").modal("show")
-                  }else {
-		                  $(this).bootstrapSwitch("disabled", true);
-		                  // 将些分享链接设为失效（未实现）
-                      failConfirm = false         // 设置回 不确定默认值
-                  }
+          $("#searchFile").on("keypress", function(e){
+              if(e.keyCode == 13) {
+                  initTable()
               }
           })
-		      // 获取确认状态
-		      $("#shareFailConfirm").click(function() {
-              failConfirm = true
-              $("input[name='sStatus']").bootstrapSwitch("toggleState");
-              $("#shareFailModal").modal("hide")
-		      })
+
 
 
 					// 初始化表格
@@ -237,42 +110,128 @@
               // 先销毁表格
               $('#sTable').bootstrapTable('destroy');
               $('#sTable').bootstrapTable({
-                  // url: "showConsumeRecordlList",//请求后台的URL（*）
-                  // method: 'get',
-                  // dataType: "json",
-                  // undefinedText: "-",         // 当数据为 undefined 时显示的字符
-                  pagination: true,           // 设置为 true 会在表格底部显示分页条。
-                  pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
-                  // paginationPreText: '上一页',
-                  // paginationNextText: '下一页',
-                  data_local: "zh-US",        // 表格汉化
-                  // 表格 样式类
-                  classes: 'table',
-                  // 表格高度
-                  height: 530,
-                  // 查询 和 请求响应
-                  // queryParams: function (params) {  // 自定义参数
-                  //     return {//这里的params是table提供的
-                  //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
-                  //     };
-                  // },
-                  // responseHandler: function (res) {
-                  //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
-                  //     return "\"rows\":[ " + res + "]";
-                  // },
-                  data: [{
-                      fileName: "java实验1",
-                      createdTime: '2018-11-30',
-                      expireTime: '2018-11-30',
-                      shareType: '内部分享',
-                      // 失效开关
-                      sStatus: '<input type="checkbox" name="sStatus" checked>',
-                      // 查看详情图标，弹出抽屉显示信息
-                      rDetails: "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>",
-                      // rDetails: "<i class='bi bi-three-dots detailIcon'></i>",
-                  }, ]
+                  url: "/share/shareGet",    //请求后台的URL（*）
+                  method: 'get',
+                  dataField: 'list',
+                  totalField: 'total',
+                  pagination: true,                 // 设置为 true 会在表格底部显示分页条。
+                  pageList: [10, 20, 30, 40],       // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+		              sidePagination: 'server',         // 分页处理方式
+                  data_local: "zh-US",              // 表格汉化
+                  classes: 'table',                 // 表格 样式类
+                  height: 530,                      // 表格高度
+
+                  queryParams: function (params) {       // 查询 和 请求响应
+                      return {
+                          pageNum: params.offset / params.limit + 1,  // 当前页码
+                          pageSize: params.limit,
+		                      fileName: $("#searchFile").val()
+                      };
+                  },
+                  responseHandler: function (res) {
+                      console.log(res)
+                      return res.data;
+                  },
+		              columns: [
+		                  {
+		                      field: 'shareId',
+		                      title: '分享id',
+		                      align: 'center',
+				                  visible: false
+		                  },
+				              {
+													field: 'fileName',
+						              title: '文件名',
+						              align: 'center'
+			                },
+				              {
+						              field: "createdTime",
+						              title: "分享时间",
+						              align: 'center',
+						              formatter: dateFormatter
+				              },
+				              {
+		                      field: 'expireTime',
+						              title: '失效时间',
+						              align: 'center',
+                          formatter: function (value, row, index) {
+		                          value = value.replace("T", " ")
+		                          if(value == "1970-01-01 07:59:59")
+		                              return "永久"
+		                          else
+		                              return value
+                          }
+				              },
+				              {
+		                      field: 'status',
+				                  title: '状态',
+													align: 'center',
+						              formatter: function(value, row, index) {
+                              if(value)
+			                          return '<input type="checkbox" name="sStatus" shareId="' +
+					                          row.shareId + '" checked>'
+								              else
+			                          return '<input type="checkbox" name="sStatus" shareId="' +
+	                              row.shareId + '" disabled>'
+						              }
+				              },
+				              {
+				                  title: "查看详情",
+						              align: 'center',
+						              formatter: function(value, row, index) {
+				                      return "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>"
+						              }
+				              }
+		              ],
+		              // 渲染好表格数据后 函数
+		              onPostBody: function() {
+                      // 文件详细绑定事件
+                      $(".drawer-toggle").click(function(){
+                          $(".drawer").drawer("open")
+                      })
+				              // 单击遮罩层，关闭文件详情
+				              $(".drawer-overlay").click(function() {
+				                  $(".drawer").drawer("close")
+				              })
+
+                      // 分享链接 状态开关
+                      $("#sTable input[name='sStatus']").bootstrapSwitch({
+                          onText: "有效",
+                          offText: "失效",
+                          animate: false,
+                      });
+                      // 状态框失效确认
+                      $("#sTable input[name='sStatus']").on("switchChange.bootstrapSwitch", function(event, state){
+                          if(state == false) {
+                              if(!failConfirm){
+                                  closeShareSwitch = $(this)
+                                  $(this).bootstrapSwitch("toggleState");  // 转换回原状态
+                                  $("#shareFailModal").modal("show")
+                              }else {
+                                  httpUtil.put("share/closeShare/"+$(this).attr("shareId"))
+		                                  .then(res =>{
+                                          initTable()
+                                          failConfirm = false         // 设置回 不确定默认值
+                                      })
+                              }
+                          }
+                      })
+                      // 获取确认状态
+                      $("#shareFailConfirm").click(function() {
+                          failConfirm = true
+                          $("#shareFailModal").modal("hide")
+                          closeShareSwitch.bootstrapSwitch("toggleState");
+                      })
+                  }
+
               })
           }
+
+          // 日期处理函数
+		      function dateFormatter(value) {
+		          return value.replace("T", " ")
+		      }
+
           // 抽屉(必须先创建元素，再绑定事件）
           $('.drawer').drawer();
 
@@ -303,11 +262,10 @@
 		<!--	自定义搜索框	-->
 		<div class=".sSearch">
 			<div class="panel-body" style="padding-bottom: 1px;">
-				<form class="form-horizontal">
 					<div class="form-group row pb-0 m-2">
 						<div class="col-3 pr-0">
 							<!-- 自定义搜索框 -->
-							<input type="text" name="searchString" id="searchFile" class="form-control" placeholder="文件名" onkeydown="javascript:if(event.keyCode==13) searchId();" />
+							<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
 						</div>
 						<div class="col-sm-1 pl-0">
 							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
@@ -315,25 +273,11 @@
 							</button>
 						</div>
 					</div>
-				</form>
 			</div>
 		</div>
 
 		<!--	ShareTable	-->
-		<table id="sTable" data-pagination="true">
-			<thead>
-			<tr>
-				<th data-field="fileName" data-align="center">文件名</th>
-				<th data-field="createdTime" data-align="center">分享时间</th>
-				<th data-field="expireTime" data-align="center">失效时间</th>
-				<th data-field="shareType" data-align="center">分享类型</th>
-				<!--	用开关实现，添加确认窗口	-->
-				<th data-field="sStatus" data-align="center">状态</th>
-				<!--	显示文件详情（内部分享组、人；删除、添加权限）；转存、下载次数查看；查看密码~~~~弹出模态框	-->
-				<th data-field="rDetails" data-align="center">查看详情</th>
-			</tr>
-			</thead>
-		</table>
+		<table id="sTable"></table>
 
 		<!--	ShareDetails	-->
 		<nav class="drawer-nav" role="navigation" style="z-index: 20;">

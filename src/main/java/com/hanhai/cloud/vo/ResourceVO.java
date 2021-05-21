@@ -19,7 +19,6 @@ public class ResourceVO {
     private LocalDateTime createdTime;
     /** 过期时间;-1为永不过期即 1970-01-01T07:59:59 */
     private LocalDateTime expireTime ;
-
     /** 最大下载次数 */
     private Integer maxDownloadTimes ;
     /** 最大转存次数 */

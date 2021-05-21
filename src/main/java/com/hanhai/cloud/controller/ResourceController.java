@@ -27,16 +27,18 @@ public class ResourceController {
         return "resourceSearch";
     }
 
+    // 得到公共资源
     @GetMapping("/resource/resourceGet")
     @ResponseBody
     public R<PageResult> getResources(@Validated  ResourceSearchParams resourceSearchParams) {
-
+        // 未登录时
         if(!StpUtil.isLogin()) {
             return new R<PageResult>(ResultCode.SUCCESS_NO_SHOW)
                                     .setData(new PageResult(resourceService.getPublicShare(resourceSearchParams)));
         }
+        // 登录后
         else
             return new R<PageResult>(ResultCode.SUCCESS_NO_SHOW)
-                                .setData((new PageResult(resourceService.getUserShare(resourceSearchParams))));
+                                .setData((new PageResult(resourceService.getUserPublicShare(resourceSearchParams))));
     }
 }

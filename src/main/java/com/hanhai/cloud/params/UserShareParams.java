@@ -9,9 +9,9 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Accessors(chain = true)
-public class ResourceSearchParams extends PageParam {
+public class UserShareParams extends PageParam {
     /** 文件名 */
-    @NotNull(message = "文件名不能为空")
+    @NotNull(message = "文件名不能为null")
     @Value("")
     private String fileName;
 }

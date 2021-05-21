@@ -9,9 +9,11 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Accessors(chain = true)
-public class ResourceSearchParams extends PageParam {
-    /** 文件名 */
-    @NotNull(message = "文件名不能为空")
+public class TagFilesParams extends PageParam {
+    /** 标签id */
+    private Long tagId ;
+    /** 文件id */
     @Value("")
+    @NotNull(message = "文件名不能为null")
     private String fileName;
 }

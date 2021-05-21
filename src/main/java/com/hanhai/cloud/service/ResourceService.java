@@ -15,8 +15,8 @@ public class ResourceService extends BaseService {
         return userShareMapper.getPublicShare(LocalDateTime.now(), resourceSearchParams.getFileName());
     }
 
-    public List<ResourceVO> getUserShare(ResourceSearchParams resourceSearchParams) {
+    public List<ResourceVO> getUserPublicShare(ResourceSearchParams resourceSearchParams) {
         startPage(resourceSearchParams);
-        return userShareMapper.getUserShare(LocalDateTime.now(), resourceSearchParams.getFileName());
+        return userShareMapper.getUserPublicShare(LocalDateTime.now(), resourceSearchParams.getFileName());
     }
 }

@@ -79,19 +79,14 @@
                   url: "/resource/resourceGet",   //请求后台的URL（*）
                   method: 'get',
                   dataField: 'list',              // 设置数据域
-                  // dataType: "json",
-                  // undefinedText: "-",          // 当数据为 undefined 时显示的字符
+                  totalField: "total",            // 纪录总数
                   pagination: true,               // 设置为 true 会在表格底部显示分页条。
-                  sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
+                  sidePagination: 'server',       //分页方式：client客户端分页，server服务端分页（*）
                   pageList: [10, 20, 30, 40],     // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
                   data_local: "zh-US",            // 表格汉化
-                  // 表格 样式类
-                  classes: 'table',
-                  totalField: "total",            // 纪录总数
-                  // 表格高度
-                  height: 550,
-		              // 查询 和 请求响应
-                  queryParams: function (params) {  // 自定义参数
+                  classes: 'table',               // 表格 样式类
+                  height: 550,                    // 表格高度
+                  queryParams: function (params) {  // 查询 和 请求响应
                       return {
                           fileName: $("#searchFile").val(),
                           pageNum: params.offset / params.limit + 1,  //页码
@@ -99,14 +94,13 @@
                       };
                   },
                   responseHandler: function (res) {
-                      //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
 		                  // 设置 数据对象
                       return res.data;
                   },
                   columns: [{
 											field: "shareId",
 		                  title: "分享id",
-		                  aligin: "center",
+		                  align: "center",
 		                  visible: false
                   },
                   {
