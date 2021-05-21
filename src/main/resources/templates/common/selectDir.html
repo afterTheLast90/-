@@ -1,0 +1,182 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head></head>
+<body>
+
+<div th:fragment="selectDir">
+    <style type="text/css">
+        .icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+        }
+    </style>
+    <!-- 模态框 -->
+    <div class="modal fade" id="select-dir-for-user-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- 模态框头部 -->
+                <div class="modal-header">
+                    <h4 class="modal-title">请选择一个文件夹</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- 模态框主体 -->
+                <style type="text/css">
+                    #modal-dir-list {
+                        margin-left: 0;
+                        padding-left: 0;
+                    }
+
+                    #modal-dir-list li {
+                        padding-left: 10px;
+                        padding-top: 2px;
+                        padding-bottom: 2px;
+
+                    }
+
+                    #modal-dir-list li:hover {
+                        background-color: #f0f0f0;
+                    }
+
+                    #modal-dir-list li .icon {
+                        margin-right: 5px;
+                    }
+                </style>
+                <div class="modal-body">
+                    <div style="height: 15rem;width: 100%;overflow-y: auto;font-size: 1.2rem;">
+                        <ul style="list-style: none" id="modal-dir-list"></ul>
+                    </div>
+                    <div class="form-group form-inline">
+                        <label for="select-dir-for-user">选择的文件夹：</label>
+                        <input type="text" disabled class="form-control col-sm-9"
+                               id="select-dir-for-user"
+                               value="/">
+                    </div>
+                </div>
+
+
+                <!-- 模态框底部 -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" id="select-dir-for-user-modal-ok">
+                        确定
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import httpUtil from "/static/httpUtil.js";
+
+        $.fn.selectDirForUser = {
+            currentPath: "/",
+            prePath: "/",
+            _ok: null,
+            _close:null,
+            ok: function (f) {
+                this._ok=f;
+            },
+            close:function (f){
+                this._close=f;
+            },
+            show: function () {
+                $("#select-dir-for-user-modal").modal('show');
+            },
+            hide: function () {
+                $("#select-dir-for-user-modal").modal('hide');
+            },
+            reset: function () {
+                this.currentPath = "/"
+                this.prePath = "/"
+            },
+            getPath: function (fileId, fileName) {
+                if (fileId) {
+                    this.prePath = this.currentPath;
+                    this.currentPath = this.currentPath + String(fileId) + "/";
+                }
+                if (fileName) {
+                    $("#select-dir-for-user").val($("#select-dir-for-user").val() + fileName + "/")
+                }
+                this.getDirs();
+            },
+            back: function () {
+                this.currentPath = this.prePath;
+                this.prePath = this.prePath.substr(0, this.prePath.length - 1);
+                this.prePath = this.prePath.substr(0, this.prePath.lastIndexOf("/"));
+                if (this.prePath === "")
+                    this.prePath = "/"
+                this.getDirs();
+            },
+            getDirs: function () {
+                let dir = this;
+                httpUtil.get("/getUserDir", {
+                    params: {
+                        path: this.currentPath
+                    }
+                }).then(res => {
+
+                    $("#modal-dir-list li").remove();
+                    if (dir.currentPath !== "/") {
+                        let li = document.createElement("li");
+                        li.innerHTML =
+                            "<svg class='icon' aria-hidden='true'> <use xlink:href='#icon-dir'></use></svg>" + "&nbsp&nbsp...返回上一级";
+                        li.setAttribute("next", false);
+                        $("#modal-dir-list").append(li);
+                    }
+                    for (let i = 0; i < res.data.length; i++) {
+                        let li = document.createElement("li");
+                        li.innerHTML =
+                            "<svg class='icon' aria-hidden='true'> <use xlink:href='#icon-dir'></use></svg>" + res.data[i].fileName;
+                        li.setAttribute("fileId", res.data[i].userFileId);
+                        li.setAttribute("fileName", res.data[i].fileName);
+                        li.setAttribute("next", true);
+                        $("#modal-dir-list").append(li);
+                    }
+                    $("#modal-dir-list li[next=true]").click(function (e) {
+                        dir.getPath(e.target.getAttribute("fileId"), e.target.getAttribute("fileName"))
+                    })
+                    $("#modal-dir-list li[next=false]").click(function (e) {
+                        let val = $("#select-dir-for-user").val();
+                        val = val.substr(0, val.length - 1);
+                        val = val.substr(0, val.lastIndexOf("/"))
+                        if (val === "")
+                            val = "/"
+                        $("#select-dir-for-user").val(val);
+                        dir.back();
+                    })
+
+                })
+            }
+
+        }
+        $("#select-dir-for-user-modal-ok").click(function () {
+            if ($.fn.selectDirForUser._ok) {
+                $.fn.selectDirForUser._ok($.fn.selectDirForUser.currentPath,
+                    $("#select-dir-for-user").val())
+            }
+            $.fn.selectDirForUser.hide();
+        })
+        $("#select-dir-for-user-modal").on('show.bs.modal', function () {
+            $.fn.selectDirForUser.reset();
+            $("#select-dir-for-user").val("/");
+            $.fn.selectDirForUser.getPath();
+
+        });
+        $("#select-dir-for-user-modal").on('hide.bs.modal', function () {
+            if ($.fn.selectDirForUser._close) {
+                $.fn.selectDirForUser._close($.fn.selectDirForUser.currentPath,
+                    $("#select-dir-for-user").val())
+            }
+
+        });
+    </script>
+</div>
+</body>
+</html>
