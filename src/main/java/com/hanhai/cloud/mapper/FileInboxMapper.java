@@ -15,4 +15,7 @@ public interface FileInboxMapper extends BaseMapper<FileInbox> {
 
     @Select("select * from file_inbox where publisher =#{userId} and deleted =0 ")
     public List<FileInbox> getByUserId(@Param("userId") Long userId);
+
+    @Select("select * from file_inbox where inbox_id=#{inboxId} and deleted=0")
+    public List<FileInbox> findByInboxId(@Param("inboxId") Long inboxId);
 }

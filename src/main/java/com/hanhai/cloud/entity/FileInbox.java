@@ -34,4 +34,6 @@ public class FileInbox extends BaseEntity implements Serializable,Cloneable {
     private String savePath ;
     /** 截至时间 */
     private LocalDateTime endTime ;
+    /** 用户类型 */
+    private int commitType;
 }
