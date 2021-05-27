@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:input="http://www.w3.org/1999/html">
 
 <head>
 	<!-- 引入 popper.js(bootstrap-table需要)	-->
@@ -27,6 +28,8 @@
 	<!--  引入bootstrap-switch  -->
 	<link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
 	<script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
+
+	<script src="/static/iconfont/iconfont.js"></script>
 
 	<style>
 
@@ -61,7 +64,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: rgb(21,151,219);
+      /*color: rgb(21,151,219);*/
     }
 
     .drawer-nav>ul>li {
@@ -83,34 +86,55 @@
     #sTable tbody tr:hover {
       background-color: rgba(18, 150, 219, .15);
     }
+
+    .col-drawer {
+	    width: 400px;
+    }
+
+    .icon {
+      width: 4em;
+      height: 4em;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      overflow: hidden;
+    }
+
+    .icon_table {
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: -0.4em;
+      fill: currentColor;
+      margin-right: 3px;
+      overflow: hidden;
+    }
 	</style>
 
 	<script type="module">
 
       import httpUtil from "../static/httpUtil.js";
-
       let failConfirm = false   // 是否 确认链接失效
       let closeShareSwitch      // 关闭哪个分享
+
       $(function() {
 
           // 调用函数，初始化表格
           initTable();
+          // 抽屉(必须先创建元素，再绑定事件）
+          $('.drawer').drawer();
+
           // 自定义搜索框，进行搜索
-          $("#queryBtn").on("click", initTable);
+          $("#queryBtn").on("click", initTable);        // 回车搜索
           $("#searchFile").on("keypress", function(e){
               if(e.keyCode == 13) {
                   initTable()
               }
           })
 
-
-
 					// 初始化表格
           function initTable() {
-              // 先销毁表格
-              $('#sTable').bootstrapTable('destroy');
+              $('#sTable').bootstrapTable('destroy');   // 先销毁表格
               $('#sTable').bootstrapTable({
-                  url: "/share/shareGet",    //请求后台的URL（*）
+                  url: "/share/shareGet",               //请求后台的URL（*）
                   method: 'get',
                   dataField: 'list',
                   totalField: 'total',
@@ -119,7 +143,7 @@
 		              sidePagination: 'server',         // 分页处理方式
                   data_local: "zh-US",              // 表格汉化
                   classes: 'table',                 // 表格 样式类
-                  height: 530,                      // 表格高度
+                  height: 720,                      // 表格高度
 
                   queryParams: function (params) {       // 查询 和 请求响应
                       return {
@@ -142,7 +166,13 @@
 				              {
 													field: 'fileName',
 						              title: '文件名',
-						              align: 'center'
+                          halign: "center",
+						              align: 'left',
+                          formatter: function fileNameFormatter(value, row, index) {
+                              return "<svg fileType=" + row.fileType + " class='icon_table ml-5' aria-hidden='true'>" +
+                                  "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
+                                  "</svg>" + value
+                          }
 			                },
 				              {
 						              field: "createdTime",
@@ -179,21 +209,143 @@
 				                  title: "查看详情",
 						              align: 'center',
 						              formatter: function(value, row, index) {
-				                      return "<i class='bi bi-three-dots detailIcon drawer-toggle'></i>"
+				                      return "<i class='bi bi-three-dots detailIcon drawer-toggle'" +
+						                            "shareId='"+ row.shareId +"' ></i>"
 						              }
 				              }
 		              ],
 		              // 渲染好表格数据后 函数
 		              onPostBody: function() {
-                      // 文件详细绑定事件
-                      $(".drawer-toggle").click(function(){
-                          $(".drawer").drawer("open")
+                      // 详情图标
+                      $(".detailIcon").click(function(){
+
+                          // 固定模式，显示的内容隐藏
+                          $("#shareMumbers").hide()
+                          $("#sHavePwd").hide()
+                          $("#sHaveCode").hide()
+
+                          // 获取数据
+		                      httpUtil.get("/share/shareDetail",{
+		                          params: {
+		                              shareId: $(this).attr("shareId")
+		                          }
+		                      })
+		                      .then(res => {
+		                          // 密码显示 初始化
+                              $(".pwdShow").hide()
+                              $(".codeShow").hide()
+				                      $(".pwdHide").show()
+				                      $(".codeHide").show()
+				                      $("#sPwd").attr("type", "password")
+				                      $("#sCode").attr("type", "password")
+                              $("#sQR").attr("src", "")
+                              // 文件类型图片
+		                          $("#sFileType use").attr("xlink:href",  '#icon-'+res.data.fileType.toLowerCase())
+				                      // 文件名
+		                          $("#sFileName").text(res.data.fileName)
+				                      // 分享类型
+				                      $("#sType").text(res.data.shareType)
+				                      // 固定人/群组 分享
+				                      if(res.data.shareType=="私有分享") {
+				                          $("#shareList").html("")
+				                          $("#shareMumbers").show()
+				                          for(let group of res.data.shareMumbersVO.groupName){
+                                      console.log(group)
+				                              $("#shareList").append("<li title='"+ group +"'>" +
+						                                                      "<i class=\"bi bi-people-fill\"></i> "+ group +
+						                                                "</li>")
+				                          }
+                                  for(let user of res.data.shareMumbersVO.userName){
+                                      console.log(user)
+                                      $("#shareList").append("<li title='"+ user +"'>" +
+									                                                "<i class=\"bi bi-person-fill\"></i> "+ user +
+									                                            "</li>")
+                                  }
+				                      }
+
+				                      // 密码分享
+				                      if(res.data.shareType == "密码分享") {
+                                  $("#sPwd").val("")
+				                          $("#sHavePwd").show()
+						                      $("#sPwd").val(res.data.sharePassword)
+				                      }
+				                      // 取件码分享
+				                      if(res.data.shareType == "访问码分享") {
+				                          $("#sCode").val("")
+						                      $("#sHaveCode").show()
+						                      $("#sCode").val(res.data.shareId)
+						                      // 不显示分享链接、二维码、转存次数、复制分享链接
+                                  $("#sHaveLink").hide()
+                                  $("#sHaveQR").hide()
+						                      $("#sHaveDump").hide()
+						                      $("#copyShareUrl").hide()
+						                      // 下载次数
+                                  $("#sDownTime").text(res.data.downloadTimes)
+                                  if(res.data.maxDownloadTimes == -1) {
+                                      $("#sMaxDownTime").text("不限")
+                                  }
+                                  else{
+                                      $("#sMaxDownTime").text(res.data.maxDownloadTimes)
+                                  }
+				                      }
+				                      else {
+						                      // 分享链接
+                                  $("#sHaveLink").show()
+						                      $("#sUrl").val(res.data.shareUrl)
+						                      // 复制到剪贴板按钮
+                                  $("#copyShareUrl").show()
+                                  // 二维码
+                                  $("#sQR").attr("src", "/share/QRCode?url="+$("#sUrl").val())
+                                  $("#sHaveQR").show()
+                                  // 下载/转存次数
+                                  $("#sHaveDump").show()
+                                  $("#sFileDumpTime").text(res.data.fileDumpTime)
+                                  if(res.data.maxFileDumpTimes == -1) {
+                                      $("#sMaxFileDumpTime").text("不限")
+                                  }
+                                  else{
+                                      $("#sMaxFileDumpTime").text(res.data.maxFileDumpTimes)
+                                  }
+                                  $("#sDownTime").text(res.data.downloadTimes)
+                                  if(res.data.maxDownloadTimes == -1) {
+                                      $("#sMaxDownTime").text("不限")
+                                  }
+                                  else{
+                                      $("#sMaxDownTime").text(res.data.maxDownloadTimes)
+                                  }
+                              }
+
+                              // 文件详细抽屉显示(并增加宽度)
+                              $(".drawer").drawer("open")
+                              $(".drawer-nav").addClass("col-drawer")
+
+				                      $("#copyShareUrl").click(function () {
+				                          $("#sUrl").select()
+						                      try {
+																			if(document.execCommand("copy", "false", null)) {
+																			    layer.msg("复制成功")         // layUI 自带的提示框
+								                      }
+																			else {
+																			    layer.msg("复制失败，请尝试手动复制")
+																			}
+						                      }
+						                      catch (err) {
+                                      layer.msg("复制失败，请尝试手动复制")
+						                      }
+                                  window.getSelection().empty()       // 取消选中状态
+                              })
+		                      })
+
                       })
-				              // 单击遮罩层，关闭文件详情
+				              // 单击遮罩层，关闭文件详情(并减少宽度)
 				              $(".drawer-overlay").click(function() {
+                          $(".drawer-nav").removeClass("col-drawer")
 				                  $(".drawer").drawer("close")
 				              })
-
+											// 调整窗体大小时，移除添加的宽度
+                      $(window).resize(function() {
+                          $(".drawer-nav").removeClass("col-drawer")
+                      });
                       // 分享链接 状态开关
                       $("#sTable input[name='sStatus']").bootstrapSwitch({
                           onText: "有效",
@@ -208,7 +360,7 @@
                                   $(this).bootstrapSwitch("toggleState");  // 转换回原状态
                                   $("#shareFailModal").modal("show")
                               }else {
-                                  httpUtil.put("share/closeShare/"+$(this).attr("shareId"))
+                                  httpUtil.put("/share/closeShare/"+$(this).attr("shareId"))
 		                                  .then(res =>{
                                           initTable()
                                           failConfirm = false         // 设置回 不确定默认值
@@ -232,20 +384,28 @@
 		          return value.replace("T", " ")
 		      }
 
-          // 抽屉(必须先创建元素，再绑定事件）
-          $('.drawer').drawer();
-
-          $(".bi-eye-fill").hide();
+          $(".pwdShow").hide()
+		      $(".codeShow").hide()
           // 密码显示
-					$(".bi-eye-slash").click(function(){
+					$(".pwdHide").click(function(){
             $("#sPwd").attr("type", "text");
-            $(".bi-eye-fill").show();
+            $(".pwdShow").show();
             $(this).hide();
 					})
+		      $(".codeHide").click(function() {
+		          $("#sCode").attr("type", "text")
+				      $(".codeShow").show()
+				      $(this).hide()
+		      })
 		      // 密码隐藏
-          $(".bi-eye-fill").click(function(){
+          $(".pwdShow").click(function(){
               $("#sPwd").attr("type", "password");
-              $(".bi-eye-slash").show();
+              $(".pwdHide").show();
+              $(this).hide();
+          })
+          $(".codeShow").click(function(){
+              $("#sCode").attr("type", "password");
+              $(".codeHide").show();
               $(this).hide();
           })
       });
@@ -283,49 +443,64 @@
 		<nav class="drawer-nav" role="navigation" style="z-index: 20;">
 			<ul class="pl-0">
 				<li class="text-center" style="width: 100%">
-					<img src="/static/img/logo.png" alt="" style="width: 40%;">
+					<svg id="sFileType" class="icon" aria-hidden="true">
+						<use xlink:href=""></use>
+					</svg>
 				</li>
 				<li class="row">
-					<span class="col-5 text-right">文件名:</span>
-					<span class="sInfo col-6 p-0 pr-2">地觅仙泉灾夏无酷暑鄙厅里淡标题</span>
+					<span class="offset-2"></span>
+					<span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName"></span>
 				</li>
 				<hr>
 				<li class="row">
 					<span class="col-5 text-right">分享方式:</span>
-					<span class="sInfo col-6 p-0 pr-2">内部分享</span>
+					<span class="sInfo col-6 p-0 pr-2" id="sType">内部分享</span>
 				</li>
 				<!--	分享人应该可以 加/删	-->
-				<li class="row" id="sharePeople">
+				<li class="row" id="shareMumbers">
 					<span class="col-5 text-right">分享人:</span>
-					<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2">
-						<li>家人</li>
-						<li>李咏</li>
+					<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2" id="shareList">
 					</ul>
 				</li>
 				<hr>
-				<li class="row">
+				<li class="row" id="sHaveDump">
 					<span class="col-5 text-right">转存次数:</span>
-					<span class="sInfo p-0 pr-2">10</span> /
-					<span class="sInfo pl-2 p-0">15</span>
+					<span class="sInfo p-0 pr-2" id="sFileDumpTime">10</span> /
+					<span class="sInfo pl-2 p-0" id="sMaxFileDumpTime">15</span>
 				</li>
 				<li class="row">
 					<span class="col-5 text-right">下载次数:</span>
-					<span class="sInfo p-0 pr-2">3</span> /
-					<span class="sInfo pl-2 p-0">15</span>
+					<span class="sInfo p-0 pr-2" id="sDownTime">3</span> /
+					<span class="sInfo pl-2 p-0" id="sMaxDownTime">15</span>
 				</li>
 				<hr>
-				<li class="row">
-					<span class="col-5 text-right">分享密码:</span>
-					<input type="password" name="" class="sInfo col-2 p-0 pr-2 border-0" value="3Daj" id="sPwd" style="outline: none">
+				<li class="row" id="sHavePwd">
+					<span class="col-5 text-right">密码:</span>
+					<input type="password" name="" readonly class="sInfo col-3 p-0 pr-2 border-0" value="" id="sPwd" style="outline: none">
 					<!--	显示密码 -->
-					<i class="bi bi-eye-fill"></i>
+					<i class="bi bi-eye-fill pwdShow"></i>
 					<!--	隐藏密码 -->
-					<i class="bi bi-eye-slash"></i>
-
+					<i class="bi bi-eye-slash pwdHide"></i>
 				</li>
-				<li class="row">
+				<li class="row" id="sHaveCode">
+					<span class="col-5 text-right">访问码:</span>
+					<input type="password" name="" readonly class="sInfo col-3 p-0 pr-2 border-0" value="" id="sCode" style="outline: none">
+					<!--	显示取件码 -->
+					<i class="bi bi-eye-fill codeShow"></i>
+					<!--	隐藏取件码 -->
+					<i class="bi bi-eye-slash codeHide"></i>
+				</li>
+				<li class="row" id="sHaveLink">
+					<div class="col-5 text-right">分享链接:</div>
+					<input type="text" id="sUrl" readonly class="sInfo col-6 p-0 pr-2" style="border: none;outline: none;" value="http://localhost/8080/s/dsafn32nvi3">
+				</li>
+				<li class="row" id="copyShareUrl">
+					<div class="col-7"></div>
+					<input type="button" class="btn btn-primary col-4 text-center" value="复制分享链接">
+				</li>
+				<li class="row" id="sHaveQR">
 					<div class="col-5 text-right">二维码:</div>
-					<img src="/static/img/logo.png" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">
+					<img src="/static/img/logo.png" id="sQR" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">
 				</li>
 			</ul>
 		</nav>
@@ -361,4 +536,6 @@
 </div>
 
 </body>
+
+
 </html>

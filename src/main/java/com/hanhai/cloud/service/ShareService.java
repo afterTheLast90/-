@@ -1,9 +1,9 @@
 package com.hanhai.cloud.service;
 
-import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.params.UserShareParams;
+import com.hanhai.cloud.vo.ShareMumbersVO;
 import com.hanhai.cloud.vo.UserShareVO;
 import org.springframework.stereotype.Service;
 
@@ -27,5 +27,15 @@ public class ShareService extends BaseService {
     // 根据分享id 得分享信息
     public UserShare getShareById(Long shareId) {
         return userShareMapper.selectById(shareId);
+    }
+
+    // 得到用户分享信息 详情
+    public UserShareVO getShareDetail(Long shareId){
+        UserShareVO shareDetail = userShareMapper.getShareDetail(shareId);
+        ShareMumbersVO shareMumbersVO = new ShareMumbersVO()
+                                            .setGroupName(innerShareMapper.getShardGroups(shareId))
+                                            .setUserName(innerShareMapper.getShardUsers(shareId));
+        shareDetail.setShareMumbersVO(shareMumbersVO);
+        return shareDetail;
     }
 }

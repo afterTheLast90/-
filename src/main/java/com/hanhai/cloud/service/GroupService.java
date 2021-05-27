@@ -8,6 +8,7 @@ import com.hanhai.cloud.entity.GroupRelationship;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.AddGroupParams;
 import com.hanhai.cloud.params.AddGroupParams;
+import com.hanhai.cloud.params.GroupAddUserParam;
 import com.hanhai.cloud.params.UpdGroupParams;
 import com.hanhai.cloud.utils.BeanUtils;
 import com.hanhai.cloud.vo.GroupVO;
@@ -40,10 +41,13 @@ public class GroupService extends BaseService {
                 .setGroupName(groupParams.getGroupName())
                 .setNumberOfPersones(groupParams.getUserList().size())
                 .setUserId(StpUtil.getLoginIdAsLong());
+        // 插入新群组
         groupMapper.insert(group);
 
+        // 插入 群组与用户联系
         for (Long userId : groupParams.getUserList()) {
-            groupRelationshipMapper.insert(new GroupRelationship().setGroupId(group.getGroupId()).setUserId(userId));
+            groupRelationshipMapper.insert(new GroupRelationship().setGroupId(group.getGroupId())
+                                                                .setUserId(userId));
         }
     }
 
@@ -61,5 +65,13 @@ public class GroupService extends BaseService {
 
     public Group getGroupByName(String groupName, Long userId) {
         return groupMapper.getGroupByName(groupName, userId);
+    }
+
+    public void delPersonNum(Long groupId) {
+        groupMapper.delPersonNum(groupId);
+    }
+
+    public void addPersonNum(GroupAddUserParam groupAddUserParam) {
+        groupMapper.addPersonNum(groupAddUserParam.getGroupId(), groupAddUserParam.getUserIds().length);
     }
 }

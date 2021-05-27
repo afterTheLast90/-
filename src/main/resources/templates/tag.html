@@ -28,14 +28,16 @@
 	<!-- 引入bootstrop-select.js -->
 	<script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
 
+	<script src="/static/iconfont/iconfont.js"></script>
+
 	<style>
-    body {
-      background-color: #efefef;
-      min-width: 1400px;
-      margin: 0px auto;
-      padding: 0px 0px;
-      overflow: hidden;
-    }
+    /*body {*/
+    /*  background-color: #efefef;*/
+    /*  min-width: 1400px;*/
+    /*  margin: 0px auto;*/
+    /*  padding: 0px 0px;*/
+    /*  overflow: hidden;*/
+    /*}*/
 
     .tMain {
       width: 85%;
@@ -175,6 +177,16 @@
     .modal {
 	    font-size: 1rem;
     }
+
+    .icon {
+      width: 1.5em;
+      height: 1.5em;
+      margin-left: 25%;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      margin-right: 3px;
+      overflow: hidden;
+    }
 	</style>
 
 	<script type="module">
@@ -221,6 +233,8 @@
           $(".delConfirm").click(function(){
               httpUtil.delete("/tag/tagDel/"+delTagLi.attr("tagId"))
                   .then(res => {
+                      if(delTagLi.siblings().length==0)
+                          initTag()
                       delTagLi.remove()
                   }).catch(err => {})
               $("#delTagModal").modal("hide");
@@ -293,11 +307,7 @@
               pageList: [10, 20, 30, 40],   // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
               data_local: "zh-US",          // 表格汉化
               classes: 'table',             // 表格 样式类
-              height: 530,                  // 表格高度
-              // paginationPreText: '上一页',
-              // paginationNextText: '下一页',
-              // undefinedText: "-",        // 当数据为 undefined 时显示的字符
-              // dataType: "json",
+              height: 730,                  // 表格高度
               queryParams: function (params) {         // 自定义参数
                   return {                  //这里的params是table提供的
                       pageNum: params.offset / params.limit + 1,
@@ -326,7 +336,13 @@
 				          {
                       field: "fileName",
                       title: "文件名",
-                      align: "center",
+						          halign: "center",
+                      align: "left",
+                      formatter: function fileNameFormatter(value, row, index) {
+                          return "<svg fileType=" + row.fileType + " class='icon' aria-hidden='true'>" +
+                              "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
+                              "</svg>" + value
+                      }
 				          },
 				          {
                       field: "fileSize",
@@ -392,6 +408,9 @@
       }
 
       function initTag() {
+          // 清空数据
+          $(".tTags ul").html("")
+          $("#groupQuery").html("")
           httpUtil.get("/tag/getTags")
               .then(res => {
                   if(res.data.length == 0){
@@ -400,12 +419,9 @@
                           '</li>')
                   }
                   else {
-                      $(".tTags ul").html("")
-                      $("#groupQuery").html("")
                       for (let i = 0; i < res.data.length; i++) {
                           $(".tTags ul").append('<li tagId="' + res.data[i].tagId + '">' +
-                              '<i class="bi bi-tags tTag"></i>' +
-                              '<span class="info" title="'+ res.data[i].tagName +'">' + res.data[i].tagName + '</span>' +
+                              '<span class="info" title="'+ res.data[i].tagName +'"><i class="bi bi-tags tTag"></i>' + res.data[i].tagName + '</span>' +
                               '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
                               '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
                               '</li>')
@@ -416,7 +432,7 @@
                       // 刷新下拉搜索框
                       $('#groupQuery').selectpicker('refresh');
                       // 清空下拉搜索框选择值
-                      $("#groupQuery").selectpicker("val","")
+                      $("#groupQuery").selectpicker("val", "")
                       // 单击标签选项时，显示对应文件信息
                       $('#groupQuery').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
                           if(!$("#groupQuery").selectpicker("val")==""){
@@ -474,9 +490,15 @@
 
 <body class="drawer drawer--right">
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;">
+
+<div class="main  ">
 	<div th:replace="common/nav-left :: nav-left"></div>
-	<div class="row tMain">
+
+	<div class="content row"  style="overflow: hidden;margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
+
+<!--<div class="row" style="margin-top:8px;">-->
+<!--	<div th:replace="common/nav-left :: nav-left"></div>-->
+<!--	<div class="row tMain">-->
 
 		<!--	标签列表	-->
 		<div class="tLists shadow">

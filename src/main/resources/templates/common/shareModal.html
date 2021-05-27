@@ -66,7 +66,7 @@
 
           // 是否使用密码
           // 密码文本框默认隐藏
-          $("#sharePassword").hide();
+          // $("#sharePassword").hide();
           // 单击复选框时，对文本框进行 显示/隐藏
           $(".havePwd").click(function () {
               let havePwd = $(".havePwd").prop("checked");
@@ -74,9 +74,15 @@
                   $("#sharePassword").fadeOut("fast");
                   // 取消设置密码选项，则把密码框清空
                   $("#sharePassword").val("");
+                  $(".codeBtn").fadeIn()
+                  // $(".linkBtn").removeClass("offset-5")
+                  // $(".linkBtn").addClass("offset-2")
               } else {
                   $("#sharePassword").fadeIn("fast");
                   $("#sharePassword").prop("disabled", false);
+                  $(".codeBtn").fadeOut()
+                  // $(".linkBtn").removeClass("offset-2")
+                  // $(".linkBtn").addClass("offset-5")
               }
           });
 
@@ -141,8 +147,9 @@
 					<div class="modal-body">
 						<!-- 标签页头 -->
 						<ul class="nav nav-tabs border-bottom-0" id="shareTab">
-							<li class="active mr-4"><a href="#shareConfig">分享</a></li>
-							<li><a href="#shareSelect">发送给好友</a></li>
+							<li class="active mr-4"><a href="#shareConfig">普通分享</a></li>
+							<li class="mr-4"><a href="#shareSelect">发送给好友</a></li>
+							<li><a href="#shareCode">取件码分享</a></li>
 						</ul>
 					</div>
 
@@ -151,10 +158,12 @@
 						<!-- 分享子页 -->
 						<form action="" method="post" id="shareConfig" class="tab-pane">
 							<div class="form-group row">
-								<label class="col-form-label col-md-3 col-sm-3 ml-2 mr-1 text-right">分享范围：</label>
-								<label class="radio-inline mr-3 pt-1"><input type="radio" name="shareType" value="0" class="publicShare"
-								                                             checked>公共分享</label>
-								<label class="radio-inline pt-1"><input type="radio" name="shareType" value="1">内部分享</label>
+								<label class="col-form-label col-md-3 col-sm-3 ml-1 mr-1 text-right">分享范围：</label>
+								<label class="radio-inline mr-3 pt-1">
+									<input type="radio" name="shareType" value="0" class="publicShare mr-1" checked>公共分享
+								</label>
+								<label class="radio-inline pt-1 mr-3"><input type="radio" name="shareType" class="mr-1" value="1">内部分享</label>
+								<label class="radio-inline pt-1"><input type="radio" name="shareType" class="mr-1" value="3">密码分享</label>
 							</div>
 
 							<div class="form-group row ">
@@ -171,7 +180,7 @@
 								<label for="sharePassword" class="col-form-label col-md-3 col-sm-3 text-right">
 									密码:
 								</label>
-								<input type="checkbox" class="s_pwd_check havePwd offset-md-1" value=""/>
+<!--								<input type="checkbox" class="s_pwd_check havePwd offset-md-1" value=""/>-->
 							</div>
 							<!-- 密码输入框(默认隐藏) -->
 							<div class="form-group row">
@@ -194,10 +203,10 @@
 
 							<!-- 创建链接/取件码 按钮 -->
 							<div class="row mb-2">
-								<a href="#" class="btn btn-primary offset-md-2 offset-sm-2 col-md-3 col-sm-3 linkBtn"
+								<a href="#" class="btn btn-primary offset-4 col-4 linkBtn"
 								   data-toggle="modal" data-target="#shareLink">创建链接</a>
-								<a href="#" class="btn btn-primary offset-md-2 offset-sm-2 col-md-3 col-sm-3 codeBtn"
-								   data-toggle="modal" data-target="#shareCode">生成取件码</a>
+<!--								<a href="#" class="btn btn-primary offset-2 col-3 codeBtn"-->
+<!--								   data-toggle="modal" data-target="#shareCode">生成取件码</a>-->
 							</div>
 						</form>
 

@@ -42,6 +42,6 @@ public class UserShare extends BaseEntity implements Serializable,Cloneable{
     private Integer downloadTimes ;
     /** 转存次数 */
     private Integer fileDumpTime ;
-    /** 密码 */
+    /** 密(取件）码 */
     private String sharePassword ;
 }
