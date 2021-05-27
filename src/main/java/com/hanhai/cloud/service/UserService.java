@@ -2,6 +2,7 @@ package com.hanhai.cloud.service;
 
 import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.entity.User;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -20,4 +21,13 @@ public class UserService extends BaseService {
     public User getUserById(Long userId){
         return userMapper.selectById(userId);
     }
+
+
+    @CachePut(value = "userInfo",key = "#user.userId")
+    public User updateById(User user){
+        userMapper.updateById(user);
+        return  user;
+    }
+
+
 }

@@ -49,4 +49,16 @@ public class BeanUtils {
     public static <T> T convertTo(Object source,Class<T> tClass) {
         return BeanUtil.toBean(source,tClass);
     }
+
+    /**
+     * 将 source中的同名属性赋值到target中
+     * @param source 源对象
+     * @param target 目标对象
+     * @param <T>
+     * @return 结果
+     */
+    public static <T> T copyProperties(Object source, T target){
+        BeanUtil.copyProperties(source,target);
+        return target;
+    }
 }

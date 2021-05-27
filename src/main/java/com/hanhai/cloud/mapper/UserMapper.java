@@ -13,4 +13,5 @@ public interface UserMapper extends BaseMapper<User> {
 
     @Select("select * from user where user_phone=#{p1} or user_email=#{p1} and deleted=false ")
     public User getUserByPhoneOrEmail(@Param("p1") String t1);
+
 }

@@ -1,0 +1,217 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="static/popper/popper.min.js"></script>
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>瀚海云盘</title>
+    </th:block>
+
+    <script src="//at.alicdn.com/t/font_2539461_jy6ayp1p7wh.js"></script>
+    <style type="text/css">
+        .icon {
+            width: 1em;
+            height: 1em;
+            vertical-align: -0.15em;
+            fill: currentColor;
+            overflow: hidden;
+        }
+
+        body {
+            background-color: #efefef;
+            min-width: 1440px;
+            margin: 0px auto;
+            padding: 0px 0px;
+        }
+
+        .actions {
+            padding-top: 10px;
+            justify-content: left;
+        }
+
+        .dropdown-item {
+            font-size: 1rem;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+
+        .actions button {
+            margin-right: 10px;
+            margin-left: 5px;
+        }
+
+        .statistical {
+            margin-right: 5px;
+        }
+
+        table {
+            font-size: 1.2rem;
+            margin-left: 0px;
+        }
+
+        .files i {
+            display: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+        }
+
+        .files i:hover {
+            background-color: #7abaff;
+            color: white;
+        }
+
+        tr:hover > td > i {
+            display: inline-block;
+            margin-right: 30px;
+            /*display: flex;*/
+        }
+
+        tbody tr:hover {
+            background-color: rgb(244, 251, 255);
+        }
+
+        .files {
+            line-height: 2rem;
+        }
+
+        table {
+            margin-top: 5px;
+            width: 100%;
+            display: table;
+        }
+
+        .btn-outline-primary {
+            color: #000000;
+            border-color: #007bff;
+        }
+
+        .icon {
+            width: 2em;
+            height: 2em;
+        }
+
+        .translation {
+            font-size: 1.5rem;
+            margin-left: 5px;
+        }
+
+        .btn-lg, .btn-group-lg > .btn {
+            border-radius: 1.3rem;
+        }
+    </style>
+</head>
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row" style="margin-top:8px;margin-left: 0px ;margin-right: 0px">
+    <div th:replace="common/nav-left :: nav-left"></div>
+    <div class="col-my-10 main" style="margin-right: 0px">
+        <div class="row  navbar bg-light  actions">
+            <i class="bi bi-megaphone"></i><a class="translation">提示：文件保存30天后将被自动清除!!!</a>
+            <form class="form-inline ml-auto ">
+                <button type="button" class="btn btn btn-danger btn-lg">
+                    <span class="bi bi-trash2-fill"></span>&nbsp;清空回收站
+                </button>
+            </form>
+        </div>
+        <div class="row navbar navbar-light bg-light" style="margin-top: 5px;">
+            <a>回收站</a>
+            <button type="button" class="btn btn btn-primary btn-lg" id="reduction" style="margin-left: -80%"
+                    onclick="check()" disabled="disabled">
+                <span class="bi bi bi-arrow-repeat"></span>&nbsp;还原
+            </button>
+            <span class="statistical" id="counttext"></span>
+        </div>
+        <div class="row" id="filesTable">
+            <table class="table   files" style="background-color: white">
+                <thead style="display:block;">
+                <tr class="success">
+                    <td><input type="checkbox" name="all" style="margin-top: 5px"/></td>
+                    <th>文件名</th>
+                    <th></th>
+                    <th>文件大小</th>
+                    <th>删除时间</th>
+                    <th>到期时间</th>
+                </tr>
+                </thead>
+                <tbody style="display: block; height:680px;overflow-y: scroll;">
+                <tr th:each="file : ${files}" class="files" style="display: flex">
+                    <td>
+                        <input type="checkbox" name="num" style="margin-top: 5px"/></td>
+                    <td>
+                        <svg class="icon" aria-hidden="true">
+                            <use xlink:href="#icon-weibiaoti-_huabanfuben"></use>
+                        </svg>
+                        <span th:text="${file.getFileName()}"></span></td>
+                    <td class="action" style="color: #007bff">
+                        <i class="bi bi-trash" title="删除"></i>
+                        <i class="bi bi bi-arrow-repeat" title="还原"></i>
+                    </td>
+                    <td th:text="${file.getFileSize()}"></td>
+                    <td th:text="${#temporals.format(file.getCreatedTime(), 'yyyy-MM-dd HH:mm:ss')}"></td>
+                    <td th:text="1"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    var allDom = document.getElementsByName("all")[0];  //找到全选框
+    var numDoms = document.getElementsByName("num");
+    allDom.onclick = function () {   //定义一个全选框的点击函数
+        if (this.checked) {                 //判断全选框是否选中,如果返回值为true代表选中
+            $("#reduction")[0].removeAttribute("disabled");
+            for (var i = 0; i < numDoms.length; i++) {   //使用for循环选中列表框
+                numDoms[i].checked = true;
+            }
+        } else {
+            $("#reduction")[0].setAttribute("disabled", "disabled");
+            //如果返回值为false代表未选中
+            for (var i = 0; i < numDoms.length; i++) {  //使用for循环取消列表框的选中状态
+                numDoms[i].checked = false;
+            }
+        }
+    }
+    $(function () {                 //页面加载完成后执行事件
+            $("#counttext").text("已全部加载，共" + numDoms.length + "个");
+            $("[name=num]").click(function () {
+                let selectLength = $("input[name='num']:checked").length;
+
+                if (selectLength===0){
+                    $("#reduction")[0].setAttribute("disabled", "disabled");
+                }else{
+                    $("#reduction")[0].removeAttribute("disabled");
+                }
+                if(selectLength===numDoms.length){
+                    allDom.checked = true;
+                }else{
+                    allDom.checked = false;
+                }
+            });
+
+            let _width = $('#filesTable').width();
+            $('#filesTable th:first-child').width(_width * 0.01);//复选框
+            $('#filesTable td:first-child').width(_width * 0.01);
+
+            $('#filesTable th:nth-child(2)').width(_width * 0.15);//文件名
+            $('#filesTable td:nth-child(2)').width(_width * 0.15);
+
+            $('#filesTable th:nth-child(3)').width(_width * 0.14);//三个按钮
+            $('#filesTable td:nth-child(3)').width(_width * 0.14);
+
+            $('#filesTable th:nth-child(4)').width(_width * 0.19);//文件大小
+            $('#filesTable td:nth-child(4)').width(_width * 0.19);
+
+            $('#filesTable th:nth-child(5)').width(_width * 0.2);//删除时间
+            $('#filesTable td:nth-child(5)').width(_width * 0.2);
+
+            $('#filesTable th:nth-child(6)').width(_width * 0.2);//距离到期时间的天数
+            $('#filesTable td:nth-child(6)').width(_width * 0.2);
+
+
+        }
+    );
+
+</script>
+</body>
+</html>

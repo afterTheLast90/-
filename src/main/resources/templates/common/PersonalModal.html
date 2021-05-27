@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="PersonalModal">
+    <!-- 引入bootstrop-select.css -->
+    <link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
+    <!-- 引入bootstrop-select.js -->
+    <script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
+    <style>
+        .modal-body img {
+            width: 60px;
+            display: block;
+            margin-right: auto;
+            margin-left: auto;
+        }
+
+        .modal-body div {
+            margin-left: 30px;
+        }
+
+        .modal-body div input {
+            margin-left: 15px;
+        }
+
+        .label-information {
+            font-size: 1rem;
+        }
+
+    </style>
+    <!-- 模态框 -->
+    <div class="modal fade" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- 模态框头部 -->
+                <div class="modal-header">
+                    <h4 class="modal-title">个人信息</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- 模态框主体 -->
+                <div class="modal-body">
+
+
+
+                        <input type="file" id="selectAvatar" name="avatar" class="upload_media" multiple="multiple" hidden/><br/>
+                    <script>
+                        $("#selectAvatar").change(function (){
+                            let forms = new FormData()
+                            let configs = {
+                                headers:{'Content-Type':'multipart/form-data'}
+                            };
+                            forms.append('file',$("#selectAvatar")[0].files[0])
+                            axios.post("/userInfo/updateAvatar",forms ,configs).then(res=>{
+                                if (res.data.code===200){
+                                    layer.msg("头像更新成功")
+                                    $("#userAvatar")[0].src="/avatar?avatar="+res.data.data;
+                                    $("#headerUserAvatar")[0].src="/avatar?avatar="+res.data.data;
+                                }else{
+                                    layer.msg(res.data.msg)
+                                }
+                            }).catch(e=>{
+                                layer.msg("网络错误，请稍后再试");
+                            })
+                        })
+                    </script>
+                        <img  class="rounded-circle img-responsive center-block"
+                             title="这是用户头像" alt="此处是用户头像" id="userAvatar" th:src="${'/avatar?avatar='+userInfo.userAvatar}" onclick="$('#selectAvatar').click()"><br>
+
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">用户名:</label>
+                        <input type='text' class="form-control col-md-5 col-sm-5" id="userName" name="userName"
+                               th:value="${userInfo.userName}">
+                    </div>
+                    <div class="form-group row" id="sexGroup">
+                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">性 别:</label>
+                        <div class="form-group form-inline">
+                            <label class="radio-inline" style="margin-top: 5px">
+                                <input type="radio" value="0" name="sex" id="man" checked="checked"
+                                       th:checked="${userInfo.userGender==0}">男性
+                                <input type="radio" value="1" name="sex" id="woman"
+                                       th:checked="${userInfo.userGender==1}">女性
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">电子邮箱:</label>
+                        <input type='email' class="form-control col-md-5 col-sm-5" id="userEmail" name="userEmail"
+                               th:value="${userInfo.userEmail}">
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">手机号:</label>
+                        <input type='text' class="form-control col-md-5 col-sm-5" id="userPhone" name="userPhone"
+                               th:value="${userInfo.userPhone}">
+                    </div>
+                    <!-- 模态框底部 -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="btuSave">保存</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import httpUtil from "/static/httpUtil.js";
+
+        $(function (){
+            $("#btuSave").click(function () {
+                httpUtil.put("/userInfo/update", JSON.stringify({
+                    userName: $("#userName").val(),
+                    userGender: $('input[name="sex"]:checked').val(),
+                    userEmail: $("#userEmail").val(),
+                    userPhone: $("#userPhone").val()
+                })).then(res => {
+                    $('#myModal').modal('hide');
+                }).catch(e => {
+
+                })
+            })
+        })
+    </script>
+</div>
+
+</html>
