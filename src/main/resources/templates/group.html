@@ -54,7 +54,15 @@
           padding-left: 30px;
           width: 95%;
           list-style: none;
-          cursor: pointer;
+      }
+
+      .col-group li .gName {
+        display: inline-block;
+        width: 80%;
+        white-space: nowrap;
+        overflow: hidden;
+        ext-overflow: ellipsis;
+	      cursor: pointer;
       }
 
       .col-group ul li:hover {
@@ -143,10 +151,10 @@
           right: 5px;
           top: -2px;
           font-weight: 700;
-          font-size: 20px;
+          font-size: 1.5rem;
           color: #fd0707;
           cursor: pointer;
-          text-shadow: #ff0023 0 0 2px;
+          text-shadow: #ff0023 0 0 4px;
       }
 
       .g_users .u_name {
@@ -163,6 +171,264 @@
       }
 	</style>
 
+	<script type="module">
+      import httpUtil from "/static/httpUtil.js"
+      import httpUtilFormDate from "/static/httpUtilFormDate.js";
+      // 当前需要修改的标签
+      let groupLi
+      let groupId
+      let userLi
+
+      $(function () {
+          // 初始化标签
+          initTag()
+
+          // 添加群组(）
+		      // 同时添加用户
+          $('#addGroup-addUser').next().next().find("input").on("input", function(){        // 输入框，输入信息则搜索（内容为空则不显示任何用户）
+              $(this).attr('id',"deviceInput2");                  // 为input增加id属性
+              if($('#deviceInput2').val() != ""){
+                  httpUtil.get("/group/addGroupUserSearch", {     // 获得模糊搜索的10名用户（除自己、群组列表中有的用户）
+                      params: {
+                          userName: $('#deviceInput2').val()
+                      }
+                  }).then(res => {
+                      $("#addGroup-addUser").html("")
+                      for(let data of res.data) {
+                          $("#addGroup-addUser").append("<option title='"+data.userName +
+																                              "' value='"+ data.userId +
+																                              "' userId='"+ data.userId +
+																                              "' data-subtext='("+ data.userPhone +", "+ data.userEmail +")'>"+
+                                          data.userName +"</option>")
+                      }
+                      $("#addGroup-addUser").selectpicker("refresh")
+                  })
+              }
+          })
+		      // 添加确认
+          $("#addGroupConfirm").click(function () {
+              console.log($("#addGroup-addUser").val())
+              httpUtil.post("/group/groupAdd", JSON.stringify({
+                  groupName: $("#nGName").val(),
+                  userList: $("#addGroup-addUser").val()
+              })).then(res => {
+                  // 更新标签
+                  initTag()
+		              // 更新添加用户 下拉搜索框
+		              $("#addGroup-addUser").val("")
+		              $("#addGroup-addUser").html("")
+		              $("#addGroup-addUser").selectpicker("refresh")
+              })
+              // 单击确认添加群组按钮后，进行的操作
+              $("#nGName").val("")            // 清空 群组名称
+              $("#gAddModal").modal("hide")   // 添加模态框隐藏
+          })
+          // 删除群组确认
+          $("#gDelConfirm").click(function () {
+              httpUtil.delete("/group/delGroup/"+groupLi.attr("groupId")).then(res=>{
+                  initTag();
+              })
+              $("#delGroupModal").modal("hide")
+          })
+          // 修改群组
+          $("#gUpdConfirm").click(function () {
+              httpUtil.put("/group/groupUpd",
+                  JSON.stringify({
+                      groupId: groupLi.attr("groupId").trim(),
+                      groupName: $("#updGroupName").val().trim()
+                  }))
+                  .then(res => {
+                      initTag();    // 更新群组和搜索框
+                  })
+              $("#updGroupName").val("")
+              $("#updGroupModal").modal("hide")
+          })
+
+
+		      // 群组添加用户
+		      // 输入框，输入信息则搜索（内容为空则不显示任何用户）
+          $('#userSearch').next().next().find("input").on("input", function(){
+              $(this).attr('id',"deviceInput");         // 为input增加id属性
+		          if($('#deviceInput').val() != ""){
+		              httpUtil.get("/group/userSearch", {       // 获得模糊搜索的10名用户（除自己、群组列表中有的用户）
+				              params: {
+				                  groupId: groupId,
+						              userName: $('#deviceInput').val()
+				              }
+				          }).then(res => {
+				              $("#userSearch").html("")
+		                  for(let data of res.data) {
+													$("#userSearch").append("<option title='"+data.userName +
+																												"' value='"+ data.userId +
+																												"' userId='"+ data.userId +
+																												"' data-subtext='("+ data.userPhone +", "+ data.userEmail +")'>"+
+															data.userName +"</option>")
+		                  }
+                      $("#userSearch").selectpicker("refresh")
+				          })
+              }
+          })
+          // 确认群组添加 选中的用户
+		      $(".uAddConfirm").click(function() {
+              httpUtil.post("group/relationAdd", JSON.stringify({
+				          groupId: groupId,
+				          userIds: $("#userSearch").selectpicker("val")
+		          }))
+				      .then(res => {
+                  initSelect()
+						      initUserList()
+						      initTag()
+				      })
+              $("#uAddModal").modal("hide")
+          })
+          // 删除 群组用户
+          $(".uDelConfirm").click(function () {
+              // 关闭模态框
+              $("#uDelModal").modal("hide")
+
+              // 从用户群组 删除该用户
+              httpUtil.delete("/delGroup/userDel", {
+                  params:{
+                      relationId: userLi.attr("relationId"),
+                      groupId: groupId
+                  }
+              })
+              .then(res => {
+                  // 更新页面
+                  userLi.remove()
+                  initTag()
+
+              })
+
+          });
+
+      })
+
+      // 更新标签
+      function initTag() {
+          httpUtil.get("/group/groups"
+              //     ,{
+              //     params:{
+              //         groupName:"44"
+              //     }
+              // }
+
+              // ,JSON.stringify({
+              //     groupName:"44"
+              // })
+          ).then(res => {
+              // 清空数据
+              $("#groups").html("")
+              $("#groupQuery").html("")     // 设置标签搜索框为空
+		          // 添加数据
+              if (res.data.length == 0) {   // 设置 没有群组 标签显示情况
+                  $("#groups").append("<li data-toggle=\"modal\" data-target=\"#gAddModal\">" +
+                      " <i class='bi bi-emoji-wink' style='color: #1E9FFF'></i> 添加你的第一标签吧 " +
+                      "</li>")
+
+              }
+              else {
+                  for (let i = 0; i < res.data.length; i++) {
+                      $("#groupQuery").append("<option groupId='" + res.data[i].groupId + "'>" +
+                          res.data[i].groupName +
+                      "</option>")
+
+                      $("#groups").append('<li groupId="' + res.data[i].groupId + '">' +
+                          '<span class="gName" title="'+ res.data[i].groupName +' ('+ res.data[i].numberOfPersones +'人)"><i class="bi bi-tags-fill g_tab"></i>' +
+                          res.data[i].groupName  + ' (' + res.data[i].numberOfPersones + '人)</span>' +
+                          '<i class="bi bi-pencil-square updGroup" data-toggle="modal" data-target="#updGroupModal"></i>\n' +
+                          '<i class="bi bi-x-square delGroup" data-toggle="modal" data-target="#delGroupModal"></i>' +
+                          '</li>'
+                      )
+                  }
+
+                  // 下拉搜索框刷新
+                  $("#groupQuery").selectpicker("val", "")
+                  $('#groupQuery').selectpicker('refresh')    // 刷新数据
+                  // 单击后选项后，更新用户列表，置空文本框
+                  $('#groupQuery').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                      if($("#groupQuery").selectpicker("val") != null){
+                          groupId = $("#groupQuery option").eq(clickedIndex).attr("groupId")
+                          initUserList()
+                          $("#groupQuery").selectpicker("val", null)
+		                      // $("#groupQuery").html("")
+                          // 搜索框初始化
+                          initSelect()
+                      }
+                  });
+
+                  // 群组操作
+		              // 单击名称，获得用户列表
+                  $("#groups li .gName").click(function(){
+                      groupId = $(this).parent().attr("groupId")
+                      // 搜索框初始化
+                      initSelect()
+                      initUserList()
+                  })
+                  // 修改按钮绑定事件，得到当前标签
+                  $(".updGroup").click(function (event) {
+                      groupLi = $(this).parent()
+                  })
+                  // 删除按钮绑定事件
+                  $(".delGroup").click(function (event) {
+                      groupLi = $(this).parent()
+                  })
+
+              }
+          })
+      }
+
+      // 更新用户列表
+      function initUserList(){
+
+		      // 得到用户列表
+					httpUtil.get("/group/relationGet", {
+					    params: {
+					        groupId: groupId
+					    }
+					})
+					.then(res => {
+              $(".col-users .g_users").html("")
+              if(res.data.length==0) {
+              }
+              else {
+                  for(let data of res.data){
+	                  $(".col-users .g_users").append("<li class=\"u_head col-md-1\" relationId='"+ data.groupRelationshipId +"'>" +
+			                  "<img src='"+ data.userAvatar +"' class=\"rounded-circle\" alt=\"\">" +
+			                  "<i class=\"bi bi-x u_del\" data-toggle=\"modal\" data-target=\"#uDelModal\" groupId='"+ data.groupId +"'></i>" +
+			                  "<div class=\"u_name\" title=\""+ data.userName +"\">"+ data.userName +"</div>" +
+		                  "</li>")
+                  }
+              }
+              $(".col-users .g_users").append("<li class=\"u_add col-md-1\">" +
+                  "<img src=\"/static/img/addUser.png\" id='addUser' groupId='"+ groupId + "' " +
+		              "title='添加用户' data-toggle=\"modal\" data-target=\"#uAddModal\"/>" +
+              "</li>")
+
+							// axios异步，所以不能在外面绑定事件
+							// 获得需要删除的 userLi
+              $(".u_del").click(function() {
+                  userLi = $(this).parent()
+		              groupId = $(this).attr("groupId")
+              })
+							// 组添加用户按钮，获得需要添加用户的 组id
+							$("#addUser").click(function() {
+							    groupId = $(this).attr("groupId")
+							})
+
+					})
+
+
+      }
+
+      // 搜索框初始化
+      function initSelect() {
+          $("#userSearch").selectpicker("val", "")    // 清空选择内容
+          $("#userSearch").html("")                   // 清空数据项
+          $("#userSearch").selectpicker("refresh")    // 刷新搜索框
+      }
+	</script>
+
 
 </head>
 <body>
@@ -176,9 +442,8 @@
 			<!--	群组搜索框		-->
 			<div class="row">
 				<div class="col-8 ml-1">
-					<select id="groupQuery" class="selectpicker" multiple data-live-search="true"></select>
+					<select id="groupQuery" class="selectpicker" data-live-search="true"></select>
 				</div>
-
 				<!--	添加群组按钮 	-->
 				<i class="bi bi-person-plus-fill offset-1 col-2 gAdd" data-toggle="modal" data-target="#gAddModal"></i>
 			</div>
@@ -187,89 +452,10 @@
 			<ul id="groups">
 			</ul>
 		</div>
+
 		<!--	群组内的用户显示	-->
 		<div class="col-users shadow">
-			<ul class="g_users row">
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name" title="tom土ffffffffffffff">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name" title="jack">jack</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name" title="Jenny">Jenny</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">Tomcat</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">eclipse</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">Myeclipse</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del" data-toggle="modal" data-target="#uDelModal"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_head col-md-1">
-					<img src="/static/img/logo.png" class="rounded-circle" alt="">
-					<i class="bi bi-x u_del"></i>
-					<div class="u_name">tom土ffffffffffffff</div>
-				</li>
-				<li class="u_add col-md-1">
-					<!--					<i class="bi bi-plus-circle" data-toggle="modal" data-target="#uAddModal"></i>-->
-					<img src="/static/img/addUser.png" data-toggle="modal" data-target="#uAddModal"/>
-				</li>
-			</ul>
+			<ul class="g_users row"></ul>
 		</div>
 	</div>
 </div>
@@ -302,7 +488,7 @@
 
 <!-- 群组添加用户 模态框 -->
 <div class="modal fade" id="uAddModal">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 
 			<!-- 模态框头部 -->
@@ -317,12 +503,8 @@
 					<div class="row  pb-5 pt-3">
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 text-right">选择用户:</label>
 						<!--	搜索/选择新用户	-->
-						<div class="col-md-4 col-sm-4">
-							<select class="selectpicker" multiple data-live-search="true">
-								<option>jack</option>
-								<option value="">tom</option>
+							<select class="selectpicker col-6" id="userSearch" title="搜索并添加新用户" multiple data-live-search="true">
 							</select>
-						</div>
 					</div>
 
 					<div class="modal-footer">
@@ -342,7 +524,7 @@
 
 <!-- 添加新群组 模态框 -->
 <div class="modal fade" id="gAddModal">
-	<div class="modal-dialog">
+	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
 
 			<!-- 模态框头部 -->
@@ -357,18 +539,14 @@
 					<!--	群组名称	-->
 					<div class="row form-group">
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 mr-3 text-right">群组名:</label>
-						<input type="text" name="nGName" id="nGName" class="form-control col-md-5 col-sm-5" placeholder="群组名"
+						<input type="text" name="nGName" id="nGName" class="form-control col-6" placeholder="群组名"
 						       required>
 					</div>
 					<!--	在组中添加用户	-->
 					<div class="row form-group">
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 text-right">选择用户:</label>
-						<div class="col-md-4 col-sm-4">
-							<select class="selectpicker" id="addGroup-addUser" multiple data-live-search="true">
-								<option value="1111">xixi</option>
-								<option value="2222">hahah</option>
+							<select class="col-6 selectpicker" id="addGroup-addUser" title="搜索并添加用户" multiple data-live-search="true">
 							</select>
-						</div>
 					</div>
 				</form>
 			</div>
@@ -440,121 +618,5 @@
 	</div>
 </div>
 
-<script type="module">
-    import httpUtil from "/static/httpUtil.js";
-
-    // 当前需要修改的标签
-    let updGroupLi
-    let delGroupLi
-
-    $(function () {
-        // 初始化标签
-        initTag()
-        console.log($("#groupQuery").html());
-
-        // 添加群组(未实现，同时添加用户列表）
-        $("#addGroupConfirm").click(function () {
-            httpUtil.post("/group/groupAdd", JSON.stringify({
-                groupName: $("#nGName").val(),
-                userList: $("#addGroup-addUser").val()
-            })).then(res => {
-                // 更新标签
-                initTag()
-            })
-            // 单击确认添加群组按钮后，进行的操作
-            $("#nGName").val("")            // 清空 群组名称
-            $("#gAddModal").modal("hide")   // 添加模态框隐藏
-        })
-
-        // // 删除群组确认
-        $("#gDelConfirm").click(function () {
-            httpUtil.delete("/group/"+delGroupLi.attr("groupId")).then(res=>{
-                initTag();
-            })
-            $("#delGroupModal").modal("hide")
-        })
-
-        // 修改群组
-        $("#gUpdConfirm").click(function () {
-            httpUtil.put("/group/groupUpd",
-                JSON.stringify({
-                    groupId: updGroupLi.attr("groupId").trim(),
-                    groupName: $("#updGroupName").val().trim()
-                }))
-                .then(res => {
-                    initTag();    // 更新群组和搜索框
-                })
-            $("#updGroupName").val("")
-            $("#updGroupModal").modal("hide")
-        })
-
-        // 删除 群组用户
-        $(".uDelConfirm").click(function () {
-            // 从用户群组 删除该用户
-            // $.ajax();
-            // 更新页面
-            delUserLi.remove();
-            // 关闭模态框
-            $("#uDelModal").modal("hide");
-        });
-    })
-
-    // 更新标签
-    function initTag() {
-        httpUtil.get("/group/groups"
-            //     ,{
-            //     params:{
-            //         groupName:"44"
-            //     }
-            // }
-
-            // ,JSON.stringify({
-            //     groupName:"44"
-            // })
-        ).then(res => {
-            if (res.data.length == 0) {
-                // 设置 没有群组 标签显示情况
-                $("#groups").append("<li data-toggle=\"modal\" data-target=\"#gAddModal\">" +
-                    " <i class='bi bi-emoji-wink' style='color: #1E9FFF'></i> 添加你的第一标签吧 " +
-                    "</li>")
-
-                // 设置标签搜索框为空
-                $("#groupQuery").html("")
-            } else {
-                // 更新标签
-                $("#groups").html("")
-                $("#groupQuery").html("")
-
-                for (let i = 0; i < res.data.length; i++) {
-                    $("#groupQuery").append("<option groupId='" + res.data[i].groupId + "'>" +
-                        res.data[i].groupName +
-                        "</option>")
-
-                    $("#groups").append('<li groupId="' + res.data[i].groupId + '">' +
-                        '<i class="bi bi-tags-fill g_tab"></i>' +
-                        '<span class="gName" title="'+ res.data[i].groupName +'">' + res.data[i].groupName + '</span>' +
-                        '<i class="bi bi-pencil-square updGroup" data-toggle="modal" data-target="#updGroupModal"></i>\n' +
-                        '<i class="bi bi-x-square delGroup" data-toggle="modal" data-target="#delGroupModal"></i>' +
-                        '</li>'
-                    )
-                }
-
-
-                // 修改群组按钮绑定事件，得到当前标签
-                $(".updGroup").click(function () {
-                    updGroupLi = $(this).parent()
-                })
-                // 删除群组按钮绑定事件
-                $(".delGroup").click(function () {
-                    delGroupLi = $(this).parent()
-                })
-
-                // 刷新下拉搜索框
-                $('#groupQuery').selectpicker('refresh');
-            }
-        })
-    }
-
-</script>
 </body>
 </html>
