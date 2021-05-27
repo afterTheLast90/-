@@ -2,7 +2,9 @@ package com.hanhai.cloud.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.entity.Group;
 import com.hanhai.cloud.entity.Tag;
+import com.hanhai.cloud.params.UpdTagParams;
 import com.hanhai.cloud.utils.BeanUtils;
 import com.hanhai.cloud.vo.TagVO;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,10 @@ public class TagService extends BaseService {
 
     public void delTag(Long tagId) {
         tagMapper.deleteById(tagId);
+    }
+
+    public void updTag(UpdTagParams tagParams) {
+        tagMapper.updateById(BeanUtils.convertTo(tagParams, Tag.class));
     }
 
     public Tag getTagByName(Long tagOwner, String tagName) {

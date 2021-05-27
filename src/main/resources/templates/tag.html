@@ -136,7 +136,7 @@
 	    color: #333;
     }
 
-    .tFiles table tbody tr td #delFile {
+    .tFiles table tbody tr td .delFile {
 	    color: #ff111f;
     }
 
@@ -177,6 +177,299 @@
     }
 	</style>
 
+	<script type="module">
+      import httpUtil from "/static/httpUtil.js";
+      import httpUtilFormDate from "/static/httpUtilFormDate.js";
+      // 要删除的标签
+      let delTagLi
+      let updTagLi
+      // 获取标签id
+      let tagFileId
+      // 关系id
+      let relationId
+      // 多个关系id
+      let tagRelationsId = []
+
+      $(function() {
+
+          initTag()
+          initTable();
+          // 生成相应方法和类
+          $('.drawer').drawer();
+
+          // 标签操作
+          // 新增
+          $("#addTagConfirm").click(function() {
+              // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
+              let data = new URLSearchParams()
+              data.append('tagName',$("#newTag").val())
+
+              httpUtilFormDate.post("/tag/tagAdd", data
+              ).then(res => {
+                  // if (res.code)
+                  // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
+                  $(".tTags ul").append('<li tagId="' + res.data.data + '">' +
+                      '<i class="bi bi-tags tTag"></i><span class="info" title="'+ $("#newTag").val() +'">' + $("#newTag").val() + '</span>' +
+                      '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
+                      '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
+                      '</li>')
+                  $("#newTag").val("")
+              }).catch(e=>{})
+              $("#addTagModal").modal("hide");
+          })
+          // 删除 确认
+          $(".delConfirm").click(function(){
+              httpUtil.delete("/tag/tagDel/"+delTagLi.attr("tagId"))
+                  .then(res => {
+                      delTagLi.remove()
+                  }).catch(err => {})
+              $("#delTagModal").modal("hide");
+          });
+          // 修改 确认操作
+          $("#updConfirm").click(function() {
+              httpUtil.put("/tag/tagUpd", JSON.stringify({
+                  tagId: updTagLi.attr("tagId"),
+                  tagName: $("#updateTag").val()
+              })).then(res => {
+                  updTagLi.children(".info").text($("#updateTag").val())
+                  $("#updateTag").val("")
+              })
+
+              $("#updTagModal").modal("hide");
+          })
+
+		      // 关系操作
+		      // 删除关系
+		      $(".fDelConfirm").click(function() {
+		          httpUtil.delete("/tag/relationDel/"+relationId)
+				          .then(res => {
+				              initTable()
+				          })
+				      $("#delFileModal").modal("hide")
+		      })
+		      // 删除多个关系
+		      $("#delAllFile").click(function() {
+		          // 得到删除id组
+              let rows = $('#tTable').bootstrapTable('getSelections')
+				      tagRelationsId = []
+              for (let rowElement of rows) {
+                  tagRelationsId.push(rowElement.tagRelationshipId)
+              }
+              if(tagRelationsId.length == 0) {
+                  layer.msg("请先选择文件")
+              }
+		          else {
+                  $("#delAllFileModal").modal("show")
+              }
+		      })
+		      $("#fAllDelConfirm").click(function() {
+		          httpUtilFormDate.delete("/tag/relationsDel/"+tagRelationsId)
+				          .then(res => {
+				              initTable()
+				          })
+				      $("#delAllFileModal").modal("hide")
+		      })
+
+
+		      // 自定义搜索框，进行搜索
+		      $("#queryBtn").on("click", initTable);
+		      // 回车搜索
+		      $("#searchFile").on("keypress", function(event){
+		          if(event.keyCode == 13)
+		              initTable()
+		      })
+      })
+      // 初始化表格(为操作按钮绑定事件）
+      function initTable() {
+          // 先销毁表格
+          $('#tTable').bootstrapTable('destroy');
+          $('#tTable').bootstrapTable({
+              url: "/tag/tagFiles",
+              method: 'get',
+              totalField: "total",          // 纪录总数
+              dataField: "list",
+              pagination: true,             // 设置为 true 会在表格底部显示分页条
+              sidePagination: "server",
+              pageList: [10, 20, 30, 40],   // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+              data_local: "zh-US",          // 表格汉化
+              classes: 'table',             // 表格 样式类
+              height: 530,                  // 表格高度
+              // paginationPreText: '上一页',
+              // paginationNextText: '下一页',
+              // undefinedText: "-",        // 当数据为 undefined 时显示的字符
+              // dataType: "json",
+              queryParams: function (params) {         // 自定义参数
+                  return {                  //这里的params是table提供的
+                      pageNum: params.offset / params.limit + 1,
+		                  pageSize: params.limit,
+                      tagId: tagFileId,
+		                  fileName: $("#searchFile").val()
+                  };
+
+              },
+              responseHandler: function (res) {
+		              if(res.data != null)
+                      return res.data
+		              else
+		                  return ""
+              },
+		          columns: [
+				          {
+				              checkbox: true
+				          },
+		              {
+		                  field: "tagRelationshipId",
+				              title: "关系id",
+				              align: "center",
+				              visible: false
+		              },
+				          {
+                      field: "fileName",
+                      title: "文件名",
+                      align: "center",
+				          },
+				          {
+                      field: "fileSize",
+                      title: "文件大小",
+                      align: "center",
+						          formatter: function sizeFormatter(value, row, index) {
+                          if(value > Math.pow(1024,3))
+                              return (value / Math.pow(1024,3)).toFixed(2) + 'G'
+								          else if(value> Math.pow(1024,2))
+								              return (value / Math.pow(1024,2)).toFixed(2) + 'M'
+                          else if(value > 1024)
+                              return (value / 1024).toFixed(2) + 'KB'
+								          else
+								              return value + 'B'
+						          }
+				          },
+				          {
+                      field: "updatedTime",
+                      title: "修改时间",
+                      align: "center",
+                      formatter: function dateFormatter(value, row, index) {
+                          return value.replace("T", " ")
+                      }
+				          },
+                  {
+                      // field: "operation",
+                      title: "操作",
+                      align: "center",
+		                  formatter: function operationFormatter(value, row, index) {
+                          return "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
+                              "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
+                              "<i class=\"bi bi-trash pl-2\ delFile\" relationId='"+ row.tagRelationshipId +
+		                              "' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
+		                  }
+                  }],
+		          // 渲染完数据
+		          onPostBody: function() {
+                  // 文件详情抽屉
+				          $(".bi-three-dots").click(function (){
+				              // 打开drawer
+				              $(".drawer").drawer("open")
+				          })
+
+                  // 删除文件关系按钮
+                  $(".delFile").click(function() {
+                      relationId = $(this).attr("relationId")
+                  })
+		          },
+		          // // 选中单元格时，获得id
+              // onCheck: function(field, value, row, $element){
+              //     // let rows = $('#tTable').bootstrapTable('getSelections')
+              //     // for (let rowElement of field) {
+              //     //     tagRelationsId.push(field.tagRelationshipId)
+              //     // }
+              //     console.log($element)
+              //     // console.log(tagRelationsId)
+              // },
+		          // onUncheck: function(field, value, row, $element){
+              //     console.log($element)
+              //     // tagRelationsId.remove(field.tagRelationshipId)
+              // },
+          })
+      }
+
+      function initTag() {
+          httpUtil.get("/tag/getTags")
+              .then(res => {
+                  if(res.data.length == 0){
+                      $(".tTags ul").append('<li>' +
+                          '<i class="bi bi-tags tTag"></i><span class="info" style="color: #1698dc" data-toggle="modal" data-target="#addTagModal" title="添加你的第一个标签吧！">添加你的第一个标签吧！</span>' +
+                          '</li>')
+                  }
+                  else {
+                      $(".tTags ul").html("")
+                      $("#groupQuery").html("")
+                      for (let i = 0; i < res.data.length; i++) {
+                          $(".tTags ul").append('<li tagId="' + res.data[i].tagId + '">' +
+                              '<i class="bi bi-tags tTag"></i>' +
+                              '<span class="info" title="'+ res.data[i].tagName +'">' + res.data[i].tagName + '</span>' +
+                              '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
+                              '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
+                              '</li>')
+                          $("#groupQuery").append("<option tagId='"+ res.data[i].tagId  +"'>" + res.data[i].tagName + "</option>")
+                      }
+
+
+                      // 刷新下拉搜索框
+                      $('#groupQuery').selectpicker('refresh');
+                      // 清空下拉搜索框选择值
+                      $("#groupQuery").selectpicker("val","")
+                      // 单击标签选项时，显示对应文件信息
+                      $('#groupQuery').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                          if(!$("#groupQuery").selectpicker("val")==""){
+	                          tagFileId = $("#groupQuery option").eq(clickedIndex).attr("tagId")
+			                      initTable()
+	                          $("#groupQuery").selectpicker("val","")
+                          }
+                      });
+
+
+
+                      // 删除标签按钮 绑定事件
+                      $(".delTag").click(function() {
+                          delTagLi = $(this).parent();
+                      })
+
+                      // 修改标签按钮 绑定事件
+                      $(".updTag").click(function(){
+                          updTagLi = $(this).parent()
+                      });
+
+                      // 单击li，得到id
+		                  $(".tTags ul li .info").click(function() {
+		                      tagFileId = $(this).parent().attr("tagId")
+                          // 清空搜索框
+                          $("#searchFile").val("")
+                          initTable()
+		                  })
+
+                  }
+              })
+
+      }
+
+
+
+      // 密码默认隐藏
+      $(".bi-eye-fill").hide();
+      // 密码显示
+      $(".bi-eye-slash").click(function(){
+          $("#sPwd").attr("type", "text");
+          $(".bi-eye-fill").show();
+          $(this).hide();
+      })
+      // 密码隐藏
+      $(".bi-eye-fill").click(function(){
+          $("#sPwd").attr("type", "password");
+          $(".bi-eye-slash").show();
+          $(this).hide();
+      })
+
+	</script>
+
 </head>
 
 <body class="drawer drawer--right">
@@ -190,9 +483,7 @@
 			<div class="row">
 				<!--	标签搜索框 -->
 				<div class="col-8 ml-1">
-					<select id="groupQuery" class="selectpicker" multiple data-live-search="true">
-						<option>rew</option>
-					</select>
+					<select id="groupQuery" class="selectpicker" data-live-search="true"></select>
 				</div>
 				<!--	添加标签按钮 	-->
 				<i class="bi bi-plus-square offset-1 col-2" id="tAdd" data-toggle="modal" data-target="#addTagModal"></i>
@@ -211,13 +502,10 @@
 				<!--	自定义搜索框	-->
 				<div class=".tSearch col-10">
 					<div class="panel-body" style="padding-bottom: 1px;">
-						<form class="form-horizontal">
 							<div class="form-group row pb-0 m-2">
 								<div class="col-3 pr-0">
 									<!-- 自定义搜索框 -->
-									<input type="text" name="searchString" id="searchFile"
-									       class="form-control" placeholder="文件名"
-									       onkeydown="javascript:if(event.keyCode==13) searchId();" />
+									<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
 								</div>
 								<div class="col-sm-1 pl-0">
 									<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
@@ -225,26 +513,14 @@
 									</button>
 								</div>
 							</div>
-						</form>
 					</div>
 				</div>
-
-				<input type="button" class="btn btn-danger col-1 mt-2"
-				       style="height: 30%;" id="delAllFile" value="删除"
-				       data-toggle="modal" data-target="#delAllFileModal">
+				<!--		删除按钮		-->
+				<input type="button" class="btn btn-danger col-1 mt-2" style="height: 30%;" id="delAllFile" value="删除"/>
 			</div>
 
 			<!--  文件列表	-->
 			<table id="tTable">
-				<thead>
-				<tr>
-					<th  data-checkbox="true"></th>
-					<th data-field="fileName" data-align="center">文件名</th>
-					<th data-field="fileSize" data-align="center">文件大小</th>
-					<th data-field="createdTime" data-align="center">修改时间</th>
-					<th data-field="operation" data-align="center">操作</th>
-				</tr>
-				</thead>
 			</table>
 		</div>
 	</div>
@@ -360,7 +636,7 @@
 </div>
 </div>
 
-<!--  多文件删除该标签 模态框  -->
+<!--  删除所有关联文件 模态框  -->
 <div class="modal fade" id="delAllFileModal">
 	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
@@ -439,177 +715,5 @@
 	</ul>
 </nav>
 
-<script type="module">
-		import httpUtil from "/static/httpUtil.js";
-		import httpUtilFormDate from "/static/httpUtilFormDate.js";
-		// 要删除的标签
-    let delTagLi
-		let updTagLi
-
-    $(function() {
-        initTag()
-
-		    // 新增标签（未实现 查重）
-		    $("#addTagConfirm").click(function() {
-		        // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
-            let data = new URLSearchParams()
-            data.append('tagName',$("#newTag").val())
-
-            httpUtilFormDate.post("/tag/tagAdd", data
-						).then(res => {
-						    // if (res.code)
-						    // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
-						    $(".tTags ul").append('<li tagId="' + res.data.data + '">' +
-                    '<i class="bi bi-tags tTag"></i><span class="info" title="'+ $("#newTag").val() +'">' + $("#newTag").val() + '</span>' +
-                    '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
-                    '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
-                    '</li>')
-                $("#newTag").val("")
-            }).catch(e=>{})
-				    $("#addTagModal").modal("hide");
-		    })
-
-
-        // 设置表格数据、样式
-        // $('#tTable').bootstrapTable({
-        //     // url: 'data1.json',
-        //     // 表格 样式类
-        //     classes: 'table',
-        //     // 表格高度
-        //     height: 550,
-        //     // 自动去除搜索空格
-        //     trimOnSearch: true,
-        //     // 左对齐
-        //     searchAlign: "left",
-        //     // 分页
-        //     pagination: true,
-        //     // 开启查询
-        //     search: true,
-        //     data: [{
-        //         fileName: "java实验一",
-        //         fileSize: "1303M",
-        //         createdTime: "2018-03-31",
-        //         operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-        //             "<i class=\"bi bi-three-dots drawer-toggle\"></i>"
-        //     }]
-        // });
-
-
-
-        // 删除标签
-        $(".delConfirm").click(function(){
-            httpUtil.delete("/tag/"+delTagLi.attr("tagId"))
-		          .then(res => {
-		              delTagLi.remove()
-		          })
-            $("#delTagModal").modal("hide");
-        });
-
-
-        // 修改标签
-        // 修改标签 确认操作
-        $("#updConfirm").click(function() {
-
-            $("#updTagModal").modal("hide");
-        })
-
-        // 调用函数，初始化表格
-        initTable();
-        // 自定义搜索框，进行搜索
-        $("#queryBtn").on("click", initTable);
-        // 初始化表格
-        function initTable() {
-            // 先销毁表格
-            $('#tTable').bootstrapTable('destroy');
-            $('#tTable').bootstrapTable({
-                // url: "showConsumeRecordlList",//请求后台的URL（*）
-                // method: 'get',
-                // dataType: "json",
-                // undefinedText: "-",         // 当数据为 undefined 时显示的字符
-                pagination: true,           // 设置为 true 会在表格底部显示分页条。
-                pageList: [10, 20, 30, 40], // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
-                // paginationPreText: '上一页',
-                // paginationNextText: '下一页',
-                data_local: "zh-US",        // 表格汉化
-                // 表格 样式类
-                classes: 'table',
-                // 表格高度
-                height: 530,
-                // 查询 和 请求响应
-                // queryParams: function (params) {  // 自定义参数
-                //     return {//这里的params是table提供的
-                //         fileName: $("#searchFile").val() // 这个就是搜索框中的内容
-                //     };
-                // },
-                // responseHandler: function (res) {
-                //     //如果后台返回的json格式不是{rows:[{...},{...}],total:100},可以在这块处理成这样的格式
-                //     return "\"rows\":[ " + res + "]";
-                // },
-                data: [{
-                    fileName: "java实验一",
-                    fileSize: "1303M",
-                    createdTime: "2018-03-31",
-                    operation: "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-                        "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
-                        "<i class=\"bi bi-trash pl-2\" id='delFile' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
-                }]
-            })
-        }
-
-        // 抽屉(必须先创建元素，再绑定事件）
-        $('.drawer').drawer();
-
-        $(".bi-eye-fill").hide();
-        // 密码显示
-        $(".bi-eye-slash").click(function(){
-            $("#sPwd").attr("type", "text");
-            $(".bi-eye-fill").show();
-            $(this).hide();
-        })
-        // 密码隐藏
-        $(".bi-eye-fill").click(function(){
-            $("#sPwd").attr("type", "password");
-            $(".bi-eye-slash").show();
-            $(this).hide();
-        })
-    })
-
-		function initTag() {
-        httpUtil.get("/tag/getTags")
-		        .then(res => {
-                if(res.data.length == 0){
-                    $(".tTags ul").append('<li>' +
-			                    '<i class="bi bi-tags tTag"></i><span class="info" style="color: #1698dc" data-toggle="modal" data-target="#addTagModal" title="添加你的第一个标签吧！">添加你的第一个标签吧！</span>' +
-		                    '</li>')
-                }
-                else {
-                    $(".tTags ul").html("")
-                    $("#groupQuery").html("")
-                    for (let i = 0; i < res.data.length; i++) {
-                        $(".tTags ul").append('<li tagId="' + res.data[i].tagId + '">' +
-                            '<i class="bi bi-tags tTag"></i>' +
-		                        '<span class="info" title="'+ res.data[i].tagName +'">' + res.data[i].tagName + '</span>' +
-                            '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
-                            '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
-                            '</li>')
-                        $("#groupQuery").append("<option>" + res.data[i].tagName + "</option>")
-                    }
-
-                    // 删除标签按钮 绑定事件
-                    $(".delTag").click(function() {
-                        delTagLi = $(this).parent();
-                    })
-
-		                // 修改标签按钮 绑定事件
-                    $(".updTag").click(function(){
-                        updTagLi = $(this).parent()
-                        console.log(updTagLi.attr("tagId"))
-                    });
-                }
-		        })
-
-		}
-
-</script>
 </body>
 </html>
