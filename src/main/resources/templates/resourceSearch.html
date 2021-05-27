@@ -16,6 +16,8 @@
 	<!--	引入bootstrap-table中文包 -->
 	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 
+	<script src="/static/iconfont/iconfont.js"></script>
+
 	<style>
     body {
       background-color: #efefef;
@@ -56,6 +58,15 @@
       /*display: none;*/
       font-size: 23px;
     }
+
+    .icon {
+      width: 1.5em;
+      height: 1.5em;
+      /*vertical-align: -0.15em;*/
+      fill: currentColor;
+      margin-right: 3px;
+      overflow: hidden;
+    }
 	</style>
 
 	<script>
@@ -85,7 +96,7 @@
                   pageList: [10, 20, 30, 40],     // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
                   data_local: "zh-US",            // 表格汉化
                   classes: 'table',               // 表格 样式类
-                  height: 550,                    // 表格高度
+                  height: 720,                    // 表格高度
                   queryParams: function (params) {  // 查询 和 请求响应
                       return {
                           fileName: $("#searchFile").val(),
@@ -104,9 +115,21 @@
 		                  visible: false
                   },
                   {
+                      field: "fileType",
+                      title: "文件类型",
+                      align: "center",
+                      visible: false
+                  },
+                  {
                       field: 'fileName',
                       title: '文件名',
-                      align: 'center',
+                      align: 'left',
+                      halign: "center",
+		                  formatter: function fileNameFormatter(value, row, index) {
+                          return "<svg fileType="+ row.fileType +" class='icon ml-4' aria-hidden='true'>" +
+                                    "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
+		                              "</svg>" + value
+                      }
                   },
                   {
                       field: 'userName',

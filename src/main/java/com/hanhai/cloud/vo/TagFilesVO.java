@@ -14,6 +14,8 @@ public class TagFilesVO{
     private Long tagRelationshipId ;
     /** 文件名 */
     private String fileName ;
+    /** 文件类型*/
+    private String fileType;
     /** 文件大小 */
     private Long fileSize ;
     /** 修改时间 */
