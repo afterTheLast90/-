@@ -100,11 +100,13 @@
         }
     </style>
 </head>
-<body>
+<body  class="drawer drawer--right">
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;margin-left: 0px ;margin-right: 0px">
+
+<div class="main">
     <div th:replace="common/nav-left :: nav-left"></div>
-    <div class="col-my-10 main" style="margin-right: 0px">
+
+    <div class="content"   style="overflow: hidden;margin-right: 1%">
         <div class="row  navbar bg-light  actions">
             <i class="bi bi-megaphone"></i><a class="translation">提示：文件保存30天后将被自动清除!!!</a>
             <form class="form-inline ml-auto ">

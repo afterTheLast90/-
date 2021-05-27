@@ -6,18 +6,18 @@
     <!-- 引入bootstrop-select.js -->
     <script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
     <style>
-        .modal-body img {
+        .personal-modal-body img {
             width: 60px;
             display: block;
             margin-right: auto;
             margin-left: auto;
         }
 
-        .modal-body div {
+        .personal-modal-body div {
             margin-left: 30px;
         }
 
-        .modal-body div input {
+        .personal-modal-body div input {
             margin-left: 15px;
         }
 
@@ -27,7 +27,7 @@
 
     </style>
     <!-- 模态框 -->
-    <div class="modal fade" id="myModal">
+    <div class="modal fade" id="personalModal">
         <div class="modal-dialog">
             <div class="modal-content">
 
@@ -38,7 +38,7 @@
                 </div>
 
                 <!-- 模态框主体 -->
-                <div class="modal-body">
+                <div class="modal-body personal-modal-body">
 
 
 
@@ -114,7 +114,7 @@
                     userEmail: $("#userEmail").val(),
                     userPhone: $("#userPhone").val()
                 })).then(res => {
-                    $('#myModal').modal('hide');
+                    $('#personalModal').modal('hide');
                 }).catch(e => {
 
                 })
