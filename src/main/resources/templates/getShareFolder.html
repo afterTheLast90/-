@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入popper.js	-->
+	<script src="/static/popper/popper.min.js"></script>
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>分享文件夹</title>
+	</th:block>
+
+	<!-- 引入bootstrap-table.css	-->
+	<link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
+	<!--	引入bootstrap-table.js -->
+	<script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+	<!--	引入bootstrap-table中文包 -->
+	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+
+	<style>
+    .main {
+      display: flex;
+      height: calc(100vh - 88px);
+      width: 100%;
+      overflow-y: hidden;
+      margin-top: 10px;
+      font-size: 1.5rem;
+    }
+
+    .rMain {
+      margin-top: 10px;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+      overflow: auto;
+    }
+
+    #expireTime{
+      margin-left: 3%;
+      line-height: 1.5rem;
+      font-size: 1rem;
+      color: #5a6268;
+    }
+
+    #sTable tbody i {
+      color: #1296db;
+      cursor: pointer;
+    }
+
+    #sTable tbody tr:hover {
+      background-color: rgba(18, 150, 219, .15);
+    }
+
+    #sTable tbody .rUpload {
+      font-size: 26px;
+      margin-right: 20px;
+    }
+
+    #sTable tbody .rDownload {
+      /*display: none;*/
+      font-size: 23px;
+    }
+	</style>
+
+	<script type="module">
+		import httpUtil from "../static/httpUtil.js";
+		$(function() {
+		    // 密码未匹配
+        if([[${not pwdPass}]]){
+            $("#pwdCheck").modal("show")
+            setTimeout(function(){
+                layer.msg("[[${msg}]]")
+            }, 200)
+        }
+        else {
+            initTable()
+        }
+        // 密码检验
+        $("#pwdCheckBtn").click(function(){
+            $("form").attr("action", "/s/[[${shareId}]]")
+            $("form").submit()
+        })
+        // 取消分享
+        $("#cancelShareBtn").click(function(){
+            $("#cancelShareModal").modal("show")
+        })
+				// 确认取消分享
+        $("#cancelShareConfirm").click(function(){
+            httpUtil.put("/share/closeShare/"+"[[${shareId}]]")
+                .then(res =>{
+                    setTimeout(function (){
+                        $("form").attr("action", "/s/[[${shareId}]]")
+                        $("form").submit()
+                    }, 500)
+                })
+        })
+        // 初始化表格
+        function initTable() {
+            // 先销毁表格
+            $('#sTable').bootstrapTable('destroy');
+            $('#sTable').bootstrapTable({
+                url: "/s/shareInfo",   //请求后台的URL（*）
+                method: 'get',
+                dataField: 'data',              // 设置数据域
+                data_local: "zh-US",            // 表格汉化
+                classes: 'table',               // 表格 样式类
+                height: 700,                    // 表格高度
+                queryParams: function () {  // 查询 和 请求响应
+                    return {
+                        shareId: "[[${shareId}]]"
+                    };
+                },
+                columns: [
+                    // {
+                    // field: "userFileId",
+                    // title: "用户文件id",
+                    // align: "center",
+                    // visible: false
+                    // },
+                    {
+                        field: "fileType",
+                        title: "文件类型",
+                        align: "center",
+                        visible: false
+                    },
+		                {
+		                  checkbox: true,
+		                },
+                    {
+                        field: 'fileName',
+                        title: '文件名',
+                        align: 'left',
+                        halign: "center",
+                        formatter: function fileNameFormatter(value, row, index) {
+                            return "<svg fileType="+ row.fileType +" class='icon ml-4 mr-2' aria-hidden='true'>" +
+                                "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
+                                "</svg>" + value
+                        }
+                    },
+                    {
+                        field: 'fileSize',
+                        title: '文件大小',
+                        align: 'center',
+                        formatter: function sizeFormatter(value, row, index) {
+                            if(value > Math.pow(1024,3))
+                                return (value / Math.pow(1024,3)).toFixed(2) + 'G'
+                            else if(value> Math.pow(1024,2))
+                                return (value / Math.pow(1024,2)).toFixed(2) + 'M'
+                            else if(value > 1024)
+                                return (value / 1024).toFixed(2) + 'KB'
+                            else
+                                return value + 'B'
+                        }
+                    },
+                    {
+                        field: 'createdTime',
+                        title: '分享时间',
+                        align: 'center',
+                        formatter: function indexFormatter(value, row, index) {
+                            return value.replace("T"," ");
+                        }
+                    },
+                    {
+                        field: 'expireTime',
+                        title: '过期时间',
+                        align: 'center',
+                        formatter: function dateFormatter(value, row, index) {
+                            value = value.replace("T", " ")
+                            return value=='1970-01-01 07:59:59'?"永久":value
+                        }
+                    },
+                    {
+                        field: 'operation',
+                        title: '转存/下载',
+                        align: 'center',
+                        formatter: function operationFormatter(value, row, index) {
+                            let isLogin = [[${isLogin}]]
+                            value = ""
+                            if(isLogin) {
+                                if(row.haveDown) {
+                                    value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
+                                }else {
+                                    value += "<i class=\"bi bi-box-arrow-in-right rUpload\" style='cursor:default; color: #ccc;'></i>"
+                                }
+                                if(row.haveDump) {
+                                    value += "<i class=\"bi bi bi-download rDownload\"></i>"
+                                }else {
+                                    value += "<i class=\"bi bi bi-download rDownload\" style='cursor:default; color: #ccc;'></i>"
+                                }
+                                return value
+                            }
+                            else {
+                                return "<i class=\"bi bi bi-download rDownload\"></i>"
+                            }
+                        }
+                    }
+                ],
+		            // 加载文件信息数据
+                onLoadSuccess: function (data) {
+                    $("#fileName").text(data.data[0].fileName)
+		                $("#expireTime b").text(data.data[0].expireTime.replace("T", " "))
+                    // 是否还有 下载/转存 次数
+                    if(!data.data[0].haveDown){
+                        $("#downBtn").prop("disabled", "disabled")
+                    }
+                    if(!data.data[0].haveDump){
+                        $("#dumpBtn").prop("disabled", "disabled")
+                    }
+                }
+            })
+        }
+		})
+	</script>
+
+</head>
+
+<body>
+<div th:if="${pwdPass}" ><div th:replace="common/nav-header :: nav-header"></div></div>
+<div th:if="${pwdPass}" class="row main" style="margin-top:8px;">
+	<div class="rMain container shadow">
+		<!--	分享信息	-->
+		<section class="fileInfo pt-3">
+			<!--	图标		-->
+			<svg fileType="" class='icon ml-4 mr-1 mt-1' aria-hidden='true'>
+				<use xlink:href='#icon-dir'></use>
+			</svg>
+			<!--	文件名		-->
+				<span id="fileName"></span>
+			<!--	过期时间		-->
+			<span id="expireTime">
+				过期时间: <i class="bi bi-stopwatch pl-2"></i><b style="font-weight: normal;">2021年7月1日</b>
+			</span>
+			<div class="float-right">
+				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
+				<button class="btn btn-primary mr-3" id="dumpBtn" th:if="${not isOwner}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
+				<button class="btn btn-primary" id="downBtn">
+					<i class="bi bi-box-arrow-in-down"></i>
+					下载
+				</button>
+			</div>
+		</section>
+		<hr class="mb-1">
+		<!--	返回上级	-->
+		<button type="button" class="btn btn-light btn-lg ml-3">
+			<span class="bi bi-reply"></span>&nbsp;返回上一级
+		</button>
+		<hr class="mt-1">
+		<!--	文件列表显示	-->
+		<table id="sTable">
+		</table>
+	</div>
+</div>
+
+<!-- 密码检测模态框 -->
+<div class="modal fade" id="pwdCheck" style="margin-top: 14%">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">请输入密码</h5>
+			</div>
+
+			<!-- 模态框主体 -->
+			<form action="" method="get">
+				<div class="modal-body mt-4 mb-2 row">
+					<input type="text" class="form-control col-6 offset-3" name="pwd" placeholder="请输入6位密码" required maxlength="6">
+				</div>
+
+				<input type="button" class="btn btn-primary col-4 offset-4 mb-5" id="pwdCheckBtn" value="确定">
+			</form>
+		</div>
+	</div>
+</div>
+<!-- 取消分享模态框 -->
+<div class="modal fade" id="cancelShareModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">确认操作</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>确认取消分享该文件?</span>
+			</div>
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

@@ -35,4 +35,5 @@ public interface GroupMapper extends BaseMapper<Group> {
     // 组关联用户+1
     @Update("update groups set number_of_persones=number_of_persones+#{addNum} where group_id=#{groupId} ")
     public void addPersonNum(@Param("groupId")Long groupId, @Param("addNum")Integer addNum);
+
 }

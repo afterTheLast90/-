@@ -23,7 +23,7 @@ public class InnerShare extends BaseEntity implements Serializable,Cloneable{
     @TableId
     private Long innerShareId ;
     /** 分享id */
-    private Long shareId ;
+    private String shareId ;
     /** 用户Id */
     private Long userId ;
     /** 组id */

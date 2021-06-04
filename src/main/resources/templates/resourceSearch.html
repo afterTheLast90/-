@@ -19,12 +19,21 @@
 	<script src="/static/iconfont/iconfont.js"></script>
 
 	<style>
-    body {
-      background-color: #efefef;
-      min-width: 1400px;
-      margin: 0px auto;
-      padding: 0px 0px;
-      overflow: hidden;
+    /*body {*/
+    /*  background-color: #efefef;*/
+    /*  min-width: 1400px;*/
+    /*  margin: 0px auto;*/
+    /*  padding: 0px 0px;*/
+    /*  overflow: hidden;*/
+    /*}*/
+
+    .main {
+      display: flex;
+      height: calc(100vh - 88px);
+      width: 100%;
+      overflow-y: hidden;
+      margin-top: 10px;
+	    font-size: 1.5rem;
     }
 
     .rMain {
@@ -62,9 +71,9 @@
     .icon {
       width: 1.5em;
       height: 1.5em;
-      /*vertical-align: -0.15em;*/
+      vertical-align: -0.4em;
       fill: currentColor;
-      margin-right: 3px;
+      margin-right: 10px;
       overflow: hidden;
     }
 	</style>
@@ -185,8 +194,7 @@
 </head>
 <body>
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;">
-
+<div class="row main" style="margin-top:8px;">
 	<div class="rMain container shadow">
 		<!--	自定义搜索框	-->
 		<div class=".rSearch">

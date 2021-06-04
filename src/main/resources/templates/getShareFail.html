@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>链接失效</title>
+	</th:block>
+
+	<style>
+    .main {
+      display: flex;
+      height: calc(100vh - 88px);
+      width: 100%;
+      overflow-y: hidden;
+      margin-top: 10px;
+      font-size: 1.5rem;
+    }
+
+    .rMain {
+      margin-top: 10px;
+      margin-bottom: 10px;
+      height: 100%;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+      overflow: auto;
+    }
+    .info {
+      margin-top: 15%;
+      text-align: center;
+    }
+	</style>
+
+</head>
+
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<div class="row main" style="margin-top:8px;">
+	<section class="rMain container shadow">
+		<div class="info" >
+			<i class="bi bi-emoji-neutral" style="font-size: 90px;color: #007bff;"></i><br/>
+			<div style="color: #666666;font-size: 1.3rem">[[${errorInfo}]]</div>
+		</div>
+	</section>
+</div>
+</body>
+</html>

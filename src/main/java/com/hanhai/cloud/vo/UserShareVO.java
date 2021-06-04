@@ -3,7 +3,6 @@ package com.hanhai.cloud.vo;
 import com.hanhai.cloud.configuration.SystemInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
@@ -15,10 +14,10 @@ public class UserShareVO {
     private String shareId ;
     /** 文件名 */
     private String fileName ;
+    /** 文件父目录 */
     private String fileParentPath ;
     /** 文件类型 */
     private String fileType;
-
     /** 分享类型;
      0-公有分享
      1-企业内分享（登录后可以查看）
@@ -114,7 +113,6 @@ public class UserShareVO {
                     (expireTime.isAfter(LocalDateTime.now()) ||
                             expireTime.isEqual(LocalDateTime.of(1970, 1, 1, 7, 59, 59))
                     );
-            System.out.println(status);
         }
         return this;
     }
