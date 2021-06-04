@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 
 @Data
 @Accessors(chain = true)
-public class UserShareParams extends PageParam {
+public class QueryShareParams extends PageParam {
     /** 文件名 */
     @NotNull(message = "文件名不能为null")
     @Value("")

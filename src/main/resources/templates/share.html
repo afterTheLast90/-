@@ -29,17 +29,16 @@
 	<link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
 	<script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
 
-	<script src="/static/iconfont/iconfont.js"></script>
 
 	<style>
 
-    body {
-      background-color: #efefef;
-      min-width: 1400px;
-      margin: 0px auto;
-      padding: 0px 0px;
-      overflow: hidden;
-    }
+    /*body {*/
+    /*  background-color: #efefef;*/
+    /*  min-width: 1400px;*/
+    /*  margin: 0px auto;*/
+    /*  padding: 0px 0px;*/
+    /*  overflow: hidden;*/
+    /*}*/
 
     .rMain {
       width: 84%;
@@ -47,6 +46,7 @@
       padding-top: 10px;
       padding-left: 15px;
       padding-right: 15px;
+	    font-size: 1.5rem;
       background-color: #fff;
     }
 
@@ -98,15 +98,20 @@
       fill: currentColor;
       overflow: hidden;
     }
-
     .icon_table {
       width: 1.5em;
       height: 1.5em;
+      margin-right: 10px;
+      margin-left: 20%;
       vertical-align: -0.4em;
       fill: currentColor;
-      margin-right: 3px;
       overflow: hidden;
     }
+
+    .bootstrap-switch .bootstrap-switch-handle-on,
+    .bootstrap-switch .bootstrap-switch-handle-off{
+      padding: 0 10px;
+		}
 	</style>
 
 	<script type="module">
@@ -169,7 +174,7 @@
                           halign: "center",
 						              align: 'left',
                           formatter: function fileNameFormatter(value, row, index) {
-                              return "<svg fileType=" + row.fileType + " class='icon_table ml-5' aria-hidden='true'>" +
+                              return "<svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
                                   "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
                                   "</svg>" + value
                           }
@@ -184,6 +189,7 @@
 		                      field: 'expireTime',
 						              title: '失效时间',
 						              align: 'center',
+						              sortable: true,
                           formatter: function (value, row, index) {
 		                          value = value.replace("T", " ")
 		                          if(value == "1970-01-01 07:59:59")
@@ -196,9 +202,10 @@
 		                      field: 'status',
 				                  title: '状态',
 													align: 'center',
+						              // sortable: true,
 						              formatter: function(value, row, index) {
                               if(value)
-			                          return '<input type="checkbox" name="sStatus" shareId="' +
+			                          return '<input type="checkbox" name="sStatus" id="switch" shareId="' +
 					                          row.shareId + '" checked>'
 								              else
 			                          return '<input type="checkbox" name="sStatus" shareId="' +
@@ -364,7 +371,7 @@
 		                                  .then(res =>{
                                           initTable()
                                           failConfirm = false         // 设置回 不确定默认值
-                                      })
+                                  })
                               }
                           }
                       })
@@ -414,10 +421,15 @@
 <body >
 <!--页头-->
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;">
-	<div th:replace="common/nav-left :: nav-left"></div>
 
-	<div class="rMain drawer drawer--right shadow">
+<!--<div class="row" style="margin-top:8px;">-->
+<!--	<div th:replace="common/nav-left :: nav-left"></div>-->
+<!--	<div class="rMain drawer drawer&#45;&#45;right shadow">-->
+
+<div class="main">
+	<div th:replace="common/nav-left :: nav-left"></div>
+	<div class="content rMain drawer drawer--right shadow"
+	     style="overflow: hidden;margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
 
 		<!--	自定义搜索框	-->
 		<div class=".sSearch">

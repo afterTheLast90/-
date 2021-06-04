@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<!-- 引入popper.js	-->
+<!--	<script src="/static/popper/popper.min.js"></script>-->
+
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>分享文件</title>
+	</th:block>
+
+	<style>
+    .main {
+      display: flex;
+      height: calc(100vh - 88px);
+      width: 100%;
+      overflow-y: hidden;
+      margin-top: 10px;
+      font-size: 1.5rem;
+    }
+
+    .rMain {
+      margin-top: 10px;
+      padding-left: 15px;
+      padding-right: 15px;
+      background-color: #fff;
+      overflow: auto;
+    }
+
+    #expireTime{
+      margin-left: 3%;
+      line-height: 1.5rem;
+	    font-size: 1rem;
+	    color: #5a6268;
+    }
+	</style>
+
+	<script type="module">
+			import httpUtil from "../static/httpUtil.js";
+      $(function(){
+          // 密码未验证成功
+			    if([[${not pwdPass}]]){
+              $("#pwdCheck").modal("show")
+					    setTimeout(function(){
+                  layer.msg("[[${msg}]]")
+					    }, 200)
+			    }
+			    else {
+							httpUtil.get("/s/shareInfo", {
+							    params: {
+							        shareId: "[[${shareId}]]"
+					    }})
+					    .then(res => {
+                  console.log(res)
+                  $("#fileName").text(res.data[0].fileName)
+							    $("#expireTime b").text(res.data[0].expireTime.replace("T", " "))
+							    // 文件大小
+                  $("#fileSize").text(getFileSize(res.data[0].fileSize))
+							    // 是否还有 下载/转存 次数
+							    if(!res.data[0].haveDown){
+                      $("#downBtn").prop("disabled", "disabled")
+							    }
+			            if(!res.data[0].haveDump){
+			                $("#dumpBtn").prop("disabled", "disabled")
+			            }
+					    })
+			    }
+			    // 密码验证
+			    $("#pwdCheckBtn").click(function(){
+	            $("form").attr("action", "/s/[[${shareId}]]")
+					    $("form").submit()
+			    })
+		      // 取消分享
+		      $("#cancelShareBtn").click(function(){
+							$("#cancelShareModal").modal("show")
+		      })
+		      // 确认取消分享
+		      $("#cancelShareConfirm").click(function(){
+              httpUtil.put("/share/closeShare/"+"[[${shareId}]]")
+                  .then(res =>{
+                      setTimeout(function (){
+                          $("form").attr("action", "/s/[[${shareId}]]")
+                          $("form").submit()
+                      }, 500)
+                  })
+		      })
+		})
+		// 得到文件大小
+    function getFileSize(value){
+        if(value > Math.pow(1024,3))
+            return (value / Math.pow(1024,3)).toFixed(2) + 'G'
+        else if(value> Math.pow(1024,2))
+            return (value / Math.pow(1024,2)).toFixed(2) + 'M'
+        else if(value > 1024)
+            return (value / 1024).toFixed(2) + 'KB'
+        else
+            return value + 'B'
+    }
+	</script>
+	<!-- 安新增 -->
+	<script>
+      // 检查user & group 是否已选择
+      function checkUserMember(value) {
+          let length = $("#selectUsers").children().length
+          for(let i=0; i<length; i++) {
+              if(value == $("#selectUsers").children().eq(i).attr("userId")) {
+                  return false
+              }
+          }
+          return true
+      }
+      function checkGroupMember(value) {
+          let length = $("#selectGroups").children().length
+          for(let i=0; i<length; i++){
+              if(value == $("#selectGroups").children().eq(i).attr("groupId"))
+                  return false
+          }
+          return true
+      }
+      // 得到所有userId
+      function getAllUserId() {
+          let ids = []
+          for(let i=0; i<$("#selectUsers").children().length; i++){
+              ids.push($("#selectUsers").children().eq(i).attr("userId"))
+          }
+          return ids
+      }
+      // 得到所有groupId
+      function getAllGroupId() {
+          let ids = []
+          for(let i=0; i<$("#selectGroups").children().length; i++){
+              ids.push($("#selectGroups").children().eq(i).attr("groupId"))
+          }
+          return ids
+      }
+	</script>
+
+</head>
+
+<body>
+
+<div th:if="${pwdPass}"><div th:replace="common/nav-header :: nav-header"></div></div>
+<div th:if="${pwdPass}" class="row main" style="margin-top:8px;">
+	<div class="rMain container shadow">
+		<!--	分享信息	-->
+		<section class="fileInfo pt-3">
+			<!--	图标		-->
+			<svg fileType="" class='icon ml-4 mr-1 mt-1' aria-hidden='true'>
+				<use xlink:href='#icon-mp3'></use>
+			</svg>
+			<!--	文件名		-->
+			<span id="fileName"></span>
+			<!--	过期时间		-->
+			<span id="expireTime">
+				过期时间: <i class="bi bi-stopwatch pl-2"></i><b style="font-weight: normal;"></b>
+			</span>
+			<div class="float-right">
+				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
+				<button  class="btn btn-primary mr-3" id="dumpBtn" th:if="${not isOwner}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
+				<button class="btn btn-primary" id="downBtn">
+					<i class="bi bi-box-arrow-in-down"></i>
+					下载(<span id="fileSize"></span>)
+				</button>
+			</div>
+		</section>
+		<!--	文件预览	-->
+		<section></section>
+	</div>
+</div>
+
+<!-- 密码检测模态框 -->
+<div class="modal fade" id="pwdCheck" style="margin-top: 14%">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">请输入密码</h5>
+			</div>
+
+			<!-- 模态框主体 -->
+			<form action="" method="get">
+				<div class="modal-body mt-4 mb-2 row">
+					<input type="text" class="form-control col-6 offset-3" name="pwd" placeholder="请输入6位密码" required maxlength="6">
+				</div>
+				<input type="button" class="btn btn-primary col-4 offset-4 mb-5" id="pwdCheckBtn" value="确定">
+			</form>
+		</div>
+	</div>
+</div>
+<!-- 取消分享模态框 -->
+<div class="modal fade" id="cancelShareModal">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">确认操作</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+			<!-- 模态框主体 -->
+			<div class="modal-body py-4 mx-2">
+				<span>确认取消分享该文件?</span>
+			</div>
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

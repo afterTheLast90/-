@@ -5,7 +5,7 @@
 <div th:fragment="shareModal">
 	<!-- 测试时需要的js和css文件	-->
 	<!-- 引入popper.js（需要在bootstrap.js之前引入） -->
-<!--	<script src="/static/popper/popper.min.js"></script>-->
+	<!--	<script src="/static/popper/popper.min.js"></script>-->
 	<!--  <th:block th:include="common/header :: header(~{::title})">-->
 	<!--    <title>瀚海云盘</title>-->
 	<!--  </th:block>-->
@@ -23,7 +23,7 @@
 
     .s_title {
       opacity: 1;
-      font-size: 16px;
+      font-size: 1.3rem;
       text-align: left;
       color: #333333;
     }
@@ -43,17 +43,60 @@
       border-radius: 5px;
     }
 
-    .s_pwd_check {
+    .selectMember {
       display: inline-block;
-      margin-left: 10px;
-      margin-top: 13px;
+      margin-left: 1rem;
+      max-height: 60px;
+      min-height: 38px;
+      min-width: 50%;
+      vertical-align: top;
+      overflow-y: auto;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      border-radius: 5px;
+      background-color: rgb(241,243,245);
+    }
+
+    .selectMember li {
+      display: inline-block;
+      height: 80%;
+      padding: .3rem 0 .3rem 1rem;
+      margin: .3rem 0 .3rem .2rem;
+      line-height: 100%;
+      max-width: 100%;
+      background-color: rgba(0, 123, 255, .15);
+      border-radius: 5px;
+      list-style: none;
+      white-space: nowrap;
+    }
+
+    .selectMember li span {
+      display: inline-block;
+      margin-right: 2.5rem;
+      max-width: 75%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .selectMember li .cancleSelect {
+      font-size: 20px;
+      color: red;
+      padding-right: 0.5rem;
+      cursor: pointer;
     }
 	</style>
 	<!-- 自定义js -->
-	<script>
+	<script type="module">
+			import httpUtil from "../../static/httpUtil.js";
+			let userFileId
       $(function () {
+          // 设置初始化状态（密码框默认隐藏，只复制链接）
+		      $("#havePwd").hide()
+		      $("#haveSPwd").hide()
+		      $("#copyLink").val("复制链接")
           // 首先选择第一个标签页
-          $("#shareTab a:first").tab("show");
+          $("#shareTab a:first").tab("show")
           // 切换标签页
           $("#shareTab a").click(function (e) {
               // 显示标签内
@@ -66,25 +109,19 @@
 
           // 是否使用密码
           // 密码文本框默认隐藏
-          // $("#sharePassword").hide();
-          // 单击复选框时，对文本框进行 显示/隐藏
-          $(".havePwd").click(function () {
-              let havePwd = $(".havePwd").prop("checked");
-              if (!havePwd) {
-                  $("#sharePassword").fadeOut("fast");
-                  // 取消设置密码选项，则把密码框清空
-                  $("#sharePassword").val("");
-                  $(".codeBtn").fadeIn()
-                  // $(".linkBtn").removeClass("offset-5")
-                  // $(".linkBtn").addClass("offset-2")
-              } else {
-                  $("#sharePassword").fadeIn("fast");
-                  $("#sharePassword").prop("disabled", false);
-                  $(".codeBtn").fadeOut()
-                  // $(".linkBtn").removeClass("offset-2")
-                  // $(".linkBtn").addClass("offset-5")
+					$(".shareType").click(function() {
+					    if($(this).val() == 3){
+					        $("#havePwd").fadeIn()
+							    $("#haveSPwd").show()
+							    // $("#copyLink").val("复制链接和密码")
+							    $("#copyLink").val("复制链接")
+					    }
+					    else{
+					        $("#havePwd").fadeOut()
+									$("#haveSPwd").hide()
+									$("#copyLink").val("复制链接")
               }
-          });
+					})
 
           // 非负判断
           $("#maxFileDumpTimes").on("input", function () {
@@ -96,39 +133,286 @@
               $(this).val(num);
           });
 
-          // 单击 分享按钮 时，隐藏主分享页面
-          $(".linkBtn").click(function () {
-              $("#shareMain").modal('hide');
-              reSet();
+          // 处理分享操作
+          $.fn.shareManage=function shareManage(uFileId, fName){
+              userFileId = uFileId
+              console.log(userFileId)
+              let fileName = fName
+              $(".s_title").text("分享文件(夹):  " + fileName)
+          }
+          // 单击 普通分享按钮 后（0，1，3）
+          $(".linkBtn").click(function() {
+              console.log(111111111)
+              // 使用密码分享，却不设置密码情况
+              if($(".shareType:checked").val()==3 && $("#sharePassword").val().trim().length!=6){
+                  layer.msg("请设置6位密码")
+              }
+              else {
+                  $("#shareMain").modal('hide')
+                  // 显示失效天数
+                  if($("#validtime").val() != -1){
+                      $(".overdueTime").text($("#validtime").val() + "天")
+                  }
+                  else {
+                      $(".overdueTime").text("永不")
+                  }
+                  // 发送文件id，创建分享纪录
+                  httpUtil.post("/share/addShare",JSON.stringify({
+                      userFileId: userFileId,
+                      shareType: $(".shareType:checked").val(),
+                      expireTime: $("#validtime").val(),
+                      maxFileDumpTimes: $("#maxFileDumpTimes").val(),
+                      maxDownloadTimes: $("#maxDownloadTimes").val(),
+                      sharePassword: $("#sharePassword").val()
+                  }))
+                  .then(res => {
+                      // 回显 分享信息
+                      $("#sLink").val(res.data.shareUrl)
+                      $("#sPwd").val(res.data.sharePassword)
+                      $("#sQR").attr("src", "/share/QRCode?url="+res.data.shareUrl+"&width=200&height=200")
+                      $("#shareLink").modal("show")
+                  })
+                  reSet()
+              }
           });
-          $(".codeBtn").click(function () {
-              $("#shareMain").modal('hide');
-              reSet();
-          });
-          $(".guShare").click(function () {
-              $("#shareMain").modal('hide');
-              $("#guShare").modal("show");
-              reSet();
-              // 默认行为（button默认为submit类型）
-              return false;
-          });
+          // 单击复制链接按钮，把链接和密码拷贝到剪贴板
+          $("#copyLink").click(function () {
+              $("#sLink").select()
+              // if($("#sPwd").val() != "")
+              //     $("#sPwd").select()
+              try {
+                  if(document.execCommand("copy", "false", null)) {
+                      layer.msg("复制成功")         // layUI 自带的提示框
+                  }
+                  else {
+                      layer.msg("复制失败，请尝试手动复制")
+                  }
+              }
+              catch (err) {
+                  layer.msg("复制失败，请尝试手动复制")
+              }
+              window.getSelection().empty()       // 取消选中状态
+          })
+
+          // 私有分享(shareType:2)
+          // 搜索群组
+          setTimeout(function () {
+              $('#sGroupSelect').next().next().find("input").on("input",function() {        // 输入框，输入信息则搜索（内容为空则不显示任何用户）
+                  $(this).attr('id', "deviceInput");                  // 为input增加id属性
+                  if($("#deviceInput").val() != ""){
+                      httpUtil.get("/share/queryGroup", {
+                          params: {
+                              groupName: $("#deviceInput").val()
+                          }
+                      })
+                          .then(function(res) {
+                              // 更新下拉列表
+                              $("#sGroupSelect").html("")
+                              for(let group of res.data) {
+                                  $("#sGroupSelect").append(
+                                      "<option title='"+ group.groupName + "(" + group.numberOfPersones + "人)" +
+                                      "' value='"+ group.groupId +"' >" +
+                                      group.groupName + "(" + group.numberOfPersones + "人)" +
+                                      "</option>"
+                                  )}
+                              $("#sGroupSelect").val("")
+                              $("#sGroupSelect").selectpicker("refresh")
+                          })
+                  }
+              })
+          }, 1000)
+          // 搜索用户
+          setTimeout(function(){
+              $('#sUserSelect').next().next().find("input").on("input",function() {        // 输入框，输入信息则搜索（内容为空则不显示任何用户）
+                  $(this).attr('id', "deviceInput2");                  // 为input增加id属性
+                  if($("#deviceInput2").val() != ""){
+                      httpUtil.get("/share/queryUser", {
+                          params: {
+                              userName: $("#deviceInput2").val()
+                          }})
+                          .then(res => {
+                              // 更新用户列表
+                              $("#sUserSelect").html("")
+                              for(let data of res.data) {
+                                  $("#sUserSelect").append(
+                                      "<option title='"+data.userName +
+                                      "' value='"+ data.userId +
+                                      "' userId='"+ data.userId +
+                                      "' data-subtext='("+ data.userPhone +", "+ data.userEmail +")'>"+
+                                      data.userName +
+                                      "</option>")}
+                              $("#sUserSelect").val("")
+                              $("#sUserSelect").selectpicker("refresh")
+                          })}
+              })
+          }, 1000)
+          // 保存已选择的群组
+          $('#sGroupSelect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+              if($(this).val() != "") {
+                  if(checkGroupMember($(this).val())){
+                      $("#selectGroups").append("<li groupId='"+ $(this).val() +"'>" +
+                          "<span>"+ $(this).children("option").eq(clickedIndex).text()
+                          +"</span>" +
+                          "<i class=\"bi cancleSelect bi-x\"></i>" +
+                          "</li>")
+                  }
+                  else{
+                      layer.msg("重复添加用户")
+                  }
+                  $("#sGroupSelect").val("")
+                  $("#sGroupSelect").html("")
+                  $("#sGroupSelect").selectpicker("refresh")
+              }
+              // 取消用户选择
+              $(".cancleSelect").click(function() {
+                  $(this).parent().remove()
+              })
+          })
+          // 保存已选择的用户
+          $('#sUserSelect').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+              if($(this).val() != "") {
+                  if(checkUserMember($(this).val())){
+                      $("#selectUsers").append("<li userId='"+ $(this).val() +"'>" +
+                          "<span>"+ $(this).children("option").eq(clickedIndex).text()
+                          +"</span>" +
+                          "<i class=\"bi cancleSelect bi-x\"></i>" +
+                          "</li>")
+                  }
+                  else{
+                      layer.msg("重复添加用户")
+                  }
+                  $("#sUserSelect").val("")
+                  $("#sUserSelect").html("")
+                  $("#sUserSelect").selectpicker("refresh")
+              }
+              // 取消用户选择
+              $(".cancleSelect").click(function() {
+                  $(this).parent().remove()
+              })
+          })
+          // 提交信息
+          $("#innerShareBtn").click(function() {
+              let userIds = getAllUserId()
+              let groupIds = getAllGroupId()
+              if(userIds.length==0 && groupIds.length==0){
+                  layer.msg("分享列表为空")
+              }
+              else{
+                  httpUtil.post("/share/addInnerShare",JSON.stringify({
+                      userFileId: userFileId,
+                      userIds: getAllUserId(),
+                      groupIds: getAllGroupId(),
+                      shareType: 2,
+                      expireTime: $("#expireTime").val(),
+                      maxFileDumpTimes: $("#maxDownloadTimes2").val(),
+                      maxDownloadTimes: $("#maxFileDumpTimes2").val(),
+                  }))
+                      .then(res => {
+                          $("#shareMain").modal("hide")
+                          $("#innerLink").val(res.data.shareUrl)
+                          $("#innerQR").attr("src", "/share/QRCode?url="+res.data.shareUrl+"&width=200&height=200")
+                          $("#innerExpire").text($("#expireTime").val()=="-1"?"永不":$("#expireTime").val()+"天")
+                          $("#guShare").modal("show")
+                          reSet()
+                      })
+              }
+          })
+          // 复制链接
+          $("#copyLink2").click(function() {
+              $("#innerLink").select()
+              try {
+                  if(document.execCommand("copy", "false", null)) {
+                      layer.msg("复制成功")         // layUI 自带的提示框
+                  }
+                  else {
+                      layer.msg("复制失败，请尝试手动复制")
+                  }
+              }
+              catch (err) {
+                  layer.msg("复制失败，请尝试手动复制")
+              }
+              window.getSelection().empty()       // 取消选中状态
+          })
+
+          // 取件码分享
+          $("#codeShareBtn").click(function() {
+              // 提交信息
+              $("#shareMain").modal("hide")
+              httpUtil.post("/share/codeShare",JSON.stringify({
+                  userFileId: userFileId,
+                  shareType: 4,
+                  expireTime: $("#codeExpire").val(),
+                  maxFileDumpTimes: 0,
+                  maxDownloadTimes: $("#maxDownloadTimes3").val()
+              }))
+                  .then(res => {
+                      console.log(res)
+                      $("#sCode").val(res.data.shareId)
+                      $("#codeExpireTime").text($("#codeExpire").val()=="-1"?"永不":$("#codeExpire").val()+"天")
+                      $("#shareCode").modal("show")
+                      reSet()
+                  })
+          })
 
           // 提交信息后，把消息框置空(还差一些控制未清空)
           function reSet() {
+              // 初始化 普通分享 模态框
               $(".publicShare").prop("checked", true);
               $(".initTime").prop("selected", true);
-              $(".s_pwd_check").prop("checked", false);
               $("#sharePassword").val("");
-              $("#sharePassword").hide();
+              $("#havePwd").hide();
               $("#maxFileDumpTimes").val("");
               $("#maxDownloadTimes").val("");
-              // 清空选择好友/组 模态框
-              $(".sUserSelect").selectpicker("deselectAll");
-              $(".sGroupSelect").selectpicker("deselectAll");
+              // 清空 私有分享 模态框
+              $("#selectUsers").html("")
+              $("#selectGroups").html("")
+              $("#maxDownloadTimes2").val("")
+              $("#maxFileDumpTimes2").val("")
+              // $(".sUserSelect").selectpicker("deselectAll");
+              // $(".sGroupSelect").selectpicker("deselectAll");
+              // 清空 取件码分享 模态框
+              $("#maxDownloadTimes3").val("")
           }
+
       });
       // 设置默认使用的bootstrap版本为4.
       $.fn.selectpicker.Constructor.BootstrapVersion = '4';
+	</script>
+  <script>
+  // 检查user & group 是否已选择
+  function checkUserMember(value) {
+      let length = $("#selectUsers").children().length
+      for(let i=0; i<length; i++) {
+          if(value == $("#selectUsers").children().eq(i).attr("userId")) {
+              return false
+          }
+      }
+      return true
+  }
+  function checkGroupMember(value) {
+      let length = $("#selectGroups").children().length
+      for(let i=0; i<length; i++){
+          if(value == $("#selectGroups").children().eq(i).attr("groupId"))
+              return false
+      }
+      return true
+  }
+  // 得到所有userId
+  function getAllUserId() {
+      let ids = []
+      for(let i=0; i<$("#selectUsers").children().length; i++){
+          ids.push($("#selectUsers").children().eq(i).attr("userId"))
+      }
+      return ids
+  }
+  // 得到所有groupId
+  function getAllGroupId() {
+      let ids = []
+      for(let i=0; i<$("#selectGroups").children().length; i++){
+          ids.push($("#selectGroups").children().eq(i).attr("groupId"))
+      }
+      return ids
+  }
 	</script>
 
 	<div class="container">
@@ -137,9 +421,8 @@
 			<div class="modal-dialog modal-lg">
 				<div class="modal-content">
 					<div class="modal-header">
-						<!-- 后期需根据 user_file_id得到文件名 -->
+						<!-- 文件名 -->
 						<span class="s_title">
-              分享文件(夹)：java_t7.docx
             </span>
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
 
@@ -148,26 +431,31 @@
 						<!-- 标签页头 -->
 						<ul class="nav nav-tabs border-bottom-0" id="shareTab">
 							<li class="active mr-4"><a href="#shareConfig">普通分享</a></li>
-							<li class="mr-4"><a href="#shareSelect">发送给好友</a></li>
-							<li><a href="#shareCode">取件码分享</a></li>
+							<li class="mr-4"><a href="#shareSelect" id="friendShare">发送给好友</a></li>
+							<li><a href="#shareCodeConf" id="codeShare">取件码分享</a></li>
 						</ul>
 					</div>
 
 					<!-- 标签内容页 -->
 					<div class="tab-content">
-						<!-- 分享子页 -->
+						<!-- 普通分享 子页 -->
 						<form action="" method="post" id="shareConfig" class="tab-pane">
+							<!--	分享范围 	-->
 							<div class="form-group row">
-								<label class="col-form-label col-md-3 col-sm-3 ml-1 mr-1 text-right">分享范围：</label>
+								<label class="col-form-label offset-1 col-3 mr-1 text-right">分享范围:</label>
 								<label class="radio-inline mr-3 pt-1">
-									<input type="radio" name="shareType" value="0" class="publicShare mr-1" checked>公共分享
+									<input type="radio" name="shareType" value="0" class="shareType publicShare mr-1" checked>公共分享
 								</label>
-								<label class="radio-inline pt-1 mr-3"><input type="radio" name="shareType" class="mr-1" value="1">内部分享</label>
-								<label class="radio-inline pt-1"><input type="radio" name="shareType" class="mr-1" value="3">密码分享</label>
+								<label class="radio-inline pt-1 mr-3">
+									<input type="radio" name="shareType" class="shareType mr-1" value="1">内部分享
+								</label>
+								<label class="radio-inline pt-1">
+									<input type="radio" name="shareType" class="shareType mr-1" value="3">密码分享
+								</label>
 							</div>
-
+							<!--	 分享时间		-->
 							<div class="form-group row ">
-								<label for="validtime" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">有效期:</label>
+								<label for="validtime" class="col-form-label offset-1 col-3 mr-1 text-right">有效期:</label>
 								<select class="form-control col-md-5 col-sm-5" name="validtime" id="validtime">
 									<option class="initTime" value="1">1天</option>
 									<option value="7">7天</option>
@@ -175,74 +463,116 @@
 									<option value="-1">永久</option>
 								</select>
 							</div>
-
-							<div class="row">
-								<label for="sharePassword" class="col-form-label col-md-3 col-sm-3 text-right">
+							<!-- 密码输入框(默认隐藏) -->
+							<div class="form-group row" id="havePwd">
+								<label for="sharePassword" class="col-form-label offset-1 col-3 text-right">
 									密码:
 								</label>
-<!--								<input type="checkbox" class="s_pwd_check havePwd offset-md-1" value=""/>-->
+								<input type="text" class="form-control col-md-5 col-sm-5" name="sharePassword" id="sharePassword"
+								       placeholder="输入密码" maxlength="6" >
 							</div>
-							<!-- 密码输入框(默认隐藏) -->
+							<!-- 下载次数 -->
 							<div class="form-group row">
-								<div class="col-md-3 mr-1 col-sm-3"></div>
-								<input type="password" class="form-control col-md-5 col-sm-5" name="sharePassword" id="sharePassword"
-								       placeholder="输入密码">
-							</div>
-
-							<div class="form-group row">
-								<label for="maxDownloadTimes" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">下载次数:</label>
+								<label for="maxDownloadTimes" class="col-form-label offset-1 col-3 mr-1 text-right">下载次数:</label>
 								<input type="number" class="form-control col-md-5 col-sm-5" id="maxDownloadTimes"
 								       name="maxDownloadTimes" placeholder="省略或0则不限制">
 							</div>
-
+							<!-- 转存次数 -->
 							<div class="form-group row">
-								<label for="maxFileDumpTimes" class="col-form-label col-md-3 col-sm-3 mr-1 text-right">转存次数:</label>
+								<label for="maxFileDumpTimes" class="col-form-label offset-1 col-3 mr-1 text-right">转存次数:</label>
 								<input type="number" class="form-control col-md-5 col-sm-5" id="maxFileDumpTimes"
 								       name="maxFileDumpTimes" placeholder="省略或0则不限制">
 							</div>
-
-							<!-- 创建链接/取件码 按钮 -->
+							<!-- 创建链接 按钮 -->
 							<div class="row mb-2">
-								<a href="#" class="btn btn-primary offset-4 col-4 linkBtn"
-								   data-toggle="modal" data-target="#shareLink">创建链接</a>
-<!--								<a href="#" class="btn btn-primary offset-2 col-3 codeBtn"-->
-<!--								   data-toggle="modal" data-target="#shareCode">生成取件码</a>-->
+								<a href="#" class="btn btn-primary offset-4 col-4 linkBtn">创建链接</a>
 							</div>
 						</form>
 
 						<!-- 发送给好友 子页 -->
 						<section class="tab-pane" id="shareSelect">
 							<form action="" class="mt-2">
+								<!-- 已选用户 -->
+								<div class="mt-2">
+									<label class="col-form-label offset-1 col-3 text-right">已选用户:</label>
+									<ul class="mb-0 pl-3 col-6 selectMember" id="selectUsers">
+									</ul>
+								</div>
 								<!-- 选择用户 搜索框 -->
-								<div class="form-group">
-									<label for="sUserSelect"
-									       class="col-form-label offset-md-2 offset-sm-1 col-md-3 col-sm-3 mr-1 text-right">选择用户:</label>
+								<div class="form-group mt-2">
+									<label for="sUserSelect" class="col-form-label offset-1 col-3 text-right">选择用户:</label>
 									<!-- 下拉搜索框 -->
-									<select id="sUserSelect" class="selectpicker sUserSelect" multiple data-live-search="true">
-										<!-- <optgroup> -->
-										<option>rew</option>
+									<select id="sUserSelect" class="selectpicker sUserSelect col-6" data-live-search="true">
 									</select>
 								</div>
-
 								<hr/>
-
-								<!-- 组名 可多选下拉框 -->
-								<div class="form-group row">
+								<!-- 已选群组 -->
+								<div class="mt-2">
+									<label class="col-form-label offset-1 col-3 text-right">已选群组:</label>
+									<ul class="mb-0 pl-3 col-6 selectMember" id="selectGroups">
+									</ul>
+								</div>
+								<!-- 选择组名 搜索框 -->
+								<div class="form-group mt-2">
 									<label for="sGroupSelect"
-									       class="col-form-label offset-md-2 offset-sm-1 col-md-3 col-sm-3 mr-1 text-right">选择群组:</label>
+									       class="col-form-label offset-1 col-3 text-right">选择群组:</label>
 									<!-- 多选下拉框 -->
-									<select id="sGroupSelect" class="selectpicker sGroupSelect" multiple data-live-search="true">
-										<option>rew</option>
+									<select id="sGroupSelect" class="selectpicker sGroupSelect col-6" data-live-search="true">
 									</select>
 								</div>
-
-								<!-- 分享按钮 -->
+								<hr>
+								<!--	 分享时间		-->
+								<div class="form-group row ">
+									<label for="expireTime" class="col-form-label offset-1 col-3 text-right">有效期:</label>
+									<select class="form-control col-6 ml-3" id="expireTime" >
+										<option class="initTime" value="1">1天</option>
+										<option value="7">7天</option>
+										<option value="30">30天</option>
+										<option value="-1">永久</option>
+									</select>
+								</div>
+								<!-- 下载次数 -->
+								<div class="form-group row">
+									<label for="maxDownloadTimes2" class="col-form-label offset-1 col-3 text-right">下载次数:</label>
+									<input type="number" class="form-control col-6 ml-3" id="maxDownloadTimes2"
+									       name="maxDownloadTimes" placeholder="省略或0则不限制"/>
+								</div>
+								<!-- 转存次数 -->
+								<div class="form-group row">
+									<label for="maxFileDumpTimes2" class="col-form-label offset-1 col-3 text-right">转存次数:</label>
+									<input type="number" class="form-control col-6 ml-3" id="maxFileDumpTimes2"
+									       name="maxFileDumpTimes" placeholder="省略或0则不限制">
+								</div>
+								<!-- 创建链接 按钮 -->
 								<div class="row mt-1 mb-2">
-									<button class="btn btn-primary m-auto pl-4 pr-4 guShare" data-toggle="modal" data-target="#guShare">
-										分享
-									</button>
+									<a href="#" class="btn btn-primary offset-4 col-4" id="innerShareBtn">创建链接</a>
 								</div>
 							</form>
+						</section>
+
+						<!--	 生成取件码子页		-->
+						<section id="shareCodeConf" class="tab-pane">
+							<!--	 分享时间		-->
+							<div class="form-group row ">
+								<label for="codeExpire" class="col-form-label offset-1 col-3 mr-1 text-right">有效期:</label>
+								<select class="form-control col-5" id="codeExpire">
+									<option class="initTime" value="1">1天</option>
+									<option value="7">7天</option>
+									<option value="30">30天</option>
+									<option value="-1">永久</option>
+								</select>
+							</div>
+							<!-- 下载次数 -->
+							<div class="form-group row">
+								<label for="maxDownloadTimes3" class="col-form-label offset-1 col-3 mr-1 text-right">下载次数:</label>
+								<input type="number" class="form-control col-5" id="maxDownloadTimes3"
+								       name="maxDownloadTimes" placeholder="省略或0则不限制"/>
+							</div>
+							<!-- 创建链接 按钮 -->
+							<div class="row mt-1 mb-2">
+								<a href="#" class="btn btn-primary offset-4 col-4" id="codeShareBtn">生成取件码</a>
+							</div>
+
 						</section>
 						<!-- end tab-content -->
 					</div>
@@ -271,41 +601,39 @@
 
 					<div class="modal-content">
 						<!-- 创建成功提示 -->
-						<div class="row mt-3" style="color: #06a7ff;font-size: 10px">
-							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2"></i>
-							<span class="ml-2"> 成功创建私密链接</span>
+						<div class="row mt-4" style="color: #06a7ff;font-size: 15px">
+							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2 mt-1"></i>
+							<span class="ml-2 pb-2"> 成功创建私密链接</span>
 						</div>
 						<!-- 分享链接 -->
 						<div class="form-group row mt-1">
 							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">链接:</label>
 							<!--      生成链接      -->
-							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
-							       name="sLink" value="">
+							<input type="text" readonly class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
+							       name="sLink" value="" id="sLink">
 						</div>
 						<!-- 分享密码 -->
-						<div class="form-group row">
+						<div class="form-group row" id="haveSPwd">
 							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1">密码:</label>
 							<!--      随机生成密码      -->
-							<input type="text" class="form-control col-md-2 col-sm-2" name="sPwd" disabled value="">
-							<input type="button" class="btn btn-primary offset-md-1 offset-sm-1 col-md-3 col-sm-3"
-							       style="font-size: 10px;" value="复制链接及密码"/>
+							<input type="text" class="form-control col-md-2 col-sm-2" name="sPwd" id="sPwd" readonly  value="">
 						</div>
 						<!-- 分享二维码 -->
 						<div class="form-group row" style="height: 150px;">
 							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1 pt-5">二维码:</label>
 							<!--      生成二维码图片      -->
-							<img src="" style="height: 100%;" alt="二维码">
+							<img src="" style="height: 100%;" alt="二维码" id="sQR">
 							<span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>
                 对方扫描二维码即可访问提取文件链接</span>
 						</div>
 						<!-- 提示失效时间 -->
 						<div class="form-group row">
-            <span class="offset-md-2 offset-md-3 offset-sm-3">
-              链接
-              <b class="font-weight-normal overdueTime" style="color: #06a7ff;">7天</b>
-              后失效
-            </span>
+	            <span class="offset-md-2 offset-md-3 offset-sm-3">
+	              链接 <b class="font-weight-normal overdueTime" style="color: #06a7ff;"></b> 失效
+	            </span>
 						</div>
+						<input type="button" id="copyLink" class="btn btn-primary offset-3 col-3"
+						       style="font-size: 10px;" value="复制链接及密码"/>
 
 					</div>
 					<div class="modal-footer ">
@@ -315,45 +643,6 @@
 			</div>
 		</div>
 	</div>
-
-	<!-- shareCode模态框 -->
-	<div class="container">
-		<div class="modal fade" id="shareCode">
-			<div class="modal-dialog modal-lg">
-				<div class="modal-content">
-					<div class="modal-header">
-            <span class="s_title">
-              生成取件码
-            </span>
-						<button type="button" class="close" data-dismiss="modal">&times;</button>
-					</div>
-
-					<div class="modal-content">
-						<!-- 分享链接 -->
-						<div class="form-group row mt-4">
-							<label for="sCode" class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">取件码:</label>
-							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" id="sCode"
-							       style="font-size: 16px;" name="sCode" value="03eD4z">
-						</div>
-						<!-- 创建成功提示 -->
-						<div class="row mt-2" style="color: #06a7ff">
-							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-3" style="font-size: 10px;"></i>
-							<span class="ml-2" style="font-size: 10px;"> 成功生成取件码</span>
-						</div>
-						<!-- 提示失效时间 -->
-						<div class="form-group row mt-3">
-							<span class="offset-md-3  offset-sm-3">链接 <b class="font-weight-normal" style="color: #06a7ff;">7天</b> 后失效</span>
-						</div>
-
-						<div class="modal-footer ">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
 	<!-- 群组/好友分享guShare模态框 -->
 	<div class="container">
 		<div class="modal fade" id="guShare">
@@ -366,43 +655,34 @@
 						<button type="button" class="close" data-dismiss="modal">&times;</button>
 					</div>
 
-					<div class="modal-content">
+					<div class="modal-content mb-3">
 						<!-- 创建成功提示 -->
-						<div class="row mt-3" style="color: #06a7ff;font-size: 10px">
-							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2"></i>
-							<span class="ml-2"> 成功创建私密链接</span>
+						<div class="row mt-4" style="color: #06a7ff;font-size: 15px">
+							<i class="bi bi-check-circle-fill offset-md-3 offset-sm-2 mt-1"></i>
+							<span class="ml-2 pb-2"> 成功创建私密链接</span>
 						</div>
 						<!-- 分享链接 -->
 						<div class="form-group row mt-1">
 							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">链接:</label>
 							<!--      生成链接      -->
-							<input type="text" disabled class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
+							<input type="text" readonly id="innerLink" class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
 							       name="sLink" value="">
-						</div>
-						<!-- 分享密码 -->
-						<div class="form-group row">
-							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1">密码:</label>
-							<!--      随机生成密码      -->
-							<input type="text" class="form-control col-md-2 col-sm-2" name="sPwd" disabled value="">
-							<input type="button" class="btn btn-primary offset-md-1 offset-sm-1 col-md-3 col-sm-3"
-							       style="font-size: 10px;" value="复制链接及密码"/>
 						</div>
 						<!-- 分享二维码 -->
 						<div class="form-group row" style="height: 150px;">
 							<label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1 pt-5">二维码:</label>
-							<img src="" style="height: 100%;" alt="二维码">
+							<img src="" id="innerQR" style="height: 100%;" alt="二维码">
 							<span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>
                 只有您选中的好友才能访问该链接</span>
 						</div>
 						<!-- 提示失效时间 -->
 						<div class="form-group row">
-            <span class="offset-md-2 offset-md-3 offset-sm-3">
-              链接
-              <b class="font-weight-normal overdueTime" style="color: #06a7ff;">7天</b>
-              后失效
-            </span>
+	            <span class="offset-md-2 offset-md-3 offset-sm-3">
+	              链接 <b class="font-weight-normal overdueTime" id="innerExpire" style="color: #06a7ff;"></b> 失效
+	            </span>
 						</div>
-
+						<input type="button"  class="btn btn-primary offset-3 col-3" id="copyLink2"
+						       value="复制链接"/>
 					</div>
 					<div class="modal-footer ">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
@@ -412,5 +692,44 @@
 			</div>
 		</div>
 	</div>
+	<!-- shareCode模态框 -->
+	<div class="container">
+		<div class="modal fade" id="shareCode">
+			<div class="modal-dialog modal-lg">
+				<div class="modal-content">
+					<div class="modal-header">
+            <span class="s_title">
+            </span>
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+					</div>
+
+					<div class="modal-content">
+						<!-- 分享链接 -->
+						<div class="form-group row mt-4">
+							<label for="sCode" class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">取件码:</label>
+							<input type="text" readonly class="form-control col-md-5 col-sm-5 mt-1" id="sCode"
+							       style="font-size: 16px;" name="sCode">
+						</div>
+						<!-- 创建成功提示 -->
+						<div class="row mt-2" style="color: #06a7ff; font-size: 15px;">
+							<i class="bi bi-check-circle-fill offset-3 pt-1"></i>
+							<span class="ml-2" > 成功生成取件码</span>
+						</div>
+						<!-- 提示失效时间 -->
+						<div class="form-group row mt-3">
+							<span class="offset-md-3  offset-sm-3">
+								取件码 <b class="font-weight-normal" id="codeExpireTime" style="color: #06a7ff;"></b> 失效
+							</span>
+						</div>
+
+						<div class="modal-footer ">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 </div>
 </html>

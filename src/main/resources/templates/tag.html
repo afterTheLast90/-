@@ -28,7 +28,6 @@
 	<!-- 引入bootstrop-select.js -->
 	<script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
 
-	<script src="/static/iconfont/iconfont.js"></script>
 
 	<style>
     /*body {*/
@@ -39,10 +38,10 @@
     /*  overflow: hidden;*/
     /*}*/
 
-    .tMain {
-      width: 85%;
-      margin-left: 1.5%;
-    }
+    /*.tMain {*/
+    /*  width: 85%;*/
+    /*  margin-left: 1.5%;*/
+    /*}*/
 
     .tLists {
       padding-top: 10px;
@@ -54,7 +53,7 @@
     .tLists .row #tAdd {
       padding: 0;
       margin-left: 15%;
-      margin-top: 1%;
+      margin-top: 2%;
       font-size: 20px;
       color: #1296db;
       vertical-align: middle;
@@ -182,9 +181,9 @@
       width: 1.5em;
       height: 1.5em;
       margin-left: 25%;
-      vertical-align: -0.15em;
+      vertical-align: -0.4em;
       fill: currentColor;
-      margin-right: 3px;
+      margin-right: 10px;
       overflow: hidden;
     }
 	</style>
@@ -245,7 +244,7 @@
                   tagId: updTagLi.attr("tagId"),
                   tagName: $("#updateTag").val()
               })).then(res => {
-                  updTagLi.children(".info").text($("#updateTag").val())
+                  initTag()
                   $("#updateTag").val("")
               })
 
@@ -494,11 +493,7 @@
 <div class="main  ">
 	<div th:replace="common/nav-left :: nav-left"></div>
 
-	<div class="content row"  style="overflow: hidden;margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
-
-<!--<div class="row" style="margin-top:8px;">-->
-<!--	<div th:replace="common/nav-left :: nav-left"></div>-->
-<!--	<div class="row tMain">-->
+	<div class="content row"  style="overflow: hidden;font-size: 1.5rem; margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
 
 		<!--	标签列表	-->
 		<div class="tLists shadow">
@@ -588,7 +583,7 @@
 			<!-- 模态框主体 -->
 			<div class="modal-body">
 				<div class="row form-group">
-					<label for="updateTag" class="col-form-label col-4 offset-1 text-right">新标签名:</label>
+					<label for="updateTag" class="col-form-label col-5 text-right">新标签名:</label>
 					<input type="text" name="updateTag" class="form-control col-5" id="updateTag" required>
 				</div>
 			</div>
@@ -617,7 +612,7 @@
 			<!-- 模态框主体 -->
 			<div class="modal-body">
 				<div class="row form-group">
-					<label for="newTag" class="col-form-label col-4 offset-1 text-right">标签名:</label>
+					<label for="newTag" class="col-form-label col-4 text-right">标签名:</label>
 					<input type="text" name="newTag" class="form-control col-5" id="newTag" required placeholder="标签名">
 				</div>
 			</div>
@@ -701,39 +696,6 @@
 			<span class="sInfo col-6 p-0 pr-2">内部分享</span>
 		</li>
 		<!--	分享人应该可以 加/删	-->
-<!--		<li class="row" id="sharePeople">-->
-<!--			<span class="col-5 text-right">分享人:</span>-->
-<!--			<ul class="sInfo pl-0 offset-5 col-6 p-0 pr-2">-->
-<!--				<li>家人</li>-->
-<!--				<li>李咏</li>-->
-<!--			</ul>-->
-<!--		</li>-->
-<!--		<hr>-->
-<!--		<li class="row">-->
-<!--			<span class="col-5 text-right">总转存次数:</span>-->
-<!--			<span class="sInfo col-6 p-0 pr-2">15</span></li>-->
-<!--		<li class="row">-->
-<!--			<span class="col-5 text-right">已转存次数:</span>-->
-<!--			<span class="sInfo col-6 p-0 pr-2">10</span></li>-->
-<!--		<li class="row">-->
-<!--			<span class="col-5 text-right">总下载次数:</span>-->
-<!--			<span class="sInfo col-6 p-0 pr-2">15</span></li>-->
-<!--		<li class="row">-->
-<!--			<span class="col-5 text-right">已下载次数:</span>-->
-<!--			<span class="sInfo col-6 p-0 pr-2">10</span></li>-->
-<!--		<hr>-->
-<!--		<li class="row">-->
-<!--			<span class="col-5 text-right">分享密码:</span>-->
-<!--			<input type="password" name="" class="sInfo col-2 p-0 pr-2 border-0" value="3Daj" id="sPwd" style="outline: none;">-->
-<!--			&lt;!&ndash;	显示密码 &ndash;&gt;-->
-<!--			<i class="bi bi-eye-fill"></i>-->
-<!--			&lt;!&ndash;	隐藏密码 &ndash;&gt;-->
-<!--			<i class="bi bi-eye-slash"></i>-->
-<!--		</li>-->
-<!--		<li class="row">-->
-<!--			<div class="col-5 text-right">二维码:</div>-->
-<!--			<img src="/static/img/logo.png" class="sInfo pl-0 offset-5 col-6 p-0 pr-2" alt="">-->
-<!--		</li>-->
 	</ul>
 </nav>
 

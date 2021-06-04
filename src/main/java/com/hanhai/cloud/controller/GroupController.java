@@ -148,7 +148,7 @@ public class GroupController {
     // 添加用户，并更新数量
     @PostMapping("group/relationAdd")
     @ResponseBody
-    public R addRelation(@RequestBody GroupAddUserParam groupAddUserParam) {
+    public R addRelation(@RequestBody @Validated GroupAddUserParam groupAddUserParam) {
 
         // 插入关联数据
         groupRelationService.addRelation(groupAddUserParam);
