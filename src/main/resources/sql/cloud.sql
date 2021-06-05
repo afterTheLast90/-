@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- 主机： localhost
--- 生成日期： 2021-05-12 12:48:29
+-- 生成日期： 2021-05-30 20:21:40
 -- 服务器版本： 5.7.32-log
 -- PHP 版本： 7.3.5
 
@@ -38,6 +38,8 @@ CREATE TABLE `files` (
                          `deleted` varchar(1) NOT NULL DEFAULT '0' COMMENT '删除标记',
                          `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件 ';
+
+
 
 -- --------------------------------------------------------
 
@@ -74,10 +76,9 @@ CREATE TABLE `file_inbox` (
                               `end_time` datetime NOT NULL COMMENT '截至时间',
                               `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                               `deleted` varchar(1) NOT NULL DEFAULT '0' COMMENT '删除标记',
-                              `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
+                              `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+                              `commit_type` int(1) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='文件收件箱 ';
-
--- --------------------------------------------------------
 
 --
 -- 表的结构 `groups`
@@ -93,6 +94,11 @@ CREATE TABLE `groups` (
                           `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组 ';
 
+--
+-- 转存表中的数据 `groups`
+--
+
+
 -- --------------------------------------------------------
 
 --
@@ -107,6 +113,11 @@ CREATE TABLE `group_relationship` (
                                       `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                                       `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='组关系 ';
+
+--
+-- 转存表中的数据 `group_relationship`
+--
+
 
 -- --------------------------------------------------------
 
@@ -125,6 +136,11 @@ CREATE TABLE `inner_share` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内部分享 ';
 
 
+
+-- --------------------------------------------------------
+
+
+
 -- --------------------------------------------------------
 
 --
@@ -141,8 +157,11 @@ CREATE TABLE `receiving_record` (
                                     `commit_file_name` varchar(1024) NOT NULL COMMENT '提交原文件名',
                                     `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                                     `deleted` varchar(1) NOT NULL DEFAULT '0' COMMENT '删除标记',
-                                    `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
+                                    `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+                                    `user_id` bigint(20) DEFAULT '-1' COMMENT '用户id'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收件记录 ';
+
+
 
 -- --------------------------------------------------------
 
@@ -191,6 +210,8 @@ CREATE TABLE `tags` (
                         `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签 ';
 
+
+
 -- --------------------------------------------------------
 
 --
@@ -205,6 +226,7 @@ CREATE TABLE `tag_relationship` (
                                     `deleted` varchar(1) NOT NULL DEFAULT '0' COMMENT '删除标记',
                                     `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='标签关系 ';
+
 
 -- --------------------------------------------------------
 
@@ -230,6 +252,8 @@ CREATE TABLE `user` (
                         `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表 ';
 
+
+
 -- --------------------------------------------------------
 
 --
@@ -244,13 +268,14 @@ CREATE TABLE `user_files` (
                               `file_parent_path` varchar(1024) NOT NULL COMMENT '父目录的全路径 存id譬如1/2/3/4',
                               `file_type` varchar(32) NOT NULL COMMENT '文件类型',
                               `recycle_id` bigint(20) NOT NULL DEFAULT '0' COMMENT '回收站批次',
-                              `share_count` int(11) NOT NULL COMMENT '共享次数',
+                              `share_count` int(11) NOT NULL DEFAULT '0' COMMENT '共享次数',
                               `created_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
                               `deleted` varchar(1) NOT NULL DEFAULT '0' COMMENT '删除标记',
-                              `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间'
+                              `updated_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '更新时间',
+                              `user_id` bigint(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户文件 ';
 
--- --------------------------------------------------------
+
 
 --
 -- 表的结构 `user_share`
