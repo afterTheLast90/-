@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 public class TagVO {
     /** 标签id */
     private Long tagId;
+    /** 标签关系id */
+    private Long tagRelationshipId;
     /** 标签名 */
     private String tagName;
     /** 文件数量 */

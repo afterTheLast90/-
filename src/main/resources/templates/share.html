@@ -98,6 +98,7 @@
       fill: currentColor;
       overflow: hidden;
     }
+
     .icon_table {
       width: 1.5em;
       height: 1.5em;
@@ -189,7 +190,6 @@
 		                      field: 'expireTime',
 						              title: '失效时间',
 						              align: 'center',
-						              sortable: true,
                           formatter: function (value, row, index) {
 		                          value = value.replace("T", " ")
 		                          if(value == "1970-01-01 07:59:59")
@@ -202,7 +202,6 @@
 		                      field: 'status',
 				                  title: '状态',
 													align: 'center',
-						              // sortable: true,
 						              formatter: function(value, row, index) {
                               if(value)
 			                          return '<input type="checkbox" name="sStatus" id="switch" shareId="' +
@@ -466,7 +465,7 @@
 				<hr>
 				<li class="row">
 					<span class="col-5 text-right">分享方式:</span>
-					<span class="sInfo col-6 p-0 pr-2" id="sType">内部分享</span>
+					<span class="sInfo col-6 p-0 pr-2" id="sType"></span>
 				</li>
 				<!--	分享人应该可以 加/删	-->
 				<li class="row" id="shareMumbers">
