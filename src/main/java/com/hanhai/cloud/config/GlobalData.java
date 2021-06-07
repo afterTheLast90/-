@@ -21,6 +21,7 @@ public class GlobalData {
 
     @ModelAttribute
     public void addUserInfoVO(Model model) {
+        model.addAttribute("isLogin",StpUtil.isLogin());
 
         if (StpUtil.isLogin())
             model.addAttribute("userInfo",
