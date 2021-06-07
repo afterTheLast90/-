@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <!-- 引入 popper.js(bootstrap-table需要)	-->
     <script src="/static/popper/popper.min.js"></script>
@@ -8,7 +8,7 @@
     </th:block>
 
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-<!--    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">-->
+    <!--    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">-->
     <script src="/static/datetime/moment-with-locales.min.js"></script>
 
     <!-- 引入bootstrap-table.css	-->
@@ -22,261 +22,21 @@
     <script src="/static/datetime/tempusdominus-bootstrap-4.min.js"></script>
 
     <style>
-        body {
-            background-color: #efefef;
-            min-width: 1400px;
-            margin: 0px auto;
-            padding: 0px 0px;
-            overflow: hidden;
-        }
-
-        .rMain {
-            width: 84%;
-            margin-left: 2%;
-            padding-top: 10px;
-            padding-left: 15px;
-            padding-right: 15px;
-            background-color: #fff;
+        #datetimeText {
+            width: 100%;
+            max-width: 100%;
+            size: 100px;
         }
     </style>
-
-    <script>
-        $(function () {
-            initTable();
-            // addTable();
-        });
-        //收件箱表格初始化
-        function initTable() {
-            $("#s_table").bootstrapTable('destroy');
-            $('#s_table').bootstrapTable({
-                onPostBody:function(data) {
-                    //点击截止提交按钮
-                    $(".end_commit").click(function(e){
-                        var inboxId1=e.target.getAttribute("inboxId");
-                        console.log(inboxId1);
-                        $("#inbox_endCommitModal").modal();
-                        $("#endCommitInboxId").val(inboxId1);
-                    })
-                    //点击修改按钮
-                    $(".update_data").click(function(e){
-                        var inboxId2=e.target.getAttribute("inboxId");
-                        var form=new FormData();
-                        form.append("inboxId",inboxId2);
-                        console.log(inboxId2);
-
-                        httpUtil.post("/updateInboxInit",JSON.stringify({
-                            "inboxId":inboxId2,
-                        })).then(res=>{
-
-                        }).catch(err=>{
-
-                        })
-
-                        $.ajax({
-                            url: "/updateInboxInit",
-                            type: "POST",
-                            data: form,
-                            async: true,
-                            processData: false,//很重要，告诉jquery不要对form进行处理
-                            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
-                            success: function (data) {
-                                $("#up_inboxId").val(data[0].inboxId);
-                                $("#up_textTitle").val(data[0].title);
-                                $("#up_textInput").val(data[0].inputTips);
-                                $("#up_selectType").get(0).selectedIndex=data[0].commitType;
-                                $("#up_datetimeText").val(data[0].endTime.replace("T"," "));
-                                $("#up_textContext").val(data[0].content);
-                            },
-                            error: function() {
-                                alert("服务器出错!@@@/updateInboxInit");
-                            }
-                        })
-                        $("#inbox_updateModal").modal();
-
-                    })
-                    //点击提交详情按钮
-                    $(".commit_detail").click(function(e){
-                        var inboxId3=e.target.getAttribute("inboxId");
-                        console.log(inboxId3);
-                        // $("#detail_table").bootstrapTable('refresh',data);
-                        $("#inbox_detailModal").modal();
-                        initDetailTable(inboxId3);
-                    })
-                },
-                url: "/inboxList",
-                dataType: "json",//数据类型
-                sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
-                pagination: true,//是否显示分页（*）
-                idField: 'inbox_id',//主键
-                dataField: 'list',
-                totalField:"total",
-                responseHandler: function (res){
-                    console.log(res);
-                    return res.data;
-                },
-                columns: [
-                    {
-                        field: 'inboxId',
-                        align: 'center',
-                        title: 'id',
-                        visible: false
-                    },
-                    {
-                        field: 'title',
-                        align: 'center',
-                        title: '标题',
-                    }, {
-                        field: 'commitCount',
-                        align: 'center',
-                        title: '提交人数',
-                    }, {
-                        field: 'createdTime',
-                        align: 'center',
-                        title: '创建时间',
-                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
-                            // console.log(value)
-                            // console.log(row)
-                            // console.log(index)
-                            return value.replace("T"," ");
-                        }
-                    }, {
-                        field: 'endTime',
-                        align: 'center',
-                        title: '截止时间',
-                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
-                            return value.replace("T"," ");
-                            // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
-                        }
-                    }, {
-                        // field: 'endTime',
-                        align: 'center',
-                        title: '操作',
-                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
-                            var isEnd=row.isEnd; //判断是否过了截止时间
-                            if(!isEnd){
-                                return '<button type="button" inboxId="'+row.inboxId+'"  class="btn btn-primary end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
-                                    '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary commit_detail">提交详情</button>';
-                            }else{
-                                return '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="'+row.inboxId+'" class="btn btn-primary commit_detail">提交详情</button>';
-                            }
-
-                            // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
-                        }
-                    }
-                    // , {
-                    //     field: 'newRechargeCount',
-                    //     align: 'center',
-                    //     title: '新增充值用户数',
-                    //     formatter: function indexFormatter(value, row, index) {
-                    //         if (row.date != '总计') {
-                    //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount + '</span>' : row.newRechargeCount;
-                    //         } else {
-                    //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount1 + '</span>' : row.newRechargeCount1;
-                    //         }
-                    //     }
-
-                ],
-                pageSize: 5,//首页显示多少行数据
-                pageList: [10,15,20],
-                queryParams: function (params) {//发送请求的参数
-                    //layer.load();//layui前端框架里的，当数据没有加载完，会出现等待图标，加载完消失
-                    return {
-                        //key: $('#templateKey').val(),
-                        pageNum: params.offset / params.limit + 1,//页码
-                        pageSize: params.limit, //页面大小
-                        // startDate: start_time,
-                        // endDate: end_time,
-                        // agents: agent,
-                        // qbsources: qbsource
-                    };
-                },
-                // responseHandler: $util.fn.table.response,
-                // onLoadSuccess: $util.fn.table.onLoadSuccess,
-                // onLoadError: $util.fn.table.onLoadError,
-                onClickRow: function (row, $element) {//给表格添加斑马效果
-                    $element.siblings().css('background-color', 'white');
-                    $element.css("background-color", "rgb(243, 247, 249)");
-                }
-            })
-        }
-
-        //收件详情表格初始化
-        function initDetailTable(recordId){
-            $("#detail_table").bootstrapTable('destroy');
-            $('#detail_table').bootstrapTable({
-                url: "/receiveRecordList?recordId="+recordId,
-                dataType: "json",//数据类型
-                sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
-                pagination: true,//是否显示分页（*）
-                idField: 'receiving_id',//主键
-                dataField: 'list',
-                totalField:"total",
-                responseHandler: function (res){
-                    console.log(res);
-                    return res.data;
-                },
-                columns: [
-                    {
-                        field: 'receivingId',
-                        align: 'center',
-                        title: '收件ID',
-                        visible: false
-                    },
-                    {
-                        field: 'inputName',
-                        align: 'center',
-                        title: '文件名(输入名)',
-                    }, {
-                        field: 'userFileId',
-                        align: 'center',
-                        title: '提交人',
-                    },{
-                        field: 'commitFileName',
-                        align: 'center',
-                        title: '原文件名',
-                    }, {
-                        field: 'createdTime',
-                        align: 'center',
-                        title: '提交时间',
-                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
-                            // console.log(value)
-                            // console.log(row)
-                            // console.log(index)
-                            return value.replace("T"," ");
-                        }
-                    },
-                ],
-                pageSize: 5,//首页显示多少行数据
-                pageList: [10,15,20],
-                queryParams: function (params) {//发送请求的参数
-                    return {
-                        //key: $('#templateKey').val(),
-                        pageNum: params.offset / params.limit + 1,//页码
-                        pageSize: params.limit, //页面大小
-                        // startDate: start_time,
-                        // endDate: end_time,
-                        // agents: agent,
-                        // qbsources: qbsource
-                    };
-                },
-                onClickRow: function (row, $element) {//给表格添加斑马效果
-                    $element.siblings().css('background-color', 'white');
-                    $element.css("background-color", "rgb(243, 247, 249)");
-                }
-            })
-        }
-
-    </script>
-
 </head>
+
 <body>
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;">
+<th:block th:include="common/selectDir::selectDir"></th:block>
+<div class="main">
     <div th:replace="common/nav-left :: nav-left"></div>
-    <div class="rMain">
-        <button type="button" id="btn_new" name="btn_new" class="btn btn-primary">发起收件申请</button>
+    <div class="content" style="overflow: hidden;margin-right: 1%;overflow-y: scroll;">
+        <button type="button" id="btn_new" name="btn_new" class="btn btn-primary" style="margin-top: 5px;margin-bottom: 10px">发起收件申请</button>
         <table id="s_table" data-pagination="true" data-align="center">
             <thead>
             <tr>
@@ -288,8 +48,6 @@
             </tr>
             </thead>
         </table>
-
-        <!--	rMain:end	-->
     </div>
 </div>
 
@@ -316,38 +74,47 @@
                 </div>
                 <div class="form-group">
                     <label for="selectType">提交权限：</label>
-                        <select class="form-control" id="selectType">
+                    <select class="form-control" id="selectType">
                         <option>全部用户</option>
                         <option>登陆用户</option>
                     </select>
                 </div>
-                保存路径：<br/>
-                截止时间：<br/>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <div class="input-group date" id="datetimepicker" data-target-input="nearest">
-                                    <input type="text" id="datetimeText" class="form-control datetimepicker-input" data-target="#datetimepicker"/>
-                                    <div class="input-group-append" data-target="#datetimepicker" data-toggle="datetimepicker">
-                                        <div class="input-group-text">
-                                            <i class="fa fa-calendar"></i>
+
+                <div class="form-group">
+                    <label for="savePath">保存路径：</label>
+                    <input type="email" class="form-control" id="savePath">
+                </div>
+
+                <div class="form-group">
+                    <label for="datetimepicker">截止时间：</label>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <div class="input-group date" id="datetimepicker" data-target-input="nearest">
+                                        <input type="text" id="datetimeText" style="width:100px"
+                                               class="form-control datetimepicker-input" data-target="#datetimepicker"/>
+                                        <div class="input-group-append" data-target="#datetimepicker"
+                                             data-toggle="datetimepicker">
+                                            <div class="input-group-text">
+                                                <i class="fa fa-calendar"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <script type="text/javascript">
-                            $(function () {
-                                $('#datetimepicker').datetimepicker({
-                                    locale: 'zh-cn',
-                                    dayViewHeaderFormat: 'MMMM YYYY',
-                                    format: 'YYYY-MM-DD HH:mm:ss',
-                                    useCurrent: true,
-                                    defaultDate: new Date(),
+                            <script type="text/javascript">
+                                $(function () {
+                                    $('#datetimepicker').datetimepicker({
+                                        locale: 'zh-cn',
+                                        dayViewHeaderFormat: 'MMMM YYYY',
+                                        format: 'YYYY-MM-DD HH:mm:ss',
+                                        useCurrent: true,
+                                        defaultDate: new Date(),
+                                    });
                                 });
-                            });
-                        </script>
+                            </script>
+                        </div>
                     </div>
                 </div>
 
@@ -415,34 +182,40 @@
                         <option>登陆用户</option>
                     </select>
                 </div>
-                截止时间：<br/>
-                <div class="container">
-                    <div class="row">
-                        <div class="col-sm-6">
-                            <div class="form-group">
-                                <div class="input-group date" id="up_datetimepicker" data-target-input="nearest">
-                                    <input type="text" id="up_datetimeText" class="form-control datetimepicker-input" data-target="#up_datetimepicker"/>
-                                    <div class="input-group-append" data-target="#up_datetimepicker" data-toggle="datetimepicker">
-                                        <div class="input-group-text">
-                                            <i class="fa fa-calendar"></i>
+
+                <div class="form-group">
+                    <label for="datetimepicker">截止时间：</label>
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <div class="input-group date" id="up_datetimepicker" data-target-input="nearest">
+                                        <input type="text" id="up_datetimeText" class="form-control datetimepicker-input"
+                                               data-target="#up_datetimepicker"/>
+                                        <div class="input-group-append" data-target="#up_datetimepicker"
+                                             data-toggle="datetimepicker">
+                                            <div class="input-group-text">
+                                                <i class="fa fa-calendar"></i>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <script type="text/javascript">
-                            $(function () {
-                                $('#up_datetimepicker').datetimepicker({
-                                    locale: 'zh-cn',
-                                    dayViewHeaderFormat: 'MMMM YYYY',
-                                    format: 'YYYY-MM-DD HH:mm:ss',
-                                    useCurrent: true,
-                                    defaultDate: new Date(),
+                            <script type="text/javascript">
+                                $(function () {
+                                    $('#up_datetimepicker').datetimepicker({
+                                        locale: 'zh-cn',
+                                        dayViewHeaderFormat: 'MMMM YYYY',
+                                        format: 'YYYY-MM-DD HH:mm:ss',
+                                        useCurrent: true,
+                                        defaultDate: new Date(),
+                                    });
                                 });
-                            });
-                        </script>
+                            </script>
+                        </div>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <label for="textContext">收集内容：</label>
                     <textarea class="form-control" id="up_textContext" rows="3"></textarea>
@@ -493,102 +266,337 @@
 
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
-    //点击新建按钮弹出新建收件模态框
-    $("#btn_new").click(function () {
-        $("#inbox_newModal").modal();
+
+    $(function () {
+        initTable();
+
+        //收件箱表格初始化
+        function initTable() {
+            $("#s_table").bootstrapTable('destroy');
+            $('#s_table').bootstrapTable({
+                onPostBody: function (data) {
+                    //点击截止提交按钮
+                    $(".end_commit").click(function (e) {
+                        var inboxId1 = e.target.getAttribute("inboxId");
+                        console.log(inboxId1);
+                        $("#inbox_endCommitModal").modal();
+                        $("#endCommitInboxId").val(inboxId1);
+                    })
+                    //点击修改按钮
+                    $(".update_data").click(function (e) {
+                        var inboxId2 = e.target.getAttribute("inboxId");
+                        var form = new FormData();
+                        form.append("inboxId", inboxId2);
+                        console.log(inboxId2);
+                        httpUtil.post("/updateInboxInit", JSON.stringify({
+                            "inboxId": inboxId2
+                        })).then(res => {
+                            $("#up_inboxId").val(res.data[0].inboxId);
+                            $("#up_textTitle").val(res.data[0].title);
+                            $("#up_textInput").val(res.data[0].inputTips);
+                            $("#up_selectType").get(0).selectedIndex = res.data[0].commitType;
+                            $("#up_datetimeText").val(res.data[0].endTime.replace("T", " "));
+                            $("#up_textContext").val(res.data[0].content);
+                        }).catch(err => {
+
+                        })
+                        $("#inbox_updateModal").modal();
+
+                    })
+                    //点击提交详情按钮
+                    $(".commit_detail").click(function (e) {
+                        var inboxId3 = e.target.getAttribute("inboxId");
+                        console.log(inboxId3);
+                        $("#inbox_detailModal").modal();
+                        initDetailTable(inboxId3);
+                    })
+                },
+                url: "/inboxList",
+                dataType: "json",//数据类型
+                sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
+                pagination: true,//是否显示分页（*）
+                idField: 'inbox_id',//主键
+                dataField: 'list',
+                totalField: "total",
+                responseHandler: function (res) {
+                    console.log(res);
+                    return res.data;
+                },
+                columns: [
+                    {
+                        field: 'inboxId',
+                        align: 'center',
+                        title: 'id',
+                        visible: false
+                    },
+                    {
+                        field: 'title',
+                        align: 'center',
+                        title: '标题',
+                    }, {
+                        field: 'commitCount',
+                        align: 'center',
+                        title: '提交人数',
+                    }, {
+                        field: 'createdTime',
+                        align: 'center',
+                        title: '创建时间',
+                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                            return value.replace("T", " ");
+                        }
+                    }, {
+                        field: 'endTime',
+                        align: 'center',
+                        title: '截止时间',
+                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                            return value.replace("T", " ");
+                            // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                        }
+                    }, {
+                        // field: 'endTime',
+                        align: 'center',
+                        title: '操作',
+                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                            var isEnd = row.isEnd; //判断是否过了截止时间
+                            if (!isEnd) {
+                                return '<button type="button" inboxId="' + row.inboxId + '"  class="btn btn-primary end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>';
+                            } else {
+                                return '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>';
+                            }
+
+                            // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                        }
+                    }
+                    // , {
+                    //     field: 'newRechargeCount',
+                    //     align: 'center',
+                    //     title: '新增充值用户数',
+                    //     formatter: function indexFormatter(value, row, index) {
+                    //         if (row.date != '总计') {
+                    //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount + '</span>' : row.newRechargeCount;
+                    //         } else {
+                    //             return row.date == '总计' ? '<span style="color: red;">' + row.newRechargeCount1 + '</span>' : row.newRechargeCount1;
+                    //         }
+                    //     }
+
+                ],
+                pageSize: 10,//首页显示多少行数据
+                pageList: [10, 15, 20],
+                queryParams: function (params) {//发送请求的参数
+                    //layer.load();//layui前端框架里的，当数据没有加载完，会出现等待图标，加载完消失
+                    return {
+                        //key: $('#templateKey').val(),
+                        pageNum: params.offset / params.limit + 1,//页码
+                        pageSize: params.limit, //页面大小
+                        // startDate: start_time,
+                        // endDate: end_time,
+                        // agents: agent,
+                        // qbsources: qbsource
+                    };
+                },
+                // responseHandler: $util.fn.table.response,
+                // onLoadSuccess: $util.fn.table.onLoadSuccess,
+                // onLoadError: $util.fn.table.onLoadError,
+                onClickRow: function (row, $element) {//给表格添加斑马效果
+                    $element.siblings().css('background-color', 'white');
+                    $element.css("background-color", "rgb(243, 247, 249)");
+                }
+            })
+        }
+
+        //收件详情表格初始化
+        function initDetailTable(recordId) {
+            $("#detail_table").bootstrapTable('destroy');
+            $('#detail_table').bootstrapTable({
+                url: "/receiveRecordList?recordId=" + recordId,
+                dataType: "json",//数据类型
+                sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
+                pagination: true,//是否显示分页（*）
+                idField: 'receiving_id',//主键
+                dataField: 'list',
+                totalField: "total",
+                responseHandler: function (res) {
+                    console.log(res);
+                    return res.data;
+                },
+                columns: [
+                    {
+                        field: 'receivingId',
+                        align: 'center',
+                        title: '收件ID',
+                        visible: false
+                    },
+                    {
+                        field: 'inputName',
+                        align: 'center',
+                        title: '文件名(输入名)',
+                    }, {
+                        field: 'userName',
+                        align: 'center',
+                        title: '提交人',
+                    }, {
+                        field: 'commitFileName',
+                        align: 'center',
+                        title: '原文件名',
+                    }, {
+                        field: 'createdTime',
+                        align: 'center',
+                        title: '提交时间',
+                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                            // console.log(value)
+                            // console.log(row)
+                            // console.log(index)
+                            return value.replace("T", " ");
+                        }
+                    },
+                ],
+                pageSize: 5,//首页显示多少行数据
+                pageList: [10, 15, 20],
+                queryParams: function (params) {//发送请求的参数
+                    return {
+                        //key: $('#templateKey').val(),
+                        pageNum: params.offset / params.limit + 1,//页码
+                        pageSize: params.limit, //页面大小
+                        // startDate: start_time,
+                        // endDate: end_time,
+                        // agents: agent,
+                        // qbsources: qbsource
+                    };
+                },
+                onClickRow: function (row, $element) {//给表格添加斑马效果
+                    $element.siblings().css('background-color', 'white');
+                    $element.css("background-color", "rgb(243, 247, 249)");
+                }
+            })
+        }
+
+        //保存路径选择
+        $("#savePath").click(function () {
+            $("#inbox_newModal").modal('hide');
+            $.fn.selectDirForUser.show();
+        })
+        //路径选择模态框确认按钮
+        $.fn.selectDirForUser.ok(function(a,b){
+            console.log("ok.function()");
+            console.log(a);
+            console.log(b);
+            $("#savePath").val(b);
+            $("#inbox_newModal").modal();
+        })
+        //路径选择模态框取消按钮
+        $.fn.selectDirForUser.close(function(){
+            $("#inbox_newModal").modal();
+        })
+
+        //点击新建按钮弹出新建收件模态框
+        $("#btn_new").click(function () {
+            $("#inbox_newModal").modal();
+        });
+
+        //点击新建收件箱模态框“提交”按钮
+        $("#btn_comm").click(function () {
+            var title = $("#textTitle").val().trim(); //标题
+            var inputTips = $("#textInput").val().trim(); //输入提示
+            var commitType = $("#selectType").get(0).selectedIndex; //提交权限：0 全部用户；1 登陆用户
+            var savePath=$("#savePath").val().trim(); //保存路径
+            var endTime = $("#datetimeText").val().trim(); //截止时间
+            var content = $("#textContext").val().trim(); //收集内容
+
+            if (title == "") {
+                layer.msg("收件主题不能为空！");
+                return;
+            }
+            if (inputTips == "") {
+                layer.msg("输入提示不能为空！");
+                return;
+            }
+            if (savePath == "") {
+                layer.msg("保存路径不能为空！");
+                return;
+            }
+            if (endTime == "") {
+                layer.msg("截止时间不能为空！");
+                return;
+            }
+            if (content == "") {
+                layer.msg("收件内容不能为空！");
+                return;
+            }
+            httpUtil.post("/newInboxTask", JSON.stringify({
+                "title": title,
+                "inputTips": inputTips,
+                "commitType": commitType,
+                "savePath": savePath,
+                "endTime": endTime,
+                "content": content,
+            })).then(res => {
+                initTable();
+            }).catch(err => {
+
+            })
+            $("#inbox_newModal").modal('hide');
+            $("#textTitle").val("");
+            $("#textInput").val("");
+            $("#textContext").val("");
+        })
+
+        //点击截止提交按钮的“是”按钮
+        $("#btn_endCommitConfirm").click(function () {
+            var inboxId = $("#endCommitInboxId").val();
+            httpUtil.post("/endCommit", JSON.stringify({
+                "inboxId": inboxId,
+            })).then(res => {
+                initTable();
+            }).catch(err => {
+
+            })
+            $("#inbox_endCommitModal").modal('hide');
+        })
+
+        //点击修改模态框的“提交”按钮
+        $("#up_btn_comm").click(function () {
+            var inboxId = $("#up_inboxId").val().trim(); //inboxId
+            var title = $("#up_textTitle").val().trim(); //标题
+            var inputTips = $("#up_textInput").val().trim(); //输入提示
+            var endTime = $("#up_datetimeText").val().trim(); //截止时间
+            var content = $("#up_textContext").val().trim(); //内容
+            var commitType = $("#up_selectType").get(0).selectedIndex; //用户类型：0 全部用户；1 登陆用户
+            if (title == "") {
+                layer.msg("收件主题不能为空！");
+                return;
+            }
+            if (inputTips == "") {
+                layer.msg("输入提示不能为空！");
+                return;
+            }
+            if (endTime == "") {
+                layer.msg("截止时间不能为空！");
+                return;
+            }
+            if (content == "") {
+                layer.msg("收件内容不能为空！");
+                return;
+            }
+            httpUtil.post("/updateInboxTask", JSON.stringify({
+                "inboxId": inboxId,
+                "title": title,
+                "inputTips": inputTips,
+                "endTime": endTime,
+                "content": content,
+                "commitType": commitType
+            })).then(res => {
+                initTable();
+            }).catch(err => {
+
+            })
+            $("#inbox_updateModal").modal('hide');
+        })
+
     });
 
-    //点击新建收件箱模态框“提交”按钮
-    $("#btn_comm").click(function(){
-        var title=$("#textTitle").val().trim(); //标题
-        var inputTips=$("#textInput").val().trim(); //输入提示
-        var endTime=$("#datetimeText").val().trim(); //截止时间
-        var content=$("#textContext").val().trim(); //内容
-        var commitType=$("#selectType").get(0).selectedIndex; //用户类型：0 全部用户；1 登陆用户
-        if(title==""){
-            layer.msg("收件主题不能为空！");
-            return;
-        }
-        if(inputTips==""){
-            layer.msg("输入提示不能为空！");
-            return;
-        }
-        if(endTime==""){
-            layer.msg("截止时间不能为空！");
-            return;
-        }
-        if(content==""){
-            layer.msg("收件内容不能为空！");
-            return;
-        }
-        httpUtil.post("/newInboxTask",JSON.stringify({
-            "title":title,
-            "inputTips":inputTips,
-            "endTime":endTime,
-            "content":content,
-            "commitType":commitType,
-        })).then(res=>{
-            layer.msg("新建完成！");
-        }).catch(err=>{
-            layer.msg("修改失败！");
-        })
-        $("#inbox_newModal").modal('hide');
-        $("#textTitle").val("");
-        $("#textInput").val("");
-        $("#textContext").val("");
-    })
-
-    //点击截止提交按钮的“是”按钮
-    $("#btn_endCommitConfirm").click(function (){
-        var inboxId=$("#endCommitInboxId").val();
-        httpUtil.post("/endCommit",JSON.stringify({
-            "inboxId":inboxId,
-        })).then(res=>{
-            layer.msg("已经截止提交！");
-        }).catch(err=>{
-            layer.msg("修改截止提交失败！");
-        })
-        $("#inbox_endCommitModal").modal('hide');
-    })
-
-    //点击修改模态框的“提交”按钮
-    $("#up_btn_comm").click(function (){
-        var inboxId=$("#up_inboxId").val().trim(); //inboxId
-        var title=$("#up_textTitle").val().trim(); //标题
-        var inputTips=$("#up_textInput").val().trim(); //输入提示
-        var endTime=$("#up_datetimeText").val().trim(); //截止时间
-        var content=$("#up_textContext").val().trim(); //内容
-        var commitType=$("#up_selectType").get(0).selectedIndex; //用户类型：0 全部用户；1 登陆用户
-        if(title==""){
-            layer.msg("收件主题不能为空！");
-            return;
-        }
-        if(inputTips==""){
-            layer.msg("输入提示不能为空！");
-            return;
-        }
-        if(endTime==""){
-            layer.msg("截止时间不能为空！");
-            return;
-        }
-        if(content==""){
-            layer.msg("收件内容不能为空！");
-            return;
-        }
-        httpUtil.post("/updateInboxTask",JSON.stringify({
-            "inboxId":inboxId,
-            "title":title,
-            "inputTips":inputTips,
-            "endTime":endTime,
-            "content":content,
-            "commitType":commitType
-        })).then(res=>{
-            layer.msg("修改收件任务成功！");
-        }).catch(err=>{
-            layer.msg("修改收件任务失败！");
-        })
-        $("#inbox_updateModal").modal('hide');
-    })
 </script>
 </body>
 </html>

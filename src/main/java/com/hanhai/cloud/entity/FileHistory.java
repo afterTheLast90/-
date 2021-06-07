@@ -19,8 +19,10 @@ public class FileHistory extends BaseEntity implements Serializable,Cloneable {
     @TableId
     /** 历史id */
     private Long historyId ;
-    /** 用户文件id */
+    /** 文件id */
     private String fileId ;
+    /** 用户文件id */
+    private String userFileId ;
     /** 历史文件名 */
     private String fileName ;
     /** 历史文件大小 */
