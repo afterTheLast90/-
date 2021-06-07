@@ -9,14 +9,15 @@
                  alt="此处是瀚海云盘的LOGO">
             <span style="font-size: 25px">瀚海云盘</span>
         </a>
-
+        <th:block th:if="${isLogin}">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <ul class="navbar-nav mr-auto"></ul>
             <div class="form-inline">
                 <div class="dropdown">
                     <button type="button" class="btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown">
                         <img class="rounded-circle" width="40px" title="这是用户头像"
-                             alt="此处是用户头像"  th:src="${'/avatar?avatar='+userInfo.userAvatar}" id="headerUserAvatar"><br>
+                             alt="此处是用户头像"  th:src="${'/avatar/'+userInfo.userId}"
+                             id="headerUserAvatar"><br>
                     </button>
                     <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                         <li role="presentation" data-toggle="modal" data-target="#personalModal">
@@ -39,9 +40,12 @@
                 <label style="margin-top: 10px;margin-left: 8px" th:text="${userInfo.userName}">用户名</label>
             </div>
         </div>
+        </th:block>
     </nav>
+    <th:block th:if="${isLogin}">
     <!--个人信息模态框-->
     <div th:replace="common/PersonalModal :: PersonalModal"></div>
+    </th:block>
 </div>
 
 </html>

@@ -5,7 +5,10 @@ import com.github.pagehelper.PageHelper;
 import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.base.PageParam;
 import com.hanhai.cloud.entity.FileInbox;
-import com.hanhai.cloud.params.FileInboxParams;
+import com.hanhai.cloud.params.FileInboxEndCommitParams;
+import com.hanhai.cloud.params.FileInboxNewParams;
+import com.hanhai.cloud.params.FileInboxUpdateInitParams;
+import com.hanhai.cloud.params.FileInboxUpdateParams;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,18 +24,12 @@ public class InboxService extends BaseService {
     }
 
     //新建收件任务，插入收件数据
-    public void newInboxTask(FileInboxParams params){
-        System.out.println("当前用户ID"+StpUtil.getLoginIdAsLong());
-        System.out.println("title="+params.getTitle());
-        System.out.println("inputTips="+params.getInputTips());
-        System.out.println("commitType="+params.getCommitType());
-        System.out.println("endTime="+params.getEndTime());
-        System.out.println("content="+params.getContent());
+    public void newInboxTask(FileInboxNewParams params){
         FileInbox fileInbox=new FileInbox();
         fileInbox.setTitle(params.getTitle());
         fileInbox.setInputTips(params.getInputTips());
         fileInbox.setCommitType(params.getCommitType());
-        fileInbox.setSavePath("/file"); //之后需要修改，目前这么用
+        fileInbox.setSavePath(params.getSavePath());
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         fileInbox.setEndTime(LocalDateTime.parse(params.getEndTime(),df));
         fileInbox.setContent(params.getContent());
@@ -50,7 +47,7 @@ public class InboxService extends BaseService {
     }
 
     //截止提交
-    public void endCommit(FileInboxParams params){
+    public void endCommit(FileInboxEndCommitParams params){
         FileInbox fileInbox=new FileInbox();
         fileInbox.setInboxId(params.getInboxId());
         fileInbox.setEndTime(LocalDateTime.now());
@@ -58,7 +55,7 @@ public class InboxService extends BaseService {
     }
 
     //修改收件箱任务
-    public void updateInboxTask(FileInboxParams params){
+    public void updateInboxTask(FileInboxUpdateParams params){
         FileInbox fileInbox =new FileInbox();
         fileInbox.setInboxId(params.getInboxId());
         fileInbox.setTitle(params.getTitle());
@@ -78,7 +75,7 @@ public class InboxService extends BaseService {
     }
 
     //修改任务初始化,通过inboxId获取其他信息
-    public List<FileInbox> updateInboxInit(FileInboxParams params){
+    public List<FileInbox> updateInboxInit(FileInboxUpdateInitParams params){
         return fileInboxMapper.findByInboxId(params.getInboxId());
     }
 }

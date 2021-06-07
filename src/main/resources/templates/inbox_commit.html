@@ -1,45 +1,443 @@
 <!DOCTYPE html>
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
+
     <th:block th:include="common/header :: header(~{::title})">
-        <title>inbox_commit(收件提交)</title>
+        <title>提交任务-[[${fileInbox.title}]]</title>
     </th:block>
 
+    <script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="/static/spark-md5.js"></script>
+
     <style>
-        body {
+        /*body {
             background-color: #efefef;
             min-width: 1400px;
             margin: 0px auto;
             padding: 0px 0px;
             overflow: hidden;
-        }
-        .rMain {
-            width: 84%;
-            margin-left: 2%;
-            padding-top: 10px;
-            padding-left: 15px;
-            padding-right: 15px;
-            background-color: #fff;
-        }
+        }*/
     </style>
-
-
 </head>
-<body>
 
+<body>
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row" style="margin-top:8px;">
-    <div th:replace="common/nav-left :: nav-left"></div>
-    <div class="rMain">
-        <h2 align="center">收件标题：</h2><br/><br/>
-        输入提示：
-        <input type="text" id="input_name" value="输入名"/><br/><br/><br/>
-        <input type="file"/>
-        <input type="button" id="commit" value="提交"/><br/><br/><br/>
+<div class="main">
+    <div class="content"  style="overflow: hidden;margin-right: 1%">
+        <h2 align="center">收件任务：[[${fileInbox.title}]]</h2><br>
+        收集者：[[${publisherName}]]<br><br>
+        <div class="form-group" width="20px">
+            <label for="input_name">文件命名：[[${fileInbox.inputTips}]]</label>
+            <input type="text" class="form-control" id="input_name" aria-describedby="input_name" style="width: 20%">
+        </div><br/>
         截止时间：
+        <span th:text="${#temporals.format(fileInbox.endTime, 'yyyy-MM-dd HH:mm:ss')}">123</span><br><br>
+        收集详情：[[${fileInbox.content}]]<br><br>
+        <input type="file" id="commitFile"/>
+        <input type="button" id="commit" value="提交"/><br>
     </div>
-        <!--	rMain:end	-->
 </div>
+
+<script type="module">
+    import httpUtil from "/static/httpUtil.js";
+    var recordFileId;  //文件ID
+    var recordUserFileId;  //用户文件ID
+    var inputName;  //输入名
+    var fileOriName;  //文件原名
+
+    var conIndex;
+    var selectedType=0;  //表示选择的类型  0：初始化(文件)  1：文件夹
+    var filesId=-1;  //上传序号
+    var filesNum=0;  //上传文件数
+    let map = new Map();  //上传队列
+    var state=0;  //上传状态 0：没有上传 1：正在上传
+    var index=0;  //分片成功数  chunk+1
+    var chunk=-1;  //分片数
+    var succeed=0;  //成功表示
+    var action=false;  //false检验分片是否上传(默认);true表示上传文件
+    const shardSize=1*1024*1024;   //以1M为一个分片
+
+    $(function (){
+
+    })
+
+    $("#commit").click(function (){
+        if(![[${isCommit}]]){ //判断能否提交
+            layer.msg("权限不够，请登陆后再提交！");
+            return;
+        }
+        var file=$("#commitFile")[0].files[0];
+        console.log(file);
+        if(file==undefined){
+            layer.msg("未选择文件！");
+            return;
+        }
+        inputName=$("#input_name").val().trim();  //文件输入名
+        fileOriName=file.name;  //文件原名
+        if(inputName=="") //如果没有输入文件名，则输入名就变更为 文件原始名字
+            inputName=file.name;
+
+        //文件上传
+        if(filesNum==0 && filesId==-1)
+            filesNum=$("#commitFile")[0].files.length;
+        filesCheck();
+    })
+
+    //收件记录表插入表
+    function recordCommit(){
+        console.log("============== recordCommit =================");
+        httpUtil.post("/receiveRecordCommit",JSON.stringify({
+            "fileId":recordFileId,
+            "userFileId":recordUserFileId,
+            "inboxId":[[${fileInbox.inboxId}]],
+            "inputName":inputName,
+            "commitFileName":fileOriName,
+        })).then(res=>{
+
+        }).catch(err=>{
+
+        })
+    }
+
+    //===========================================================================
+    //===========================================================================
+    /**
+     *  检查等待队列中的每个文件，判断是否存在同名文件
+     *      存在则询问是否覆盖 - 覆盖则加入上传队列 - 不覆盖则不加入上传队列
+     *      不存在则直接加入上传队列
+     */
+    function filesCheck(){
+        var file; //文件对象
+        filesId=filesId+1;
+        console.log("filesId="+filesId);
+        console.log("filesNum="+filesNum);
+        if(filesId>=filesNum){
+            console.log("=======开始上传=======");
+            selectedType=0;
+            filesId=-1;
+            filesNum=0;
+            $("#commitFile").val(null);
+            filesUpload();
+        }else{
+            if(selectedType==0)
+                file=$("#commitFile")[0].files[filesId];
+            else
+                file=$("#commitFile")[0].files[filesId];
+            CheckIsUpload(file);
+        }
+    }
+
+    /*
+     * 检查文件是否上传，是否存在同名文件，加入到上传队列
+     */
+    function CheckIsUpload(file) {
+        var r = new FileReader();
+        r.readAsArrayBuffer(file);
+        $(r).load(function (e) {
+            var blob = e.target.result;
+            var fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
+            console.log("fileMd5=" + fileMd5);
+            if(map.get(fileMd5)!=null){
+                layer.msg("上传队列中已经存在该文件！");
+                return;
+            }
+            var form = new FormData();
+            form.append("path","1/2/3/4");
+            form.append("name","lemon.txt");
+            form.append("userId",[[${fileInbox.publisher}]]);
+            $.ajax({
+                url: "/noCover",
+                type: "POST",
+                data: form,
+                async: true,
+                processData: false,//很重要，告诉jquery不要对form进行处理
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                success: function (userFileId) {
+                    console.log("================== isCover ===================");
+                    console.log("userFileId="+userFileId);
+                    if(userFileId!="")  //存在同名文件
+                        checkCover(userFileId,fileMd5,file);
+                    else  //不存在同名文件
+                        checkUnCover(userFileId,fileMd5,file);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert("服务器出错!@@@/isCover");
+                }
+            })
+        })
+    }
+
+    /**
+     *  询问同名文件是否覆盖
+     *  覆盖加入上传队列，不覆盖不加入上传队列；
+     *  全部覆盖则不需要询问，直接加入上传队列；全不覆盖则不再继续上传
+     */
+    function checkCover(userFileId,fileMd5,file){
+        var form = new FormData();
+        layer.open({
+            content: '存在与'+ inputName +'同名文件，是否覆盖？'
+            ,btn: ['是', '否']
+            ,yes: function(index, layero){
+                // 覆盖
+                form.append("file",file);
+                form.append("userFileId",userFileId);
+                map.set(fileMd5,form);  //加入上传队列中
+                layer.open({
+                    title: '上传进度'
+                    ,move:false
+                    ,content:file.name+
+                        '<div id="progress' + fileMd5 +'" class="progress">\n' +
+                        '    <div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
+                        '</div>'
+                    ,closeBtn: 0
+                    ,resize:false
+                    ,area:['500px','200px']
+                    ,btn: []
+                });
+                filesCheck();
+            }
+            ,btn2: function(index, layero){
+                // 不覆盖
+                filesCheck();
+            }
+            ,closeBtn:0
+        });
+    }
+
+    /**
+     *  不存在同名文件，不需要询问是否覆盖
+     *  加入上传队列中
+     */
+    function checkUnCover(userFileId,fileMd5,file){
+        var form = new FormData();
+        form.append("file",file);
+        form.append("userFileId",userFileId);
+        map.set(fileMd5,form);  //加入上传队列中
+        layer.open({
+            title: '上传进度'
+            ,move:false
+            ,content:file.name+
+                '<div id="progress' + fileMd5 +'" class="progress">\n' +
+                '    <div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
+                '</div>'
+            ,closeBtn: 0
+            ,resize:false
+            ,area:['500px','200px']
+            ,btn: []
+        });
+
+        filesCheck();
+    }
+
+    function filesUpload(){     //多文件上传
+        var len=map.size;
+        if(len>0 && state==0){
+            var fileMd5=map.keys().next().value;
+            var file=map.get(fileMd5).get("file");
+            var userFileId=map.get(fileMd5).get("userFileId");
+            console.log("================= filesUplaod() ================")
+            console.log("fileMd5="+fileMd5);
+            console.log("userFileId="+userFileId);
+            console.log(file);
+            checkUpload(file,fileMd5,userFileId);
+        }
+    }
+
+    function checkUpload(file,fileMd5,userFileId){
+        state=1; //开始上传
+        index=0;
+        chunk=-1;
+        succeed=0;
+        action=false;
+        var form = new FormData();
+        form.append("md5", fileMd5);
+        //Ajax提交
+        $.ajax({
+            url: "/isUpload",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function (data) {
+                console.log("data=");
+                console.log(data);
+                handleCheckIsUploadResult(file,fileMd5,data,userFileId);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isUpload");
+            }
+        })
+    }
+
+    /**
+     * 处理检查是否上传的结果
+     *  @param file 当前文件
+     *  @param flag 0未上传 1部分上传(断点续传) 2秒传
+     */
+    function handleCheckIsUploadResult(file,fileMd5,data,userFileId){
+        let id=data.fileId;
+        let flag=data.flag;
+        if(flag==="0") {
+            //没有上传该文件
+            upload(file,id,fileMd5,userFileId);
+        }else if(flag==="1" ){
+            //部分上传
+            chunk=data.chunk;
+            action=true; //不用检测，直接上传
+            console.log("断点续传");
+            console.log("chunk="+chunk);
+            console.log("index="+(chunk+1));
+            upload(file,id,fileMd5,userFileId);
+        }else if(flag==="2"){
+            //秒传逻辑
+            handleFastUpload(file,id,userFileId);
+            layer.msg("文件已秒传");
+            $("#progress"+ fileMd5 +" .progress-bar").css("width","100%");
+            $("#progress"+ fileMd5 +" .progress-bar").text("100%");
+            state=0; //等待上传
+            map.delete(fileMd5);
+            filesUpload();
+        }
+    }
+
+
+    function handleFastUpload(file,id,userFileId){
+        var form=new FormData();
+        form.append("fileId",id);
+        form.append("name",file.name);
+        form.append("size",file.size);
+        form.append("userFileId",userFileId);
+        form.append("userId",[[${fileInbox.publisher}]]);
+        $.ajax({
+            url: "/fastUpload",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function (data) {
+                //====================================
+                recordFileId=id;
+                recordUserFileId=data;
+                recordCommit();
+                //====================================
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isUpload");
+            }
+        })
+    }
+
+    /**
+     * @param file 当前文件
+     * @param id 文件id
+     * @param fileMd5 文件md5值
+     */
+    function upload(file,id,fileMd5,userFileId){
+        let name=file.name;
+        let size=file.size;
+        let shardCount=Math.ceil(size/shardSize);//总片数
+        $("#file_name").text(name) ;
+        //分片数>分片总数 结束本次方法调用
+        if (chunk> shardCount) return;
+        if(!action){
+            chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
+        }
+        //计算每一片的起始和结束位置
+        let start=chunk*shardSize;
+        let end=Math.min(size,start+shardSize); //如果是最后一片不足shardSize，则取size作为结束位置
+        //构造一个表单，FormData是HTML5新增的
+        var form = new FormData();
+        if(!action){
+            form.append("action", "check");  //检测分片是否上传
+        }else{
+            form.append("action", "upload");  //直接上传分片
+            form.append("data", file.slice(start,end));  //slice方法用于切出文件的一部分
+        }
+        form.append("id", id);
+        form.append("md5", fileMd5);
+        form.append("name", name);
+        form.append("size", size);
+        form.append("total", shardCount);  //总片数
+        form.append("index", chunk+1);     //当前是第几片(从1开始)
+        form.append("userFileId",userFileId);
+        form.append("userId",[[${fileInbox.publisher}]]);
+
+        var index = chunk+1;
+        //按大小切割文件段
+        var data = file.slice(start, end);
+        var r = new FileReader();
+        r.readAsArrayBuffer(data);  //文件分片
+        $(r).load(function (e) {
+            var bolb = e.target.result;
+            var partMd5=SparkMD5.ArrayBuffer.hash(bolb);
+            form.append("partMd5", partMd5);
+            //Ajax提交
+            $.ajax({
+                url: "/upload",
+                type: "POST",
+                data:form,
+                async: true,
+                processData: false,  //很重要，告诉jquery不要对form进行处理
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                success: function (data) {
+                    handleUploadResult(file,id,fileMd5,shardCount,data,userFileId);
+                },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert("服务器出错!@@@/upload");
+                }
+            })
+        })
+    }
+
+    /**
+     * 处理上传的结果
+     * @param file 当前文件
+     * @param id 文件id
+     * @param fileMd5 文件MD5值
+     * @param shardCount 分片总片数
+     * @param data 文件分片
+     */
+    function handleUploadResult(file,id,fileMd5,shardCount,data,userFileId) {
+        var id = data.fileId;
+        var flag = data.flag;
+        succeed=data.succeed;
+        // var success=data.success;
+        //服务器返回该分片是否上传过
+        if (flag==="2"){
+            $("#progress"+ fileMd5 +" .progress-bar").css("width","100%");
+            $("#progress"+ fileMd5 +" .progress-bar").text("100%");
+            //服务器返回分片是否上传成功
+            // if (succeed  >= shardCount) {
+            layer.msg("上传成功！");
+            // chunk=-1;
+            // succeed=0;
+            state=0;
+            map.delete(fileMd5);
+            //====================================
+            recordFileId=id;
+            recordUserFileId=userFileId;
+            recordCommit();
+            //====================================
+            filesUpload();
+            return;
+            // }
+        } else if (flag==="0"){
+            //未上传,继续上传
+            action = true;
+        } else if (flag==="1"){
+            //该分片已上传
+            action=false;
+            var num=succeed/shardCount*100;
+            num = Math.floor(num);
+            $("#progress"+ fileMd5 +" .progress-bar").css("width",succeed/shardCount*100+"%");
+            $("#progress"+ fileMd5 +" .progress-bar").text(num+"%");
+        }
+        console.log("fileId="+id);
+        upload(file, id, fileMd5,userFileId);
+    }
+
+</script>
 
 </body>
 </html>

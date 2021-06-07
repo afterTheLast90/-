@@ -5,8 +5,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
 public class FileUploadController {
-    @GetMapping("/stu")
-    public String stu(){
+    @GetMapping("/fileUpload")
+    public String fileUpload(){
         return "file_upload";
     }
 

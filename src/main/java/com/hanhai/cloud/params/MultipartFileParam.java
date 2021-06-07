@@ -23,4 +23,15 @@ public class MultipartFileParam {
     private String action;
     /** 分片md5值 */
     private String partMd5;
+
+    /** 获取用户文件表存储ID */
+    private String userFileId;
+    /** 获取用户文件表文件ID */
+    private String fileId;
+    /** 获取用户文件表名称 */
+    private String userFileName;
+    /** 获取用户文件表大小 */
+    private String userFileSize;
+    /** 获取用户文件表用户ID */
+    private String userId;
 }
