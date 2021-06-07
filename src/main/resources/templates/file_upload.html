@@ -7,274 +7,641 @@
     <style type="text/css">
         ul li{
             list-style: none;
+            display: block;
         }
+
+        .operate-pause{
+            display: inline-block;
+            background: url("static/img/operate-pause.png") no-repeat;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .operate-continue{
+            display: inline-block;
+            background: url("static/img/operate-continue.png");
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .operate-remove{
+            display: inline-block;
+            background: url("static/img/operate-del.png");
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+        .upload-finish{
+            display: inline-block;
+            background: url("static/img/upload-finish.png");
+            width: 16px;
+            height: 16px;
+            background-size: 16px 16px;
+        }
+        #progress-parent{
+            width:90%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .fileName{
+
+        }
+
     </style>
 </head>
+<!-- 页面右下角进度条框 START -->
 <div id="content" hidden="hidden" style="overflow: auto;width: 500px;height: 350px ;padding-right: 20px" >
     <ul id="ul">
-
     </ul>
 </div>
+<!-- 页面右下角进度条框 END -->
 
 <body>
 <script src="http://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
 <script src="/static/spark-md5.js"></script>
-    <button id="con">进度条</button><br>
-    <button id="b_file">上 传 文 件</button>
-    <input type="file" id="file" hidden="hidden" onchange="document.getElementById('s_file').innerText=this.files[0].name">
-    <span id="s_file"></span><br>
-    <button id="b_files">上传文件夹</button>
-    <input type="file" id="files" hidden="hidden" webkitdirectory directory multiple
-           onchange="document.getElementById('s_files').innerText=this.files.length.toString()"/>
-    <span id="s_files"></span><br/>
-    <span id="flag">false</span>
-    <br>
-    <span id="uuid"></span>
+<input type="file" id="file" multiple /><br/>
+<input type="file" id="files" webkitdirectory directory /><br/>
 
-    <script>
-        var chunk=-1;   //分片数
-        var succeed=0;  //成功表示
-        var action=false;   //false检验分片是否上传(默认);true表示上传文件
-        const shardSize=1*1024*1024;   //以1M为一个分片
-        var files_i=0;    //文件夹上传；i表示文件序号（从0开始）
+<script>
+    var progressShow=true;
+    var coverMap=new Map();
+    var selectedFile;  //表示选中的文件内容
+    var selectedType=0;  //表示选择的类型  0：初始化(文件)  1：文件夹
+    var coverState=0;  //覆盖状态  0：初始化  1：全部覆盖  2：全不覆盖
+    var coverIndex;
 
-        $("#b_file").click(function (){
-            $("#file").click();
+    let map = new Map();  //上传队列
+    var state=0;  //上传状态 0：没有上传 1：正在上传
+    var index=0;  //分片成功数  chunk+1
+    var chunk=-1;  //分片数
+    var succeed=0;  //成功表示
+    var action=false;  //false检验分片是否上传(默认);true表示上传文件
+    const shardSize=1*1024*1024;   //以1M为一个分片
+
+    //选择上传文件
+    $("#file").change(function(){
+        filesCheck();
+
+    })
+    //选择上传文件夹
+    $("#files").change(function(e){
+        selectedType=1;
+        filesCheck();
+    })
+
+    /**
+     * 获取所有选择的文件，放入files文件组对象中
+     */
+    function filesCheck(){
+        var files; //文件对象
+        var tempfiles = new Array();
+        if(selectedType==0){
+            files=$("#file")[0].files;
+            CheckIsUpload(files);
+        }else{
+            files=$("#files")[0].files;
+            for(var i=0;i<files.length;i++){
+                var path=files[i].webkitRelativePath;
+                var regex=new RegExp("/",'g');
+                var result=path.match(regex);
+                var count=!result ? 0 : result.length;
+                if(count==1)
+                    tempfiles.push(files[i]);
+            }
+            CheckIsUpload(tempfiles);
+        }
+    }
+    /**
+    *  检查files文件组
+    *      获取每个文件的fileMd5值放入md5s数组中，获取每个文件的名字放入names数组中
+    *      通过/isCover查找在当前虚拟目录下所有存在同名的文件，返回给data对象
+    */
+    function CheckIsUpload(files) {
+        var file;
+        var names = new Array();
+        var fileMd5;
+        var md5s=new Array();
+        var r;
+        for(var i=0;i<files.length;i++) {
+            file = files[i];
+            names.push(file.name);
+            r = new FileReader();
+            r.readAsArrayBuffer(file);
+            $(r).load(function (e) {
+                var blob = e.target.result;
+                fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
+                console.log("md5="+fileMd5);
+                md5s.push(fileMd5);
+                if(md5s.length>=files.length)
+                    checkIsCover(files,md5s,names);
+            })
+        }
+        // if(md5s.length>=files.length){
+        //     checkIsCover(files,md5s,names);
+        // }
+    }
+
+    function checkIsCover(files,md5s,names){
+        var form = new FormData();
+        form.append("path","1/2/3/4");
+        form.append("names",names);
+        $.ajax({
+            url: "/isCover",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function (data) {
+                handleCover(files,md5s,names,data);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isCover");
+            }
         })
-        $("#b_files").click(function (){
-            $("#files").click();
+    }
+
+    /**
+     *  检查files文件数组
+     *      如果不是同名文件，则直接加入到上传队列中等待上传；
+     *      如果是同名文件，则通过coverCheck()方法来判断
+     */
+    function handleCover(files,md5s,names,data){
+        console.log("123123164564654");
+        console.log(files);
+        console.log(md5s);
+        var index;
+        var coverNames=new Array();
+        var coverMd5s = new Array();
+        for(var i=0;i<data.length;i++){
+            coverNames.push(data[i].fileName);
+        }
+        for(var i=0;i<coverNames.length;i++){
+            index=names.indexOf(coverNames[i]);
+            coverMd5s.push(md5s[index]);
+        }
+        var file;
+        var coverForm;
+        for(var i=0;i<files.length;i++){
+            coverForm=new FormData();
+            file=files[i];
+            if (map.get(md5s[i]) != null) {
+                layer.msg("上传队列中已经存在该文件！");
+                continue;
+            }
+            index=coverNames.indexOf(file.name);
+            if(index>-1){
+                coverForm.append("userFileId",data[index].userFileId);
+                coverForm.append("fileMd5",coverMd5s[index]);
+                coverForm.append("file",file);
+                coverMap.set(coverMd5s[index],coverForm);
+            }
+            if(index<=-1){
+                index = names.indexOf(file.name);
+                var userFileId="";
+                var fileMd5=md5s[index];
+                checkUnCover(userFileId,fileMd5,file);
+            }
+        }
+        coverCheck();
+    }
+    /**
+     *  检查files文件组中的每个文件，每个文件询问是否覆盖，或者批量覆盖
+     *  直到询问完毕，则开始对上传队列的文件进行上传操作
+     */
+    function coverCheck(){
+        var len=coverMap.size;
+        if(len<=0){
+            console.log("=======开始上传=======");
+            selectedType=0;
+            coverState=0;
+            layer.close(coverIndex);
+            $("#file").val(null);
+            $("#files").val(null);
+            filesUpload();
+        }else{
+            var userFileId;
+            var fileMd5;
+            var file;
+            for (var [key, value] of coverMap) {
+                fileMd5=key;
+                userFileId=value.get("userFileId");
+                file=value.get("file");
+                break;
+            }
+            checkCover(userFileId,fileMd5,file);
+        }
+    }
+    /**
+     *  询问同名文件是否覆盖
+     *  覆盖加入上传队列，不覆盖不加入上传队列；
+     *  全部覆盖则不需要询问，直接加入上传队列；全不覆盖则不再继续上传
+     */
+    function checkCover(userFileId,fileMd5,file){
+        if(coverState==1){
+            checkUnCover(userFileId,fileMd5,file);  //直接覆盖，加入上传队列中
+            return;
+        }
+        if(coverState==2){
+            coverMap.delete(fileMd5);
+            coverCheck();
+            return;
+        }
+        var form = new FormData();
+        coverIndex=layer.open({
+            title:'当前共有'+coverMap.size+'个同名文件'
+            ,content: '存在与'+file.name+'同名文件，是否覆盖？'
+            ,btn: ['是', '否', '全部覆盖','全部不覆盖']
+            ,yes: function(index, layero){
+                // 覆盖
+                form.append("file",file);
+                form.append("userFileId",userFileId);
+                form.append("fileState","0");
+                map.set(fileMd5,form);  //加入上传队列中
+                $("#ul").append('<li id="li-'+fileMd5+'">' +'<div class="fileName">'+file.name+'</div>'+
+                    '<div id="progress-parent">'+
+                    '<div id="progress' + fileMd5 +'" class="progress">' +
+                    '<div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>' +
+                    '</div></div>' +
+                    '<em pauseId="'+fileMd5+'" class="operate-pause" id="pause'+fileMd5+'"></em>' +
+                    '<em continueId="'+fileMd5+'" class="operate-continue" id="continue'+fileMd5+'" hidden="hidden"></em>' +
+                    '<em removeId="'+fileMd5+'" class="operate-remove" id="remove'+fileMd5+'"></em>' +
+                    '<em finishId="'+fileMd5+'" class="upload-finish" id="finish'+fileMd5+'" hidden="hidden"></em>' +
+                    '</li>');
+                progressShow=true;
+                progressControl(fileMd5);
+                coverMap.delete(fileMd5);
+                coverCheck();
+            }
+            ,btn2: function(index, layero){
+                // 不覆盖
+                coverMap.delete(fileMd5);
+                coverCheck();
+            }
+            ,btn3: function(index, layero){
+                // 全部覆盖
+                coverState=1;
+                form.append("file",file);
+                form.append("userFileId",userFileId);
+                form.append("fileState","0");
+                map.set(fileMd5,form);  //加入上传队列中
+                $("#ul").append('<li id="li-'+fileMd5+'">' +'<div class="fileName">'+file.name+'</div>'+
+                    '<div id="progress-parent">'+
+                    '<div id="progress' + fileMd5 +'" class="progress">' +
+                    '<div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>' +
+                    '</div></div>' +
+                    '<em pauseId="'+fileMd5+'" class="operate-pause" id="pause'+fileMd5+'"></em>' +
+                    '<em continueId="'+fileMd5+'" class="operate-continue" id="continue'+fileMd5+'" hidden="hidden"></em>' +
+                    '<em removeId="'+fileMd5+'" class="operate-remove" id="remove'+fileMd5+'"></em>' +
+                    '<em finishId="'+fileMd5+'" class="upload-finish" id="finish'+fileMd5+'" hidden="hidden"></em>' +
+                    '</li>');
+                progressShow=true;
+                progressControl(fileMd5);
+                coverMap.delete(fileMd5);
+                coverCheck();
+            }
+            ,btn4: function(index,layero){
+                // 全不覆盖
+                coverState=2;
+                coverMap.delete(fileMd5);
+                coverCheck();
+            }
+            ,closeBtn:0
+        });
+    }
+    /**
+     *  不存在同名文件，不需要询问是否覆盖
+     *  加入上传队列中
+     */
+    function checkUnCover(userFileId,fileMd5,file){
+        var form = new FormData();
+        form.append("userFileId",userFileId);
+        form.append("file",file);
+        form.append("fileState","0");
+        map.set(fileMd5,form);  //加入上传队列中
+        $("#ul").append('<li id="li-'+fileMd5+'">' +'<div class="fileName">'+file.name+'</div>'+
+            '<div id="progress-parent">'+
+            '<div id="progress' + fileMd5 +'" class="progress">' +
+            '<div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>' +
+            '</div></div>' +
+            '<em pauseId="'+fileMd5+'" class="operate-pause" id="pause'+fileMd5+'"></em>' +
+            '<em continueId="'+fileMd5+'" class="operate-continue" id="continue'+fileMd5+'" hidden="hidden"></em>' +
+            '<em removeId="'+fileMd5+'" class="operate-remove" id="remove'+fileMd5+'"></em>' +
+            '<em finishId="'+fileMd5+'" class="upload-finish" id="finish'+fileMd5+'" hidden="hidden"></em>' +
+            '</li>');
+        progressShow=true;
+        progressControl(fileMd5);
+        if(coverMap.size>0){
+            coverMap.delete(fileMd5);
+            coverCheck();
+        }
+        return;
+    }
+
+    function filesUpload(){     //多文件上传
+        var len=map.size;
+        if(len<=0){
+            layer.msg("全部上传完毕！");
+            return;
+        }
+        if(len>0 && state==0){
+            var fileMd5;
+            var fileState;
+            var userFileId;
+            var file;
+            for (var [key, value] of map) {
+                fileMd5=key;
+                fileState=value.get("fileState");  //0等待；1暂停；2开始。
+                userFileId=value.get("userFileId");
+                file=value.get("file");
+                if(fileState==0)
+                    break;
+                else
+                    fileMd5="";
+            }
+            if(fileMd5!="")
+                checkUpload(file,fileMd5,userFileId);
+            // if(fileMd5!=""){
+            //     checkUpload(file,fileMd5,userFileId);
+            // }else{
+            //     console.log("fileMd5为空");
+            // }
+        }
+    }
+
+    function checkUpload(file,fileMd5,userFileId){
+        map.get(fileMd5).set("fileState","2");  //开始上传
+        state=1; //开始上传
+        index=0;
+        chunk=-1;
+        succeed=0;
+        action=false;
+        var form = new FormData();
+        form.append("md5", fileMd5);
+        //Ajax提交
+        $.ajax({
+            url: "/isUpload",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function (data) {
+                handleCheckIsUploadResult(file,fileMd5,data,userFileId);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isUpload");
+            }
         })
-        $("#file").change(function (){
-            $("#uuid").text("UUID上传文件");
-            var file=$("#file")[0].files[0]; //文件对象
-            CheckIsUpload(file);
-            $("#ul").append('<li>' +file.name+
-                '<div id="progress" class="progress">\n' +
-                '    <div id="bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
-                '</div></li>');
+    }
+
+    /**
+     * 处理检查是否上传的结果
+     *  @param file 当前文件
+     *  @param flag 0未上传 1部分上传(断点续传) 2秒传
+     */
+    function handleCheckIsUploadResult(file,fileMd5,data,userFileId){
+        let id=data.fileId;
+        let flag=data.flag;
+        if(flag==="0") {
+            //没有上传该文件
+            upload(file,id,fileMd5,userFileId);
+        }else if(flag==="1" ){
+            //部分上传
+            chunk=data.chunk;
+            action=true; //不用检测，直接上传
+            console.log("断点续传");
+            console.log("chunk="+chunk);
+            console.log("index="+(chunk+1));
+            upload(file,id,fileMd5,userFileId);
+        }else if(flag==="2"){
+            //秒传逻辑
+            handleFastUpload(file,id,userFileId);
+            layer.msg("文件已秒传");
+            $("#progress"+ fileMd5 +" .progress-bar").css("width","100%");
+            $("#progress"+ fileMd5 +" .progress-bar").text("100%");
+            $("#pause"+fileMd5).prop("hidden","hidden");
+            $("#continue"+fileMd5).prop("hidden", "hidden");
+            $("#remove"+fileMd5).prop("hidden", "hidden");
+            $("#finish"+fileMd5).removeAttr("hidden");
+            state=0; //等待上传
+            map.delete(fileMd5);
+            filesUpload();
+        }
+    }
+
+    function handleFastUpload(file,id,userFileId){
+        var form=new FormData();
+        form.append("fileId",id);
+        form.append("name",file.name);
+        form.append("size",file.size);
+        form.append("userFileId",userFileId);
+        $.ajax({
+            url: "/fastUpload",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function () {
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isUpload");
+            }
         })
-        $("#files").change(function (){
-            $("#uuid").text("md5上传文件夹");
-            var flag=$("#flag").text();
-            files_i=0;
-            $("#flag").text("true");
+    }
+
+    /**
+     * @param file 当前文件
+     * @param id 文件id
+     * @param fileMd5 文件md5值
+     */
+    function upload(file,id,fileMd5,userFileId){
+        if(map.get(fileMd5)==undefined)
+            return;
+        if(map.get(fileMd5).get("fileState")==1)
+            return;
+        let name=file.name;
+        let size=file.size;
+        let shardCount=Math.ceil(size/shardSize);//总片数
+        // $("#uuid").text("") ;
+        // $("#uuid").append(" 文件名："+name) ;
+        // $("#uuid").append(" ，大小："+size) ;
+        // $("#uuid").append(" ，分片数："+shardCount) ;
+        $("#file_name").text(name) ;
+        //分片数>分片总数 结束本次方法调用
+        if (chunk> shardCount) return;
+        if(!action){
+            chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
+        }
+        //计算每一片的起始和结束位置
+        let start=chunk*shardSize;
+        let end=Math.min(size,start+shardSize); //如果是最后一片不足shardSize，则取size作为结束位置
+        //构造一个表单，FormData是HTML5新增的
+        var form = new FormData();
+        if(!action){
+            form.append("action", "check");  //检测分片是否上传
+        }else{
+            form.append("action", "upload");  //直接上传分片
+            form.append("data", file.slice(start,end));  //slice方法用于切出文件的一部分
+        }
+        form.append("id", id);
+        form.append("md5", fileMd5);
+        form.append("name", name);
+        form.append("size", size);
+        form.append("total", shardCount);  //总片数
+        form.append("index", chunk+1);     //当前是第几片(从1开始)
+        form.append("userFileId",userFileId);
+
+        var index = chunk+1;
+        //按大小切割文件段
+        var data = file.slice(start, end);
+        var r = new FileReader();
+        r.readAsArrayBuffer(data);  //文件分片
+        $(r).load(function (e) {
+            var bolb = e.target.result;
+            var partMd5=SparkMD5.ArrayBuffer.hash(bolb);
+            form.append("partMd5", partMd5);
+            //Ajax提交
+            $.ajax({
+                url: "/upload",
+                type: "POST",
+                data:form,
+                async: true,
+                processData: false,  //很重要，告诉jquery不要对form进行处理
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                success: function (data) {
+                    handleUploadResult(file,id,fileMd5,shardCount,data,userFileId);
+                },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert("服务器出错!@@@/upload");
+                }
+            })
+        })
+    }
+
+    /**
+     * 处理上传的结果
+     * @param file 当前文件
+     * @param id 文件id
+     * @param fileMd5 文件MD5值
+     * @param shardCount 分片总片数
+     * @param data 文件分片
+     */
+    function handleUploadResult(file,id,fileMd5,shardCount,data,userFileId) {
+        var id = data.fileId;
+        var flag = data.flag;
+        succeed=data.succeed;
+        if (flag==="2"){
+            $("#progress"+ fileMd5 +" .progress-bar").css("width","100%");
+            $("#progress"+ fileMd5 +" .progress-bar").text("100%");
+            $("#pause"+fileMd5).prop("hidden","hidden");
+            $("#continue"+fileMd5).prop("hidden", "hidden");
+            $("#remove"+fileMd5).prop("hidden", "hidden");
+            $("#finish"+fileMd5).removeAttr("hidden");
+            layer.msg("上传成功！");
+            // chunk=-1;
+            // succeed=0;
+            state=0;
+            map.delete(fileMd5);
+            filesUpload();
+            return;
+        } else if (flag==="0"){
+            //未上传,继续上传
+            action = true;
+        } else if (flag==="1"){
+            //该分片已上传
+            action=false;
+            var num=succeed/shardCount*100;
+            num = Math.floor(num);
+            $("#progress"+ fileMd5 +" .progress-bar").css("width",succeed/shardCount*100+"%");
+            $("#progress"+ fileMd5 +" .progress-bar").text(num+"%");
+        }
+        console.log("fileId="+id);
+        upload(file, id, fileMd5,userFileId);
+    }
+
+    //加入进度条时加入暂停，继续，移除按钮
+    function progressControl(md5){
+        $("#pause"+md5).click(function(e){  //暂停
+            console.log("暂停");
+            state=0;
+            var pauseId1 = e.target.getAttribute("pauseId");
+            $("#pause"+md5).prop("hidden", "hidden");
+            $("#continue"+md5).removeAttr("hidden");
+            var fileState=map.get(md5).get("fileState");
+            map.get(md5).set("fileState","1");
             filesUpload();
         })
-
-        function filesUpload(){     //文件夹上传
-            var len=$("#files")[0].files.length;
-            if(files_i==len-1){
-                $("#flag").text("false");
-            }
-            if(files_i<len){
-                var file=$("#files")[0].files[files_i];
-                $("#ul").append('<li>' +file.name+
-                    '<div id="progress" class="progress">\n' +
-                    '    <div id="bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
-                    '</div></li>');
-                $("#uuid").append("  "+file.name); //文件对象
-                CheckIsUpload(file);
-            }
-
-        }
-
-        /*
-         * 检查文件是否上传
-         */
-        function CheckIsUpload(file){
-            chunk=-1;   //分片数
-            succeed=0;  //成功标识
-            action=false; //检验分片是否上传
-            //构建一个表单 FoemData HTML5新增
-            var form=new FormData();
-            var r=new FileReader();
-            r.readAsArrayBuffer(file);
-            $(r).load(function(e){
-                var blob=e.target.result;
-                var fileMd5=SparkMD5.ArrayBuffer.hash(blob);
-                console.log("fileMd5="+fileMd5);
-                form.append("md5",fileMd5);
-                //Ajax提交
-                $.ajax({
-                    url: "/isUpload",
-                    type: "POST",
-                    data: form,
-                    async: true,
-                    processData: false,//很重要，告诉jquery不要对form进行处理
-                    contentType: false,  //很重要，指定为false才能形成正确的Content-Type
-                    success: function (data) {
-                        handleCheckIsUploadResult(file,fileMd5,data);
-                    },
-                    error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert("服务器出错!@@@/isUpload");
-                    }
-                })
-            })
-        }
-
-        /**
-         * 处理检查是否上传的结果
-         *  @param file 当前文件
-         *  @param flag 0未上传 1部分上传(断点续传) 2秒传
-         */
-        function handleCheckIsUploadResult(file,fileMd5,data){
-            let id=data.fileId;
-            let flag=data.flag;
-            if(flag==="0") {
-                //没有上传该文件
-                upload(file,id,fileMd5);
-            }else if(flag==="1" ){
-                //部分上传
-                chunk=data.chunk;
-                action=true; //不用检测，直接上传
-                console.log("断点续传");
-                console.log("chunk="+chunk);
-                console.log("index="+(chunk+1));
-                upload(file,id,fileMd5);
-            }else if(flag==="2"){
-                //秒传
-                alert("文件已秒传");
-                $("#uuid").text("文件已秒传");
-                $("ul li:last .progress .progress-bar").css("width","100%");
-                $("ul li:last .progress .progress-bar").text("100%");
-                if("true"===$("#flag").text()){
-                    files_i++;
-                    filesUpload();
-                }
-            }
-        }
-
-        /**
-         * @param file 当前文件
-         * @param id 文件id
-         * @param filemd5 文件md5值
-         */
-        function upload(file,id,filemd5){
-            let name=file.name;
-            let size=file.size;
-            let shardCount=Math.ceil(size/shardSize);//总片数
-            $("#uuid").text("") ;
-            $("#uuid").append(" 文件名："+name) ;
-            $("#uuid").append(" ，大小："+size) ;
-            $("#uuid").append(" ，分片数："+shardCount) ;
-            $("#file_name").text(name) ;
-            //分片数>分片总数 结束本次方法调用
-            if (chunk> shardCount) return;
-            if(!action){
-                chunk += 1;  //只有在检测分片时,i才去加1; 上传文件时无需加1
-            }
-            //计算每一片的起始和结束位置
-            let start=chunk*shardSize;
-            let end=Math.min(size,start+shardSize); //如果是最后一片不足shardSize，则取size作为结束位置
-            //构造一个表单，FormData是HTML5新增的
-            var form = new FormData();
-            if(!action){
-                form.append("action", "check");  //检测分片是否上传
-            }else{
-                form.append("action", "upload");  //直接上传分片
-                form.append("data", file.slice(start,end));  //slice方法用于切出文件的一部分
-            }
-            form.append("id", id);
-            form.append("md5", filemd5);
-            form.append("name", name);
-            form.append("size", size);
-            form.append("total", shardCount);  //总片数
-            form.append("index", chunk+1);     //当前是第几片(从1开始)
-            var index = chunk+1;
-            //按大小切割文件段
-            var data = file.slice(start, end);
-            var r = new FileReader();
-            r.readAsArrayBuffer(data);  //文件分片
-            $(r).load(function (e) {
-                var bolb = e.target.result;
-                var partMd5=SparkMD5.ArrayBuffer.hash(bolb);
-                form.append("partMd5", partMd5);
-                //Ajax提交
-                $.ajax({
-                    url: "/upload",
-                    type: "POST",
-                    data:form,
-                    async: true,
-                    processData: false,  //很重要，告诉jquery不要对form进行处理
-                    contentType: false,  //很重要，指定为false才能形成正确的Content-Type
-                    success: function (data) {
-                        handleUploadResult(file,id,filemd5,shardCount,data);
-                    },error: function(XMLHttpRequest, textStatus, errorThrown) {
-                        alert("服务器出错!@@@/upload");
-                    }
-                })
-            })
-        }
-
-        /**
-         * 处理上传的结果
-         * @param file 当前文件
-         * @param id 文件id
-         * @param filemd5 文件MD5值
-         * @param shardCount 分片总片数
-         * @param data 文件分片
-         */
-        function handleUploadResult(file,id,filemd5,shardCount,data) {
-            var id = data.fileId;
-            var flag = data.flag;
-            succeed=data.succeed;
-            // var success=data.success;
-            //服务器返回该分片是否上传过
-            if (flag==="2"){
-                $("ul li:last .progress .progress-bar").css("width","100%");
-                $("ul li:last .progress .progress-bar").text("100%");
-                //服务器返回分片是否上传成功
-                // if (succeed  >= shardCount) {
-                    alert("上传成功！");
-                    $("#uuid").append("<br>上传成功！");
-                    chunk=-1;
-                    if("true"===$("#flag").text()){
-                        files_i++;
-                        filesUpload();
-                    }
-                    return;
-
-                // }
-            } else if (flag==="0"){
-                //未上传,继续上传
-                action = true;
-            } else if (flag==="1"){
-                //该分片已上传
-                action=false;
-                var num=succeed/shardCount*100;
-                num = Math.floor(num);
-                $("ul li:last .progress .progress-bar").css("width",succeed/shardCount*100+"%");
-                $("ul li:last .progress .progress-bar").text(num+"%");
-            }
-            console.log("fileId="+id);
-            upload(file, id, filemd5);
-        }
-
-    </script>
-    <script>
-        //页面初始化加载
-        $("#con").click(function () {
-            $("#content")[0].removeAttribute("hidden");
-            layer.open({
-                type: 1,
-                title: false,
-                closeBtn: 0,
-                shade: 0,
-                area: ['500px', '350px'],
-                offset: 'rb', //右下角弹出
-                scrollbar: true,
-                closeBtn: 1,
-                content: $('#content'),
-                cancel: function(index, layero){
-                    // if(confirm('确定要关闭么')){ //只有当点击confirm框的确定时，该层才会关闭
-                    //     layer.close(index)
-                    // }
-                    // return false;
-                    $("#content")[0].setAttribute("hidden","hidden");
-                    layer.close(index)
-                }
-            });
+        $("#continue"+md5).click(function(e){  //继续
+            console.log("继续");
+            var continueId1 = e.target.getAttribute("continueId");
+            $("#continue"+md5).prop("hidden", "hidden");
+            $("#pause"+md5).removeAttr("hidden");
+            map.get(md5).set("fileState","0");
+            filesUpload();
         })
-    </script>
+        $("#remove"+md5).click(function(e){  //移除
+            console.log("移除");
+            var removeId1 = e.target.getAttribute("removeId");
+            var fileState=map.get(md5).get("fileState");
+            if(fileState==0 || fileState==1){
+                map.delete(md5);
+                $("#li-"+md5).remove();
+            }
+            if(fileState==2){
+                layer.confirm('是否删除该任务?', {
+                    icon: 3, title:'提示',btn:['是','否']
+                }, function(index){
+                    layer.close(index);
+                    map.delete(md5);
+                    $("#li-"+md5).remove();
+                },function(index){
+                    layer.close(index);
+                    return;
+                });
+            }
+            filesUpload();
+        })
+    }
+
+</script>
+<script>
+    function layerInit(md5){
+        $("#content")[0].removeAttribute("hidden");
+        index=layer.open({
+            type: 1,
+            title: "进度条",
+            id:"layerProgress",
+            move:false,
+            closeBtn: 1,
+            shade: 0,
+            area: ['520px', '400px'],
+            offset: 'rb', //右下角弹出
+            scrollbar: true,
+            content: $('#content'),
+            resize:false,
+            cancel: function(index, layero){
+                // return false;
+                $("#content")[0].setAttribute("hidden","hidden");
+                layer.close(index);
+            },
+            success: function(layero, index){
+                $(".layui-layer-title").click(function(){
+                    if(progressShow==true){
+                        $(".layui-layer-page").css("height","50px");
+                        $(".layui-layer-page").css("top",$(".layui-layer-page").position().top+350);
+                        progressShow=false;
+                    }else{
+                        $(".layui-layer-page").css("height","400px");
+                        $(".layui-layer-page").css("top",$(".layui-layer-page").position().top-350);
+                        progressShow=true;
+                    }
+                })
+            }
+        });
+    }
+</script>
+
 </body>
 </html>

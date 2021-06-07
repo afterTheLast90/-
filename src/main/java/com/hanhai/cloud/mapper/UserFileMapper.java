@@ -23,8 +23,11 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     @Select("select * from user_files where file_parent_path=#{path} and file_name=#{name} and user_id=#{userId} and file_type='DIR' and deleted = 0 ")
     public List<UserFile> getDirByName(@Param("path") String path,@Param("name") String name,@Param("userId")  Long userId);
 
+    @Select("select * from user_files where file_parent_path=#{path} and file_name=#{name} and user_id=#{userId} and deleted = 0 ")
+    public List<UserFile> getByName(@Param("path") String path,@Param("name") String name,@Param("userId")  Long userId);
 
     public List<UserFile> getByIds(@Param("ids") Long[] ids,@Param("userId")  Long userId);
 
+    public List<UserFile> getByNames(@Param("path") String path ,@Param("names") String[] names, @Param("userId") Long userId);
 
 }

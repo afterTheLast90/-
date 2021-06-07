@@ -1,67 +1,107 @@
 package com.hanhai.cloud.service;
 
+import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import com.github.yitter.idgen.YitIdHelper;
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.configuration.SystemInfo;
+import com.hanhai.cloud.entity.FileHistory;
 import com.hanhai.cloud.entity.Files;
+import com.hanhai.cloud.entity.UserFile;
+import com.hanhai.cloud.params.FastUploadParam;
 import com.hanhai.cloud.params.MultipartFileParam;
-import com.hanhai.cloud.mapper.FileMapper;
 import com.hanhai.cloud.utils.FileMd5Util;
-import com.hanhai.cloud.utils.NameUtil;
+import com.hanhai.cloud.utils.FileNameUtil;
+import com.hanhai.cloud.utils.utils.FileUploadRedisUtils;
+import com.hanhai.cloud.vo.FileUploadVO;
 import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import javax.annotation.Resource;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 @Service
 public class UploadFileService extends BaseService {
-    /**
-     * Map
-     *  @param flag(String) 0:未上传,1:部分上传,2:已上传
-     *  @param fileId(Long) 文件ID
-     */
-    private Map<String,Object> map=new HashMap<>();
+    @Autowired
+    private FileUploadRedisUtils fileUploadRedisUtils;
+    @Autowired
+    private SystemInfo systemInfo;
+    private FileUploadVO fileUploadVO=null;
 
-    @Resource
-    FileMapper fileMapper;
+    /**
+     *  通过名字查找虚拟目录是否存在同名文件
+     */
+    public Long findByName(String path, String name , String userId){
+        if(userId==null)
+            userId=String.valueOf(StpUtil.getLoginIdAsLong());
+        System.out.println("userId="+userId);
+        List<UserFile> lists=new ArrayList<UserFile>();
+        Long userFileId=null;
+        lists=userFileMapper.getByName(path,name,Long.parseLong(userId));
+        for(UserFile userFile:lists){
+            userFileId=userFile.getUserFileId();
+            if(userFileId!=null)
+                break;
+        }
+        return userFileId;
+    }
+
+    public List<UserFile> findByNames(String path, String[] names, String userId){
+        List<UserFile> userFiles=new ArrayList<>();
+        if(userId==null)
+            userId=String.valueOf(StpUtil.getLoginIdAsLong());
+        userFiles=userFileMapper.getByNames(path,names,Long.parseLong(userId));
+        for(UserFile userFile:userFiles){
+            System.out.println(userFile);
+        }
+        return userFiles;
+    }
+
     /**
      * 通过md5值查找文件对象
      * @param md5
      * @return
      */
-    public Map<String,Object> findByFileMd5(String md5){
+    public FileUploadVO findByFileMd5(String md5){
+        System.out.println("===================================================================");
+        System.out.println("md5="+md5);
+        System.out.println("===================================================================");
+        fileUploadVO = (FileUploadVO) fileUploadRedisUtils.get(md5);
+        if(fileUploadVO==null)
+            fileUploadVO=new FileUploadVO();
         Files file=fileMapper.findByFileMd5(md5);
         Long fileId= null;
         if(file==null){ //没有上传完文件，判断是否上传完成，需要断点续传
             System.out.println("********************************   检测断点续传   ***********************************");
-            Integer chunk=(Integer) map.get("chunk");
-            System.out.println("********************************   @@@chunk="+chunk+"@@@   ***********************************");
-            Long str=(Long) map.get("fileId");
-            System.out.println("********************************   @@@fileId="+str+"@@@   ***********************************");
-            if(str!=null)
-                fileId=str;
-            if(chunk!=null){
+            Integer chunk=fileUploadVO.getChunk();
+            Long tempId=fileUploadVO.getFileId();
+            String fileMd5=fileUploadVO.getMd5();
+            if(tempId!=null)
+                fileId=tempId;
+            if(md5.equals(fileMd5) && chunk!=null){
                 //上传了部分，需要断点续传
-                map.put("flag","1");
-                map.put("filedId",fileId);
+                fileUploadVO.setFlag("1");
+                fileUploadVO.setFileId(fileId);
             }else{
                 //没有上传过文件
                 fileId=YitIdHelper.nextId(); //获取下一个要插入的记录的文件ID
-                map.put("flag","0");
-                map.put("fileId",fileId);
+                fileUploadVO.setFlag("0");
+                fileUploadVO.setFileId(fileId);
+                fileUploadVO.setMd5(md5);
             }
         }else{
             //上传过该文件，秒传即可
-            map.put("flag","2");
-//            map.put("fileId",file.getFileId());
+            fileUploadVO.setFlag("2");
         }
-        return map;
+        fileUploadRedisUtils.set(md5,fileUploadVO);
+        return (FileUploadVO)fileUploadRedisUtils.get(md5);
     }
 
     /**
@@ -70,8 +110,11 @@ public class UploadFileService extends BaseService {
      * @param multipartFile 文件
      * @return
      */
-    public Map<String,Object> realUpload(MultipartFileParam param, MultipartFile multipartFile)
+    public FileUploadVO realUpload(MultipartFileParam param, MultipartFile multipartFile)
                                     throws IOException,Exception{
+        fileUploadVO = (FileUploadVO) fileUploadRedisUtils.get(param.getMd5());
+        if(fileUploadVO==null)
+            fileUploadVO=new FileUploadVO();
         String md5=param.getMd5(); //md5值
         String partMd5=param.getPartMd5(); //分片md5值
         String fileId=param.getId(); //文件id
@@ -81,48 +124,55 @@ public class UploadFileService extends BaseService {
         Integer index=Integer.valueOf(param.getIndex()); //分片序号,当前第几片(从1开始)
         String action=param.getAction(); //上传状态 check：检测；upload：上传
         /*不带扩展名的文件名*/
-        String filenameNoEx=NameUtil.getFileNameNoEx(fileName);
+        String filenameNoEx= FileNameUtil.getFileNameNoEx(fileName);
         /*扩展名*/
-        String suffix= NameUtil.getExtensionName(fileName);
+        String suffix= FileNameUtil.getExtensionName(fileName);
         /**
          * 目录验证
-         *  saveDirectory:上传文件的文件夹名(目录)
-         *  filePath:上传文件的文件名 fileId.suffix (文件名.文件扩展名)
+         *  year:当前年份
+         *  month:当前月份
+         *  day:当前日子
+         *  fileSaveDirectory:分片合成文件的路径  上传文件的文件夹名(目录)
+         *  tempSaveDirectory:上传分片的路径
+         *  filePath:上传分片的文件名 fileId.suffix (文件名.文件扩展名)
          */
-        String saveDirectory = "F:\\Uploads" + File.separator + fileId;
-        String filePath = saveDirectory + File.separator + filenameNoEx + "." + suffix;
+        Date date= DateUtil.date();
+        String year=String.valueOf(DateUtil.year(date));
+        String month=String.valueOf(DateUtil.month(date)+1);
+        String day=String.valueOf(DateUtil.dayOfMonth(date));
+        String fileSaveDirectory = systemInfo.getUpLoadPath()+"Uploads" + File.separator + year + File.separator
+                + month + File.separator + day ; //上传文件的文件夹
+        String tempSaveDirectory = fileSaveDirectory + File.separator + fileId+"_temp"; //上传文件的分片temp文件夹
+        String filePath = tempSaveDirectory + File.separator + filenameNoEx + "." + suffix;
         //验证路径是否存在，不存在则创建目录
-        File path = new File(saveDirectory);
+        File path = new File(tempSaveDirectory);
         if (!path.exists()) {
             path.mkdirs();
         }
         //文件分片名
-        File file = new File(saveDirectory, filenameNoEx + "_" + index);
+        File file = new File(tempSaveDirectory, filenameNoEx + "_" + index);
         //根据action不同执行不同操作. check:校验分片是否上传过; upload:直接上传分片
         if("check".equals(action)){
             String md5Str= FileMd5Util.getFileMD5(file);//分片MD5
             if (md5Str != null && md5Str.equals(partMd5)) {
                 //分片已上传过
-                map.put("flag", "1");
-                map.put("fileId", Long.parseLong(fileId));
-//                if(!index.equals(total))
-//                    return map;
+                fileUploadVO.setFlag("1");
+                fileUploadVO.setFileId(Long.parseLong(fileId));
             } else {
                 //分片未上传
-                map.put("flag", "0");
-                map.put("fileId", Long.parseLong(fileId));
-                return map;
+                fileUploadVO.setFlag("0");
+                fileUploadVO.setFileId(Long.parseLong(fileId));
+                fileUploadRedisUtils.set(md5,fileUploadVO);
+                return (FileUploadVO)fileUploadRedisUtils.get(md5);
             }
         } else if("upload".equals(action)){
             //分片上传过程中出错,有残余时需删除分块后,重新上传;上传前检测，如果存在则删除重新上传.
             if (file.exists()) {
                 file.delete();
             }
-            multipartFile.transferTo(new File(saveDirectory, filenameNoEx + "_" + index));
-            map.put("flag", "1");
-            map.put("fileId", Long.parseLong(fileId));
-//            if(!index.equals(total))
-//                return map;
+            multipartFile.transferTo(new File(tempSaveDirectory, filenameNoEx + "_" + index));
+            fileUploadVO.setFlag("1");
+            fileUploadVO.setFileId(Long.parseLong(fileId));
         }
 
         if(path.isDirectory()){
@@ -131,23 +181,19 @@ public class UploadFileService extends BaseService {
                 if (fileArray.length >= total) {
                     //分块全部上传完毕，合并
                     System.out.println("@@@@@@@@@@@@@@@@@@@@@@@开始合并@@@@@@@@@@@@@@@@@@@@@@@");
-                    File newFile=new File(saveDirectory,filenameNoEx+"."+suffix);
+                    File newFile=new File(fileSaveDirectory,fileId+"."+suffix);
                     FileOutputStream outputStream=new FileOutputStream(newFile,true);//文件追加写入
                     for (int i = 0; i < fileArray.length; i++) {
-                        File tmpFile = new File(saveDirectory, filenameNoEx + "_" + (i + 1));
+                        File tmpFile = new File(tempSaveDirectory, filenameNoEx + "_" + (i + 1));
                         if(tmpFile.exists())
                             FileUtils.copyFile(tmpFile,outputStream);
                     }
                     System.out.println("@@@@@@@@@@@@@@@@@@@@@@@合并结束，开始删除@@@@@@@@@@@@@@@@@@@@@@@");
-                    for(int i=0;i<fileArray.length;i++){
-                        //应该放在循环结束删除 可以避免 因为服务器突然中断 导致文件合并失败 下次也无法再次合并
-                        File tmpFile=new File(saveDirectory,filenameNoEx+"_"+(i+1));
-                        if(tmpFile.exists())
-                            tmpFile.delete();
-                    }
+                    FileUtil.del(tempSaveDirectory); //删除分片文件夹
                     System.out.println("@@@@@@@@@@@@@@@@@@@@@@@删除完成@@@@@@@@@@@@@@@@@@@@@@@");
                     outputStream.close();
-                    //修改FileRes记录为上传成功
+
+                    //文件表插入记录
                     Files files=new Files();
                     files.setFileId(Long.parseLong(fileId));
                     files.setFileMd5(md5);
@@ -155,21 +201,108 @@ public class UploadFileService extends BaseService {
                     files.setFileSize(Long.valueOf(size));
                     files.setStorageLocation(0);
                     files.setCitationsCount(1L);
-                    fileMapper.insert(files);
-                    map.clear();    //上传完成，清除map
-                    map.put("fileId",Long.parseLong(fileId));
-                    map.put("flag","2");
+//                    fileMapper.insert(files);
+
+                    //用户文件表插入记录
+                    String userFileId=param.getUserFileId();
+                    System.out.println("******************************");
+                    System.out.println("userFileId=##"+userFileId+"##");
+                    System.out.println("******************************");
+                    UserFile userFile=new UserFile();
+                    if(userFileId==null || "".equals(userFileId) || "undefined".equals(userFileId)){
+                        //新建用户文件表记录
+                        userFile.setFileId(Long.parseLong(fileId));
+                        userFile.setFileName(filenameNoEx+"."+suffix.toUpperCase());
+                        userFile.setFileSize(Long.parseLong(size));
+                        userFile.setFileParentPath("1/2/3/4");
+                        userFile.setFileType(suffix.toUpperCase());
+                        if(param.getUserId()==null)
+                            userFile.setUserId(StpUtil.getLoginIdAsLong()); //获取当前登陆的用户ID
+                        else
+                            userFile.setUserId(Long.parseLong(param.getUserId()));
+//                        userFileMapper.insert(userFile);
+
+                    }else{  //覆盖同名文件，修改用户文件表记录
+                        //历史版本表插入记录
+                        FileHistory fileHistory=new FileHistory();
+                        UserFile userFile1=userFileMapper.selectById(Long.parseLong(userFileId));
+                        fileHistory.setUserFileId(userFileId).setFileId(String.valueOf(userFile1.getFileId())).setFileName(userFile1.getFileName())
+                                .setFileSize(String.valueOf(userFile1.getFileSize()));
+                        if(StpUtil.isLogin())
+                            fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
+                        else
+                            fileHistory.setUpdatePerson(0L);
+//                        fileHistoryMapper.insert(fileHistory);
+
+                        userFile.setUserFileId(Long.parseLong(param.getUserFileId()));
+                        userFile.setFileId(Long.parseLong(fileId));
+                        userFile.setFileSize(Long.parseLong(size));
+//                        userFileMapper.updateById(userFile);
+                    }
+                    fileUploadVO.setUserFileId(userFile.getUserFileId()); //获取用户文件ID
+                    fileUploadVO.setChunk(null);
+                    fileUploadVO.setSucceed(null);
+                    fileUploadVO.setFlag("2");
+                    fileUploadVO.setFileId(Long.parseLong(fileId));
                     System.out.println("@@@@@@@@@@@@@@@@@@@flag==2@@@@@@@@@@@@@@@@@@@@");
-                    return map;
+                    fileUploadRedisUtils.set(md5,fileUploadVO);
+                    return (FileUploadVO)fileUploadRedisUtils.get(md5);
                 }else if(index>=1){
-                    System.out.println("*************************    index>=1    ***************************");
                     System.out.println("*************************    @@@"+index+"@@@    ***************************");
-                    map.put("chunk",index-1); //保存分片
-                    map.put("succeed",index);
+                    fileUploadVO.setChunk(index-1);
+                    fileUploadVO.setSucceed(index);
                 }
             }
         }
-        return map;
+        fileUploadRedisUtils.set(md5,fileUploadVO);
+        return (FileUploadVO)fileUploadRedisUtils.get(md5);
+    }
+
+    //秒传逻辑，秒传后插入或者修改用户文件表
+    public Long fastUpload(FastUploadParam param){
+        System.out.println("===============================");
+        System.out.println("秒传逻辑");
+        System.out.println("===============================");
+        Long fileId = Long.parseLong(param.getFileId());
+        String name = param.getName();
+        String filenameNoEx = FileNameUtil.getFileNameNoEx(name);  //不带扩展名的文件名
+        String suffix = FileNameUtil.getExtensionName(name);  //扩展名
+        Long size = Long.parseLong(param.getSize());
+        String userFileId = param.getUserFileId();
+        System.out.println("******************************");
+        System.out.println("userFileId="+userFileId);
+        System.out.println("******************************");
+        UserFile userFile=new UserFile();
+        if(userFileId==null || "".equals(userFileId) || "undefined".equals(userFileId)){
+            //新建用户文件表记录
+            userFile.setFileId(fileId);
+            userFile.setFileName(filenameNoEx+"."+suffix.toUpperCase());
+            userFile.setFileSize(size);
+            userFile.setFileParentPath("1/2/3/4");
+            userFile.setFileType(suffix.toUpperCase());
+            if(param.getUserId()==null)
+                userFile.setUserId(StpUtil.getLoginIdAsLong()); //获取当前登陆的用户ID
+            else
+                userFile.setUserId(Long.parseLong(param.getUserId()));
+//            userFileMapper.insert(userFile);
+        }else{  //覆盖同名文件，修改用户文件表记录
+            //历史版本表插入记录
+            FileHistory fileHistory=new FileHistory();
+            UserFile userFile1=userFileMapper.selectById(Long.parseLong(userFileId));
+            fileHistory.setUserFileId(userFileId).setFileId(String.valueOf(userFile1.getFileId())).setFileName(userFile1.getFileName())
+                    .setFileSize(String.valueOf(userFile1.getFileSize()));
+            if(StpUtil.isLogin())
+                fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
+            else
+                fileHistory.setUpdatePerson(0L);
+//            fileHistoryMapper.insert(fileHistory);
+
+            userFile.setUserFileId(Long.parseLong(param.getUserFileId()));
+            userFile.setFileId(fileId);
+            userFile.setFileSize(size);
+//            userFileMapper.updateById(userFile);
+        }
+        return userFile.getUserFileId();
     }
 
 }

@@ -5,7 +5,7 @@ package com.hanhai.cloud.utils;
  *  getExtensionName：获取文件扩展名
  *  getFileNameNoEx：获取不带扩展名的文件名
  */
-public class NameUtil {
+public class FileNameUtil {
     /**
      * Java文件操作 获取文件扩展名
      */
@@ -31,5 +31,4 @@ public class NameUtil {
         }
         return filename;
     }
-
 }
