@@ -21,7 +21,7 @@ public interface TagRelationshipMapper extends BaseMapper<TagRelationship> {
     public void delByTagId(@Param("tagId")Long tagId);
 
     // 得到 使用标签的文件信息
-    @Select("select f.user_file_id as user_file_id, tag_relationship_id as tagRelationshipId, file_name, file_type, file_size, f.updated_time as updated_time " +
+    @Select("select f.user_file_id as user_file_id, file_parent_path, tag_relationship_id as tagRelationshipId, file_name, file_type, file_size, f.updated_time as updated_time " +
             "from user_files f, tag_relationship r, tags t " +
             "where f.user_file_id=r.user_file_id and r.tag_id=t.tag_id and " +
             "f.deleted=false and r.deleted=false and t.deleted=false and " +

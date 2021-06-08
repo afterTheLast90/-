@@ -113,6 +113,10 @@
     .bootstrap-switch .bootstrap-switch-handle-off{
       padding: 0 10px;
 		}
+
+    .pointer {
+	    cursor: pointer;
+    }
 	</style>
 
 	<script type="module">
@@ -175,9 +179,15 @@
                           halign: "center",
 						              align: 'left',
                           formatter: function fileNameFormatter(value, row, index) {
-                              return "<svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
-                                  "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
-                                  "</svg>" + value
+													    if(row.fileType == "DIR") {
+													        return "<a title='打开子目录' href='/main?path="+ row.fileParentPath + row.userFileId  +"/" +"'><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
+                                      "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
+                                      "</svg>" + value + "</a>"
+													    }
+													    else
+	                              return "<div><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
+	                                  "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
+	                                  "</svg>" + value + "</div>"
                           }
 			                },
 				              {
@@ -380,6 +390,12 @@
                           $("#shareFailModal").modal("hide")
                           closeShareSwitch.bootstrapSwitch("toggleState");
                       })
+				              // 文件图标添加样式
+				              $("svg[fileType='DIR']").parent().addClass("pointer")
+				              // 单击文件，如果其还存在，则转到其子目录中
+				              $("svg[fileType='DIR']").parent().click(function(){
+                          console.log(11111111)
+				              })
                   }
 
               })
@@ -428,7 +444,7 @@
 <div class="main">
 	<div th:replace="common/nav-left :: nav-left"></div>
 	<div class="content rMain drawer drawer--right shadow"
-	     style="overflow: hidden;margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
+	     style="overflow: hidden;margin-right: 1%; margin-left: 1.5%;padding-bottom: 10px;">
 
 		<!--	自定义搜索框	-->
 		<div class=".sSearch">

@@ -9,6 +9,8 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 public class ResourceVO {
+    /** 用户文件id */
+    private Long userFileId;
     /** 分享id */
     private String shareId ;
     /** 文件名*/
@@ -33,6 +35,8 @@ public class ResourceVO {
     private Boolean downloadAllow;
     /** 是否可转存 */
     private Boolean fileDumpAllow;
+    /** 当前路径 */
+    private String currentPath;
 
     public ResourceVO setDownloadTimes(Integer times){
         this.downloadTimes = times;
@@ -64,6 +68,4 @@ public class ResourceVO {
         }
         return this;
     }
-
-
 }

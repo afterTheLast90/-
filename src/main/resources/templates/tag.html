@@ -474,7 +474,7 @@
                       halign: "center",
                       align: "left",
                       formatter: function fileNameFormatter(value, row, index) {
-                          return "<svg fileType=" + row.fileType + " class='icon' aria-hidden='true'>" +
+                          return "<svg fileType='" + row.fileType + "' class='icon' aria-hidden='true'>" +
                               "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
                               "</svg>" + value
                       }
@@ -507,9 +507,9 @@
                       title: "操作",
                       align: "center",
                       formatter: function operationFormatter(value, row, index) {
-                          return "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-                              "<i class=\"bi bi-three-dots drawer-toggle\" userFileId='" + row.userFileId + "'></i>" +
-                              "<i class=\"bi bi-trash pl-2\ delFile\" relationId='" + row.tagRelationshipId +
+                          return "<a title='转到文件目录' href='/main?path="+ row.fileParentPath +"'><i class=\"bi bi-box-arrow-in-down-left\"></i></a>" +
+                              "<i title='文件详情' class=\"bi bi-three-dots drawer-toggle\" userFileId='" + row.userFileId + "'></i>" +
+                              "<i title='删除' class=\"bi bi-trash pl-2\ delFile\" relationId='" + row.tagRelationshipId +
                               "' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
                       }
                   }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<th:block th:include="common/header :: header(~{::title})">
+		<title>分享文件</title>
+	</th:block>
+
+	<style>
+    .modal-backdrop.show{
+      opacity: 0.3;
+    }
+	</style>
+	<script>
+		$(function(){
+		    $("#takeCode").modal("show")
+				setTimeout(function(){
+				    layer.msg("[[${msg}]]")
+				},200)
+				$("#takeBtn").click(function(){
+            if($("input[name='takeCode']").val().trim().length == 6){
+                $("form").submit()
+            }else{
+                layer.msg("请输入6位密码")
+            }
+				})
+		})
+	</script>
+</head>
+<body>
+<div th:replace="common/nav-header :: nav-header"></div>
+<!-- 密码检测模态框 -->
+<div class="modal fade" id="takeCode" style="margin-top: 14%" data-backdrop="static">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">
+					<img th:src="${'/avatar/155193591906373'}" alt="" class="rounded-circle" style="width: 35%;">
+					<span class="userName ml-1 mt-1" th:text="lalalal"></span>
+				</h5>
+			</div>
+			<!-- 模态框主体 -->
+			<div class="row mt-4 ml-5 mb-0">
+				<label class="col-4">输入提取码：</label>
+			</div>
+			<form action="/s/takeCode" method="get">
+				<div class="modal-body ml-5 mt-0 pt-2 mb-5 row">
+					<input type="text" class="form-control col-8" name="takeCode" placeholder="请输入6位提取码" required maxlength="6">
+					<input type="button" class="btn btn-primary col-2 ml-2" id="takeBtn" value="确定">
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+</body>
+</html>

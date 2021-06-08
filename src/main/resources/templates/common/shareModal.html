@@ -125,24 +125,39 @@
 
           // 非负判断
           $("#maxFileDumpTimes").on("input", function () {
-              let num = $(this).val() > 0 ? $(this).val() : 0;
+              let num = $(this).val()>0 ? $(this).val() : 0;
               $(this).val(num);
           });
           $("#maxDownloadTimes").on("input", function () {
-              let num = $(this).val() > 0 ? $(this).val() : 0;
+              let num = $(this).val()>0 ? $(this).val() : 0;
               $(this).val(num);
           });
 
           // 处理分享操作
-          $.fn.shareManage=function shareManage(uFileId, fName){
+          $.fn.shareManage=function shareManage(uFileId, fName, fileType){
               userFileId = uFileId
-              console.log(userFileId)
               let fileName = fName
               $(".s_title").text("分享文件(夹):  " + fileName)
+		          // 文件夹不可设置下载/上传次数
+		          if(fileType == "dir"){
+		              $("#maxDownloadTimes").attr("disabled", "disabled")
+				          $("#maxFileDumpTimes").attr("disabled", "disabled")
+                  $("#maxDownloadTimes2").attr("disabled", "disabled")
+                  $("#maxFileDumpTimes2").attr("disabled", "disabled")
+                  $("#maxDownloadTimes3").attr("disabled", "disabled")
+                  $("#maxFileDumpTimes3").attr("disabled", "disabled")
+              }
+              else {
+                  $("#maxDownloadTimes").removeAttr("disabled")
+                  $("#maxFileDumpTimes").removeAttr("disabled")
+                  $("#maxDownloadTimes2").removeAttr("disabled")
+                  $("#maxFileDumpTimes2").removeAttr("disabled")
+                  $("#maxDownloadTimes3").removeAttr("disabled")
+                  $("#maxFileDumpTimes3").removeAttr("disabled")
+		          }
           }
           // 单击 普通分享按钮 后（0，1，3）
           $(".linkBtn").click(function() {
-              console.log(111111111)
               // 使用密码分享，却不设置密码情况
               if($(".shareType:checked").val()==3 && $("#sharePassword").val().trim().length!=6){
                   layer.msg("请设置6位密码")
@@ -342,11 +357,10 @@
                   userFileId: userFileId,
                   shareType: 4,
                   expireTime: $("#codeExpire").val(),
-                  maxFileDumpTimes: 0,
+                  maxFileDumpTimes: $("#maxFileDumpTimes3").val(),
                   maxDownloadTimes: $("#maxDownloadTimes3").val()
               }))
                   .then(res => {
-                      console.log(res)
                       $("#sCode").val(res.data.shareId)
                       $("#codeExpireTime").text($("#codeExpire").val()=="-1"?"永不":$("#codeExpire").val()+"天")
                       $("#shareCode").modal("show")
@@ -372,6 +386,7 @@
               // $(".sGroupSelect").selectpicker("deselectAll");
               // 清空 取件码分享 模态框
               $("#maxDownloadTimes3").val("")
+              $("#maxFileDumpTimes3").val("")
           }
 
       });
@@ -567,6 +582,12 @@
 								<label for="maxDownloadTimes3" class="col-form-label offset-1 col-3 mr-1 text-right">下载次数:</label>
 								<input type="number" class="form-control col-5" id="maxDownloadTimes3"
 								       name="maxDownloadTimes" placeholder="省略或0则不限制"/>
+							</div>
+							<!-- 转存次数 -->
+							<div class="form-group row">
+								<label for="maxFileDumpTimes" class="col-form-label offset-1 col-3 mr-1 text-right">转存次数:</label>
+								<input type="number" class="form-control col-md-5 col-sm-5" id="maxFileDumpTimes3"
+								       name="maxFileDumpTimes" placeholder="省略或0则不限制">
 							</div>
 							<!-- 创建链接 按钮 -->
 							<div class="row mt-1 mb-2">
