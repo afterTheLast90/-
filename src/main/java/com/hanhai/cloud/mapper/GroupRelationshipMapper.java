@@ -22,7 +22,7 @@ public interface GroupRelationshipMapper extends BaseMapper<GroupRelationship> {
     public int delByGroupId(@Param("groupId") Long groupId);
 
     // 根据组id，得到用户列表
-    @Select("select r.*, user_name, user_avatar " +
+    @Select("select r.*, user_name, u.user_id " +
             "from user u, groups g, group_relationship r where " +
             "u.user_id=r.user_id and g.group_id=r.group_id and " +
             "u.deleted=false and g.deleted=false and r.deleted=false and " +

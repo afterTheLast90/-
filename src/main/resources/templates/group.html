@@ -467,9 +467,10 @@
                       if(res.data.length==0) {
                       }
                       else {
+                          console.log(res)
                           for(let data of res.data){
                               $(".col-users .g_users").append("<li class=\"u_head col-md-1\" relationId='"+ data.groupRelationshipId +"'>" +
-                                  "<img src='"+ data.userAvatar +"' class=\"rounded-circle\" alt=\"\">" +
+                                  "<img src='/avatar/"+ data.userId +"' class=\"rounded-circle\" alt=\"\">" +
                                   "<i class=\"bi bi-x u_del\" data-toggle=\"modal\" data-target=\"#uDelModal\" groupId='"+ data.groupId +"'></i>" +
                                   "<div class=\"u_name\" title=\""+ data.userName +"\">"+ data.userName +"</div>" +
                                   "</li>")

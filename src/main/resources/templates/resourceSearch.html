@@ -76,9 +76,22 @@
       margin-right: 10px;
       overflow: hidden;
     }
+    
+    .pointer {
+      cursor: pointer;
+    }
 	</style>
 
 	<script>
+      let currentPath = ""    // 记录当前路径
+      let shareId = ""
+      let userFileId
+			let userName = ""
+      let createdTime = ""
+      let expiredTime = ""
+      let goUp = false
+      let layer = 0
+
       $(function(){
           // 调用函数，初始化表格
           initTable();
@@ -105,10 +118,15 @@
                   pageList: [10, 20, 30, 40],     // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
                   data_local: "zh-US",            // 表格汉化
                   classes: 'table',               // 表格 样式类
-                  height: 720,                    // 表格高度
+                  height: 660,                    // 表格高度
                   queryParams: function (params) {  // 查询 和 请求响应
+                      // console.log(currentPath)
                       return {
                           fileName: $("#searchFile").val(),
+		                      shareId: shareId,
+		                      userFileId: userFileId,
+		                      currentPath: currentPath,
+		                      goUp: goUp,
                           pageNum: params.offset / params.limit + 1,  //页码
                           pageSize: params.limit,                     //页面大小
                       };
@@ -117,7 +135,8 @@
 		                  // 设置 数据对象
                       return res.data;
                   },
-                  columns: [{
+                  columns: [
+                      {
 											field: "shareId",
 		                  title: "分享id",
 		                  align: "center",
@@ -135,7 +154,8 @@
                       align: 'left',
                       halign: "center",
 		                  formatter: function fileNameFormatter(value, row, index) {
-                          return "<svg fileType="+ row.fileType +" class='icon ml-4' aria-hidden='true'>" +
+                          return "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' shareId='"+ row.shareId +"' " +
+	                                "currentPath='"+ row.currentPath +"' class='icon ml-4' aria-hidden='true'>" +
                                     "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
 		                              "</svg>" + value
                       }
@@ -144,13 +164,16 @@
                       field: 'userName',
                       title: '分享人',
                       align: 'center',
+                      formatter: function userNameFormatter(value, row, index) {
+                          return userName=="" ? value : userName;
+                      }
                   },
                   {
                       field: 'createdTime',
                       title: '分享时间',
                       align: 'center',
                       formatter: function indexFormatter(value, row, index) {
-                          return value.replace("T"," ");
+                          return createdTime=="" ? value.replace("T"," ") : createdTime;
                       }
                   },
                   {
@@ -158,8 +181,11 @@
                       title: '过期时间',
                       align: 'center',
                       formatter: function dateFormatter(value, row, index) {
-													value = value.replace("T", " ")
-                          return value=='1970-01-01 07:59:59'?"永久":value
+                          if(expiredTime == ""){
+														value = value.replace("T", " ")
+	                          return value=='1970-01-01 07:59:59' ? "永久" : value
+                          }
+                          return createdTime;
                       }
                   },
                   {
@@ -170,6 +196,8 @@
 		                      let isLogin = [[${isLogin}]]
 		                      value = ""
 		                      if(isLogin) {
+		                          if(layer >= 1)     // 文件夹中，所有文件都下载/转存，无次数限制
+		                              return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><i class=\"bi bi bi-download rDownload\"></i>"
 		                          if(row.downloadAllow) {
 		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
 		                          }else {
@@ -186,9 +214,47 @@
 		                          return "<i class=\"bi bi bi-download rDownload\"></i>"
 		                      }
                       }
-                  },],
+                  },
+                  ],
+		              onPostBody: function (){
+                      $("svg[filetype='DIR']").parent().addClass("pointer")
+				              // 单击文件分享，查看内部文件
+                      $("svg[filetype='DIR']").parent().click(function(){
+                          $("#searchFile").val("")
+                          shareId = $(this).children().attr("shareid")
+                          currentPath = $(this).children().attr("currentpath")
+                          userFileId = $(this).children().attr("userfileid")
+		                      userName = $(this).siblings().eq(0).text()
+		                      createdTime = $(this).siblings().eq(1).text()
+		                      expiredTime = $(this).siblings().eq(2).text()
+		                      goUp = false
+													initTable()
+		                      layer++
+                      })
+		              }
               })
+
           }
+          // 单击返回上级目录
+          $("#parentBtn").click(function(){
+              $("#searchFile").val("")
+              goUp = true
+              if(typeof($("tbody tr td svg").attr("shareid"))!="undefined"){
+                  currentPath = $("tbody tr td svg").attr("currentpath")
+                  shareId = $("tbody tr td svg").attr("shareid")
+              }
+              else{
+                  currentPath += "!!!/"
+              }
+              layer--
+              if(layer <= 0){
+                  layer = 0
+                  userName = ""
+                  createdTime = ""
+                  expiredTime = ""
+              }
+              initTable()
+          })
       });
 	</script>
 </head>
@@ -198,7 +264,7 @@
 	<div class="rMain container shadow">
 		<!--	自定义搜索框	-->
 		<div class=".rSearch">
-			<div class="panel-body pt-3 pb-3">
+			<div class="panel-body pt-1 pb-1">
 <!--				<form class="form-horizontal">-->
 					<div class="form-group row pb-0 m-2">
 						<div class="col-11 pr-0">
@@ -215,7 +281,12 @@
 <!--				</form>-->
 			</div>
 		</div>
-
+		<hr class="my-1">
+		<!--	返回上级	-->
+		<button type="button" id="parentBtn" class="btn btn-light btn-lg ml-3">
+			<i class="bi bi-reply" ></i>&nbsp;返回上一级
+		</button>
+		<hr class="mt-1">
 		<table id="rTable">
 			<thead>
 			</thead>

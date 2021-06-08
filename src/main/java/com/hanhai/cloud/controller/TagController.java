@@ -5,20 +5,17 @@ import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.Tag;
+import com.hanhai.cloud.entity.TagRelationship;
 import com.hanhai.cloud.exception.UnauthorizedAccess;
 import com.hanhai.cloud.exception.UpdateException;
+import com.hanhai.cloud.params.AddTagRelationParams;
+import com.hanhai.cloud.params.DelTagParams;
 import com.hanhai.cloud.params.TagFilesParams;
 import com.hanhai.cloud.params.UpdTagParams;
 import com.hanhai.cloud.service.TagRelationService;
 import com.hanhai.cloud.service.TagService;
-import com.hanhai.cloud.utils.BeanUtils;
-import com.hanhai.cloud.vo.GroupVO;
-import com.hanhai.cloud.vo.TagFilesVO;
 import com.hanhai.cloud.vo.TagVO;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
@@ -27,7 +24,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 @Controller
@@ -138,25 +134,47 @@ public class TagController {
     }
 
     // 删除标签 与 单个文件的关联关系
-    @DeleteMapping("/tag/relationDel/{relationId}")
+    @DeleteMapping("/tag/relationDel")
     @ResponseBody
-    public R delTagRelation(@PathVariable(name = "relationId")
-                            @NotNull(message = "tag关系id不能为空")
-                            @Min(value = 1, message = "id非法") Long relationId){
-        tagRelationService.delByRelationId(relationId);
+    public R delTagRelation(DelTagParams delTagParams){
+        System.out.println(delTagParams.toString());
+        tagRelationService.delByRelationId(delTagParams.getRelationId());
+        tagRelationService.updateFileCount(delTagParams.getTagId());          // 更新文件使用该标签的数量
         return new R(ResultCode.SUCCESS).setMsg("删除成功");
     }
 
     // 删除标签 与 多个文件的关联关系
-    @DeleteMapping("/tag/relationsDel/{tagRelationsId}")
+    @PutMapping("/tag/relationsDel")
     @Transactional
     @ResponseBody
-    public R delTagRelations(@PathVariable(name = "tagRelationsId")
-                                Long[] tagRelationsId) throws UpdateException {
-        for(Long relationId : tagRelationsId) {
+    public R delTagRelations(@RequestBody DelTagParams delTagParams) throws UpdateException {
+        System.out.println(delTagParams.toString());
+        for(Long relationId : delTagParams.getTagRelationsId()) {
             tagRelationService.delByRelationId(relationId);
         }
+        tagRelationService.updateFileCount(delTagParams.getTagId());          // 更新文件使用该标签的数量
         return new R(ResultCode.SUCCESS).setMsg("删除成功");
+    }
+
+    // 得到文件使用的所有标签
+    @GetMapping("/tag/fileTagsGet")
+    @ResponseBody
+    public R<List<TagVO>> getFileTags(@RequestParam("userFileId") Long userFileId){
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(tagRelationService.getFileTags(userFileId));
+    }
+
+    // 查找文件 未使用的标签名和标签id
+    @GetMapping("/tag/getUnUseTags")
+    @ResponseBody
+    public R<List<TagVO>> getUnUseTags(@RequestParam("userFileId")Long userFileId, @RequestParam("tagName")String tagName) {
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(tagRelationService.getUnUseTags(StpUtil.getLoginIdAsLong(), userFileId, tagName));
+    }
+
+    // 文件添加标签
+    @PostMapping("tag/addFileTag")
+    @ResponseBody
+    public R<TagRelationship> addFileTag(@RequestBody AddTagRelationParams tagRelationParams){
+        return new R(ResultCode.SUCCESS).setMsg("添加成功").setData(tagRelationService.addFileTag(tagRelationParams.getUserFileId(), tagRelationParams.getTagId()));
     }
 }
 

@@ -43,6 +43,10 @@ public class GetShareVO{
     private Boolean haveDump;
     /** 是否有效 */
     private Boolean status;
+    /** 当前路径 */
+    private String currentPath;
+    /** 用户文件id */
+    private Long userFileId;
 
 
     // 可能status直接被映射为null，所以要提前为他设置值

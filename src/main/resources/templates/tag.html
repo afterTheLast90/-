@@ -78,7 +78,7 @@
       padding-left: 30px;
       width: 95%;
       list-style: none;
-	    /*超出部分省略号代替*/
+      /*超出部分省略号代替*/
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -101,7 +101,7 @@
     .tLists .tTags .updTag {
       position: absolute;
       right: 10%;
-	    top: 20%;
+      top: 20%;
       /*margin-left: 40%;*/
       font-size: 15px;
       color: #12a559;
@@ -127,33 +127,44 @@
     }
 
     .tFiles table tbody tr td .bi {
-	    font-size: 20px;
-			color: #1296db;
-	    cursor: pointer;
+      font-size: 20px;
+      color: #1296db;
+      cursor: pointer;
     }
 
     .tFiles table tbody tr td .bi:first-child {
       margin-right: 10px;
-	    color: #333;
+      color: #333;
     }
 
     .tFiles table tbody tr td .delFile {
-	    color: #ff111f;
+      color: #ff111f;
     }
 
     .drawer-nav ul li {
-	    list-style: none;
+      list-style: none;
+    }
+
+    fieldset {
+      padding: .35em .625em .75em;
+      margin: 10px 10px;
+      border: 1px solid silver;
+    }
+
+    legend {
+      width: auto;
     }
 
     nav .sInfo {
+      font-size: 1.5rem;
       margin-left: 1px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      color: rgb(21,151,219);
+      /*color: rgb(21,151,219);*/
     }
 
-    .drawer-nav>ul>li {
+    .drawer-nav > ul > li {
       margin-top: 10px;
     }
 
@@ -165,8 +176,45 @@
       cursor: pointer;
     }
 
-    .drawer-nav li .bi-eye-fill {
-      color: #1296db;
+    #selectTags {
+      display: inline-block;
+      margin-left: 1rem;
+      min-height: 45px;
+      min-width: 50%;
+      vertical-align: top;
+      overflow-y: auto;
+      overflow-x: hidden;
+      text-overflow: ellipsis;
+      border-radius: 5px;
+      background-color: rgb(241, 243, 245);
+    }
+
+    #selectTags li {
+      display: inline-block;
+      padding: .5rem 0 .5rem 1rem;
+      margin: .3rem 0 .3rem .1rem;
+      line-height: 100%;
+      max-width: 100%;
+      background-color: rgba(0, 123, 255, .15);
+      border-radius: 5px;
+      list-style: none;
+      white-space: nowrap;
+    }
+
+    #selectTags li span {
+      display: inline-block;
+      margin-right: 2.5rem;
+      max-width: 75%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #selectTags li .cancelSelect {
+      font-size: 20px;
+      color: red;
+      padding-right: 0.5rem;
+      cursor: pointer;
     }
 
     tbody tr:hover {
@@ -174,7 +222,7 @@
     }
 
     .modal {
-	    font-size: 1rem;
+      font-size: 1rem;
     }
 
     .icon {
@@ -186,6 +234,19 @@
       margin-right: 10px;
       overflow: hidden;
     }
+
+    .icon_detail {
+      width: 4em;
+      height: 4em;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      overflow: hidden;
+    }
+
+    .width400 {
+      width: 400px;
+    }
+
 	</style>
 
 	<script type="module">
@@ -198,11 +259,14 @@
       let tagFileId
       // 关系id
       let relationId
+      // 关系id的li
+      let relationIdLi
       // 多个关系id
       let tagRelationsId = []
+      // 用户文件idf
+      let userFileId
 
-      $(function() {
-
+      $(function () {
           initTag()
           initTable();
           // 生成相应方法和类
@@ -210,36 +274,38 @@
 
           // 标签操作
           // 新增
-          $("#addTagConfirm").click(function() {
+          $("#addTagConfirm").click(function () {
               // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
               let data = new URLSearchParams()
-              data.append('tagName',$("#newTag").val())
+              data.append('tagName', $("#newTag").val())
 
               httpUtilFormDate.post("/tag/tagAdd", data
               ).then(res => {
                   // if (res.code)
                   // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
                   $(".tTags ul").append('<li tagId="' + res.data.data + '">' +
-                      '<i class="bi bi-tags tTag"></i><span class="info" title="'+ $("#newTag").val() +'">' + $("#newTag").val() + '</span>' +
+                      '<i class="bi bi-tags tTag"></i><span class="info" title="' + $("#newTag").val() + '">' + $("#newTag").val() + '</span>' +
                       '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
                       '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
                       '</li>')
                   $("#newTag").val("")
-              }).catch(e=>{})
+              }).catch(e => {
+              })
               $("#addTagModal").modal("hide");
           })
           // 删除 确认
-          $(".delConfirm").click(function(){
-              httpUtil.delete("/tag/tagDel/"+delTagLi.attr("tagId"))
+          $(".delConfirm").click(function () {
+              httpUtil.delete("/tag/tagDel/" + delTagLi.attr("tagId"))
                   .then(res => {
-                      if(delTagLi.siblings().length==0)
+                      if (delTagLi.siblings().length == 0)
                           initTag()
                       delTagLi.remove()
-                  }).catch(err => {})
+                  }).catch(err => {
+              })
               $("#delTagModal").modal("hide");
           });
           // 修改 确认操作
-          $("#updConfirm").click(function() {
+          $("#updConfirm").click(function () {
               httpUtil.put("/tag/tagUpd", JSON.stringify({
                   tagId: updTagLi.attr("tagId"),
                   tagName: $("#updateTag").val()
@@ -251,47 +317,117 @@
               $("#updTagModal").modal("hide");
           })
 
-		      // 关系操作
-		      // 删除关系
-		      $(".fDelConfirm").click(function() {
-		          httpUtil.delete("/tag/relationDel/"+relationId)
-				          .then(res => {
-				              initTable()
-				          })
-				      $("#delFileModal").modal("hide")
-		      })
-		      // 删除多个关系
-		      $("#delAllFile").click(function() {
-		          // 得到删除id组
+          // 关系操作
+          // 删除关系
+          $(".fDelConfirm").click(function () {
+              httpUtil.delete("/tag/relationDel", {
+                  params: {
+                      relationId: relationId,
+                      tagId: tagFileId
+                  }
+              })
+                  .then(res => {
+                      initTable()
+                  })
+              $("#delFileModal").modal("hide")
+          })
+          // 删除多个关系
+          $("#delAllFile").click(function () {
+              // 得到删除id组
               let rows = $('#tTable').bootstrapTable('getSelections')
-				      tagRelationsId = []
+              tagRelationsId = []
               for (let rowElement of rows) {
                   tagRelationsId.push(rowElement.tagRelationshipId)
               }
-              if(tagRelationsId.length == 0) {
+              if (tagRelationsId.length == 0) {
                   layer.msg("请先选择文件")
-              }
-		          else {
+              } else {
                   $("#delAllFileModal").modal("show")
               }
-		      })
-		      $("#fAllDelConfirm").click(function() {
-		          httpUtilFormDate.delete("/tag/relationsDel/"+tagRelationsId)
-				          .then(res => {
-				              initTable()
-				          })
-				      $("#delAllFileModal").modal("hide")
-		      })
+          })
+          $("#fAllDelConfirm").click(function () {
+              httpUtil.put("/tag/relationsDel", JSON.stringify({
+                  tagRelationsId: tagRelationsId,
+                  tagId: tagFileId
+              }))
+                  .then(res => {
+                      initTable()
+                  })
+              $("#delAllFileModal").modal("hide")
+          })
 
+          // 自定义搜索框，进行模糊搜索文件
+          $("#queryBtn").on("click", initTable);
+          // 回车搜索文件
+          $("#searchFile").on("keypress", function (event) {
+              if (event.keyCode == 13)
+                  initTable()
+          })
 
-		      // 自定义搜索框，进行搜索
-		      $("#queryBtn").on("click", initTable);
-		      // 回车搜索
-		      $("#searchFile").on("keypress", function(event){
-		          if(event.keyCode == 13)
-		              initTable()
-		      })
+		      // 添加标签
+		      setTimeout(function (){
+              // 搜索文件未使用的标签
+              $('#addTag').next().next().find("input").on("input", function () {        // 输入框，输入信息则搜索（内容为空则不显示任何标签）
+                  $(this).attr('id', "deviceInput");                   // 为input增加id属性
+                  if ($('#deviceInput').val() != "") {
+                      httpUtil.get("/tag/getUnUseTags", {     // 获得模糊搜索的10个标签（除已有的标签）
+                          params: {
+                              tagName: $('#deviceInput').val(),
+                              userFileId: userFileId
+                          }
+                      })
+                          .then(res => {
+                              $("#addTag").html("")
+                              for (let data of res.data) {
+                                  $("#addTag").append("<option value='" + data.tagId + "'>" + data.tagName + "</option>")
+                              }
+                              $("#addTag").selectpicker("refresh")
+                          })
+                  }
+              })
+              // 选择搜索到的标签后，为文件添加标签
+              $('#addTag').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                  if ($(this).val() != "") {
+                      httpUtil.post("tag/addFileTag", JSON.stringify({
+                          tagId: $(this).val(),
+                          userFileId: userFileId
+                      }))
+                          .then(res => {
+                              $("#selectTags").append('<li tagRelationshipId="' + res.data.tagRelationshipId + '">' +
+                                  '<span>' + $(this).children("option").eq(clickedIndex).text() + '</span><i class="bi cancelSelect bi-x"></i>' +
+                                  '</li>')
+                          })
+                  }
+              })
+		      },500)
+
+          // 详情 删除标签确认
+          $(".delConfirm2").click(function () {
+              httpUtil.delete("/tag/relationDel", {
+                  params: {
+                      relationId: relationIdLi.attr("tagRelationshipId"),
+                      tagId: tagFileId
+                  }
+              })
+                  .then(res => {
+                      $("#delTagModal2").modal("hide")
+                      initTable()
+                      closeDrawer()
+                  })
+          })
+          // 关闭文件详情抽屉
+          $(".drawer-overlay").click(closeDrawer)
+          // 调整窗体大小时，取消放大抽屉
+          $(window).resize(function () {
+              $(".drawer-nav").removeClass("width400")
+          })
+          // 关闭文件详情
+          function closeDrawer() {
+              $(".drawer-nav").removeClass("width400")
+              $(".drawer").drawer("close")
+          }
       })
+
       // 初始化表格(为操作按钮绑定事件）
       function initTable() {
           // 先销毁表格
@@ -310,197 +446,183 @@
               queryParams: function (params) {         // 自定义参数
                   return {                  //这里的params是table提供的
                       pageNum: params.offset / params.limit + 1,
-		                  pageSize: params.limit,
+                      pageSize: params.limit,
                       tagId: tagFileId,
-		                  fileName: $("#searchFile").val()
+                      fileName: $("#searchFile").val()
                   };
 
               },
               responseHandler: function (res) {
-		              if(res.data != null)
+                  if (res.data != null)
                       return res.data
-		              else
-		                  return ""
+                  else
+                      return ""
               },
-		          columns: [
-				          {
-				              checkbox: true
-				          },
-		              {
-		                  field: "tagRelationshipId",
-				              title: "关系id",
-				              align: "center",
-				              visible: false
-		              },
-				          {
+              columns: [
+                  {
+                      checkbox: true
+                  },
+                  {
+                      field: "tagRelationshipId",
+                      title: "关系id",
+                      align: "center",
+                      visible: false
+                  },
+                  {
                       field: "fileName",
                       title: "文件名",
-						          halign: "center",
+                      halign: "center",
                       align: "left",
                       formatter: function fileNameFormatter(value, row, index) {
-                          return "<svg fileType=" + row.fileType + " class='icon' aria-hidden='true'>" +
+                          return "<svg fileType='" + row.fileType + "' class='icon' aria-hidden='true'>" +
                               "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
                               "</svg>" + value
                       }
-				          },
-				          {
+                  },
+                  {
                       field: "fileSize",
                       title: "文件大小",
                       align: "center",
-						          formatter: function sizeFormatter(value, row, index) {
-                          if(value > Math.pow(1024,3))
-                              return (value / Math.pow(1024,3)).toFixed(2) + 'G'
-								          else if(value> Math.pow(1024,2))
-								              return (value / Math.pow(1024,2)).toFixed(2) + 'M'
-                          else if(value > 1024)
+                      formatter: function sizeFormatter(value, row, index) {
+                          if (value > Math.pow(1024, 3))
+                              return (value / Math.pow(1024, 3)).toFixed(2) + 'G'
+                          else if (value > Math.pow(1024, 2))
+                              return (value / Math.pow(1024, 2)).toFixed(2) + 'M'
+                          else if (value > 1024)
                               return (value / 1024).toFixed(2) + 'KB'
-								          else
-								              return value + 'B'
-						          }
-				          },
-				          {
+                          else
+                              return value + 'B'
+                      }
+                  },
+                  {
                       field: "updatedTime",
                       title: "修改时间",
                       align: "center",
                       formatter: function dateFormatter(value, row, index) {
                           return value.replace("T", " ")
                       }
-				          },
+                  },
                   {
                       // field: "operation",
                       title: "操作",
                       align: "center",
-		                  formatter: function operationFormatter(value, row, index) {
-                          return "<i class=\"bi bi-box-arrow-in-down-left\"></i>" +
-                              "<i class=\"bi bi-three-dots drawer-toggle\"></i>" +
-                              "<i class=\"bi bi-trash pl-2\ delFile\" relationId='"+ row.tagRelationshipId +
-		                              "' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
-		                  }
-                  }],
-		          // 渲染完数据
-		          onPostBody: function() {
-                  // 文件详情抽屉
-				          $(".bi-three-dots").click(function (){
-				              // 打开drawer
-				              $(".drawer").drawer("open")
-				          })
-
+                      formatter: function operationFormatter(value, row, index) {
+                          return "<a title='转到文件目录' href='/main?path="+ row.fileParentPath +"'><i class=\"bi bi-box-arrow-in-down-left\"></i></a>" +
+                              "<i title='文件详情' class=\"bi bi-three-dots drawer-toggle\" userFileId='" + row.userFileId + "'></i>" +
+                              "<i title='删除' class=\"bi bi-trash pl-2\ delFile\" relationId='" + row.tagRelationshipId +
+                              "' data-toggle=\"modal\" data-target=\"#delFileModal\"></i>"
+                      }
+                  }
+              ],
+              // 渲染完数据
+              onPostBody: function () {
+                  // 打开文件详情抽屉
+                  $(".bi-three-dots").click(function () {
+                      $(".drawer").drawer("open")         // 打开drawer，设置大小
+                      $(".drawer-nav").addClass("width400")
+                      $("#selectTags").html("")
+		                  $("#addTag").val("")
+		                  $("#addTag").html("")
+		                  $("#addTag").selectpicker("refresh")
+                      // 设置数据
+                      userFileId = $(this).attr("userFileId")
+                      let fileType = $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
+                      let fileName = $(this).parent().siblings().eq(1).text()
+                      $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
+                      $("#sFileName").text(fileName)
+                      httpUtil.get("/tag/fileTagsGet", {
+                          params: {
+                              userFileId: userFileId
+                          }
+                      })
+                          .then(res => {
+                              for (let data of res.data)             // 文件使用的标签
+                                  $("#selectTags").append('<li tagRelationshipId="' + data.tagRelationshipId + '">' +
+                                      '<span>' + data.tagName + '</span><i class="bi cancelSelect bi-x"></i>' +
+                                      '</li>')
+                              // 为标签上的删除图标绑定事件
+                              $(".cancelSelect").click(function () {
+                                  relationIdLi = $(this).parent()
+                                  $("#delTagModal2").modal("show")
+                              })
+                          })
+                  })
                   // 删除文件关系按钮
-                  $(".delFile").click(function() {
+                  $(".delFile").click(function () {
                       relationId = $(this).attr("relationId")
                   })
-		          },
-		          // // 选中单元格时，获得id
-              // onCheck: function(field, value, row, $element){
-              //     // let rows = $('#tTable').bootstrapTable('getSelections')
-              //     // for (let rowElement of field) {
-              //     //     tagRelationsId.push(field.tagRelationshipId)
-              //     // }
-              //     console.log($element)
-              //     // console.log(tagRelationsId)
-              // },
-		          // onUncheck: function(field, value, row, $element){
-              //     console.log($element)
-              //     // tagRelationsId.remove(field.tagRelationshipId)
-              // },
+              }
           })
       }
-
       function initTag() {
           // 清空数据
           $(".tTags ul").html("")
-          $("#groupQuery").html("")
+          $("#tagQuery").html("")
           httpUtil.get("/tag/getTags")
               .then(res => {
-                  if(res.data.length == 0){
+                  if (res.data.length == 0) {
                       $(".tTags ul").append('<li>' +
                           '<i class="bi bi-tags tTag"></i><span class="info" style="color: #1698dc" data-toggle="modal" data-target="#addTagModal" title="添加你的第一个标签吧！">添加你的第一个标签吧！</span>' +
                           '</li>')
-                  }
-                  else {
+                  } else {
                       for (let i = 0; i < res.data.length; i++) {
                           $(".tTags ul").append('<li tagId="' + res.data[i].tagId + '">' +
-                              '<span class="info" title="'+ res.data[i].tagName +'"><i class="bi bi-tags tTag"></i>' + res.data[i].tagName + '</span>' +
+                              '<span class="info" title="' + res.data[i].tagName + '"><i class="bi bi-tags tTag"></i>' + res.data[i].tagName + '</span>' +
                               '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
                               '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
                               '</li>')
-                          $("#groupQuery").append("<option tagId='"+ res.data[i].tagId  +"'>" + res.data[i].tagName + "</option>")
+                          $("#tagQuery").append("<option tagId='" + res.data[i].tagId + "'>" + res.data[i].tagName + "</option>")
                       }
 
-
                       // 刷新下拉搜索框
-                      $('#groupQuery').selectpicker('refresh');
+                      $('#tagQuery').selectpicker('refresh');
                       // 清空下拉搜索框选择值
-                      $("#groupQuery").selectpicker("val", "")
+                      $("#tagQuery").selectpicker("val", "")
                       // 单击标签选项时，显示对应文件信息
-                      $('#groupQuery').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-                          if(!$("#groupQuery").selectpicker("val")==""){
-	                          tagFileId = $("#groupQuery option").eq(clickedIndex).attr("tagId")
-			                      initTable()
-	                          $("#groupQuery").selectpicker("val","")
+                      $('#tagQuery').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                          if (!$("#tagQuery").selectpicker("val") == "") {
+                              tagFileId = $("#tagQuery option").eq(clickedIndex).attr("tagId")
+                              initTable()
+                              $("#tagQuery").selectpicker("val", "")
                           }
                       });
 
-
-
                       // 删除标签按钮 绑定事件
-                      $(".delTag").click(function() {
+                      $(".delTag").click(function () {
                           delTagLi = $(this).parent();
                       })
-
                       // 修改标签按钮 绑定事件
-                      $(".updTag").click(function(){
+                      $(".updTag").click(function () {
                           updTagLi = $(this).parent()
                       });
-
                       // 单击li，得到id
-		                  $(".tTags ul li .info").click(function() {
-		                      tagFileId = $(this).parent().attr("tagId")
+                      $(".tTags ul li .info").click(function () {
+                          tagFileId = $(this).parent().attr("tagId")
                           // 清空搜索框
                           $("#searchFile").val("")
                           initTable()
-		                  })
-
+                      })
                   }
               })
-
       }
-
-
-
-      // 密码默认隐藏
-      $(".bi-eye-fill").hide();
-      // 密码显示
-      $(".bi-eye-slash").click(function(){
-          $("#sPwd").attr("type", "text");
-          $(".bi-eye-fill").show();
-          $(this).hide();
-      })
-      // 密码隐藏
-      $(".bi-eye-fill").click(function(){
-          $("#sPwd").attr("type", "password");
-          $(".bi-eye-slash").show();
-          $(this).hide();
-      })
-
 	</script>
 
 </head>
 
 <body class="drawer drawer--right">
 <div th:replace="common/nav-header :: nav-header"></div>
-
 <div class="main  ">
 	<div th:replace="common/nav-left :: nav-left"></div>
 
-	<div class="content row"  style="overflow: hidden;font-size: 1.5rem; margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
+	<div class="content row"
+	     style="overflow: hidden;font-size: 1.5rem; margin-right: 1%; margin-left: 0.5%;padding-bottom: 10px;">
 
 		<!--	标签列表	-->
 		<div class="tLists shadow">
 			<div class="row">
 				<!--	标签搜索框 -->
 				<div class="col-8 ml-1">
-					<select id="groupQuery" class="selectpicker" data-live-search="true"></select>
+					<select id="tagQuery" class="selectpicker" data-live-search="true" style="width: 80%;"></select>
 				</div>
 				<!--	添加标签按钮 	-->
 				<i class="bi bi-plus-square offset-1 col-2" id="tAdd" data-toggle="modal" data-target="#addTagModal"></i>
@@ -519,17 +641,17 @@
 				<!--	自定义搜索框	-->
 				<div class=".tSearch col-10">
 					<div class="panel-body" style="padding-bottom: 1px;">
-							<div class="form-group row pb-0 m-2">
-								<div class="col-3 pr-0">
-									<!-- 自定义搜索框 -->
-									<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
-								</div>
-								<div class="col-sm-1 pl-0">
-									<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
-										<i class="bi bi-search"></i>
-									</button>
-								</div>
+						<div class="form-group row pb-0 m-2">
+							<div class="col-3 pr-0">
+								<!-- 自定义搜索框 -->
+								<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
 							</div>
+							<div class="col-sm-1 pl-0">
+								<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+									<i class="bi bi-search"></i>
+								</button>
+							</div>
+						</div>
 					</div>
 				</div>
 				<!--		删除按钮		-->
@@ -568,7 +690,6 @@
 		</div>
 	</div>
 </div>
-
 <!-- 修改标签模态框 -->
 <div class="modal fade" id="updTagModal">
 	<div class="modal-dialog modal-sm">
@@ -597,7 +718,6 @@
 		</div>
 	</div>
 </div>
-
 <!-- 添加标签模态框 -->
 <div class="modal fade" id="addTagModal">
 	<div class="modal-dialog modal-sm">
@@ -650,54 +770,81 @@
 			</div>
 
 		</div>
+	</div>
 </div>
-</div>
-
 <!--  删除所有关联文件 模态框  -->
 <div class="modal fade" id="delAllFileModal">
 	<div class="modal-dialog modal-sm">
 		<div class="modal-content">
-
 			<!-- 模态框头部 -->
 			<div class="modal-header">
 				<h5 class="modal-title">删除确认</h5>
 				<button type="button" class="close" data-dismiss="modal">&times;</button>
 			</div>
-
 			<!-- 模态框主体 -->
 			<div class="modal-body py-4 mx-2">
 				<span>是否将选中的文件从该标签下移除?</span>
 			</div>
-
 			<!-- 模态框底部 -->
 			<div class="modal-footer">
 				<button type="button" class="btn btn-danger" id="fAllDelConfirm">确定</button>
 				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
 			</div>
-
 		</div>
 	</div>
 </div>
 
-
 <!--  文件详情  -->
-<nav class="drawer-nav" role="navigation" style="z-index: 20;">
+<nav class="drawer-nav" role="navigation" style="z-index: 20">
 	<ul class="pl-0">
 		<li class="text-center" style="width: 100%">
-			<img src="/static/img/logo.png" alt="" style="width: 40%;">
+			<svg id="sFileType" class="icon_detail" aria-hidden="true">
+				<use xlink:href="#icon-mp3"></use>
+			</svg>
 		</li>
 		<li class="row">
-			<span class="col-5 text-right">文件名:</span>
-			<span class="sInfo col-6 p-0 pr-2">地觅仙泉灾夏无酷暑鄙厅里淡标题</span>
+			<span class="offset-2"></span>
+			<span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName">南非世界杯</span>
 		</li>
 		<hr>
-		<li class="row">
-			<span class="col-5 text-right">分享方式:</span>
-			<span class="sInfo col-6 p-0 pr-2">内部分享</span>
-		</li>
-		<!--	分享人应该可以 加/删	-->
+		<fieldset class="mb-3">
+			<legend>标签管理</legend>
+			<div class="row" style="margin-top: 5px;">
+				<!--	添加标签	-->
+				<label class="col-form-label col-4 text-right">添加标签:</label>
+				<select id="addTag" class="selectpicker col-11" title="搜索并选择标签" data-live-search="true">
+				</select>
+			</div>
+			<div class="row" style="margin-top: 5px;">
+				<label class="col-form-label col-4 text-right">已有标签:</label>
+				<ul class="mb-0 col-11" id="selectTags">
+				</ul>
+			</div>
+		</fieldset>
+
 	</ul>
 </nav>
 
+<!-- 删除标签模态框 -->
+<div class="modal fade" id="delTagModal2">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<!-- 模态框头部 -->
+			<div class="modal-header">
+				<h5 class="modal-title">确认操作</h5>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+			</div>
+			<!-- 模态框主体 -->
+			<div class="modal-body mt-3 mb-3 ml-2 mr-2">
+				您确定删除该标签么？<br/>
+			</div>
+			<!-- 模态框底部 -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-danger delConfirm2">确定</button>
+				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+			</div>
+		</div>
+	</div>
+</div>
 </body>
 </html>

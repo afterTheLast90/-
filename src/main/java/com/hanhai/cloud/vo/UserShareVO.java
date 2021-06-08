@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class UserShareVO {
 
+    /** 用户文件id */
+    private Long userFileId;
     /** 分享id */
     private String shareId ;
     /** 文件名 */

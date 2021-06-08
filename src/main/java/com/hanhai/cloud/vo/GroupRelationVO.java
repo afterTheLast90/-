@@ -12,8 +12,8 @@ public class GroupRelationVO {
     private Long groupRelationshipId;
     /** 组id */
     private Long groupId;
+    /** 用户id */
+    private Long userId;
     /** 用户名 */
     private String userName;
-    /** 用户头像 */
-    private String userAvatar;
 }

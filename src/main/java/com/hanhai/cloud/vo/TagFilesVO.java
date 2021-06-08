@@ -10,10 +10,14 @@ import java.time.LocalDateTime;
 @Data
 @Accessors(chain = true)
 public class TagFilesVO{
+    /** 用户文件id */
+    private Long userFileId;
     /** 关系id */
     private Long tagRelationshipId ;
     /** 文件名 */
     private String fileName ;
+    /** 文件父路径 */
+    private String fileParentPath;
     /** 文件类型*/
     private String fileType;
     /** 文件大小 */
