@@ -2,6 +2,7 @@ package com.hanhai.cloud.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hanhai.cloud.entity.User;
+import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.vo.GetShareVO;
 import com.hanhai.cloud.vo.ResourceVO;
@@ -103,5 +104,20 @@ public interface UserShareMapper extends BaseMapper<UserShare> {
             "from user_files f, user_share s\n" +
             "where f.user_file_id=s.user_file_id and\n" +
             "      share_id=#{shareId}")
-    public String getFileTypeByShareId(String shareId);
+    public String getFileTypeByShareId(@Param("shareId")String shareId);
+
+    // 由userFileId数组，得到所对应的文件
+    public List<UserFile> getFileByUFIds(@Param("userFileIds")Long[] userFileIds);
+
+    // 根据文件父目录，得到该目录所有文件（需要注意：以根目录寻找，会得到所有用户根目录文件）
+    @Select("select * from user_files where file_parent_path=#{fileParentPath} and deleted=0")
+    public List<UserFile> getFileByParentPath(@Param("fileParentPath")String fileParentPath);
+
+    // 根据 用户的 文件父目录，得到用户该目录所有文件
+    @Select("select * from user_files where file_parent_path=#{fileParentPath} and user_id=#{userId} and deleted=0")
+    public List<UserFile> getFileByParentPathAndUser(@Param("userId")Long userId, @Param("fileParentPath")String fileParentPath);
+
+    // 分享信息的 转存次数+1
+    @Update("update user_share set file_dump_time=file_dump_time+1 where share_id=#{shareId}")
+    public void addDumpTime(@Param("shareId")String shareId);
 }

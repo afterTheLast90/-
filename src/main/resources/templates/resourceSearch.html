@@ -16,8 +16,6 @@
 	<!--	引入bootstrap-table中文包 -->
 	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
 
-	<script src="/static/iconfont/iconfont.js"></script>
-
 	<style>
     /*body {*/
     /*  background-color: #efefef;*/
@@ -82,7 +80,9 @@
     }
 	</style>
 
-	<script>
+	<script type="module">
+      import httpUtil from "../static/httpUtil.js";
+
       let currentPath = ""    // 记录当前路径
       let shareId = ""
       let userFileId
@@ -90,7 +90,7 @@
       let createdTime = ""
       let expiredTime = ""
       let goUp = false
-      let layer = 0
+      let layerIndex = 0
 
       $(function(){
           // 调用函数，初始化表格
@@ -196,17 +196,13 @@
 		                      let isLogin = [[${isLogin}]]
 		                      value = ""
 		                      if(isLogin) {
-		                          if(layer >= 1)     // 文件夹中，所有文件都下载/转存，无次数限制
+		                          if(layerIndex >= 1)     // 文件夹中，所有文件都下载/转存，无次数限制
 		                              return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><i class=\"bi bi bi-download rDownload\"></i>"
-		                          if(row.downloadAllow) {
-		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
-		                          }else {
-		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\" style='cursor:default; color: #ccc;'></i>"
-		                          }
 		                          if(row.fileDumpAllow) {
+		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
+		                          }
+		                          if(row.downloadAllow) {
 		                              value += "<i class=\"bi bi bi-download rDownload\"></i>"
-		                          }else {
-		                              value += "<i class=\"bi bi bi-download rDownload\" style='cursor:default; color: #ccc;'></i>"
 		                          }
 				                      return value
 		                      }
@@ -229,7 +225,13 @@
 		                      expiredTime = $(this).siblings().eq(2).text()
 		                      goUp = false
 													initTable()
-		                      layer++
+		                      layerIndex++
+                      })
+                      // 保存文件
+                      $(".rUpload").click(function(){
+                          userFileId = $(this).parent().siblings(":first").children("svg").attr("userfileid")
+		                      shareId = $(this).parent().siblings(":first").children("svg").attr("shareid")
+                          $.fn.selectDirForUser.show()
                       })
 		              }
               })
@@ -241,20 +243,36 @@
               goUp = true
               if(typeof($("tbody tr td svg").attr("shareid"))!="undefined"){
                   currentPath = $("tbody tr td svg").attr("currentpath")
-                  shareId = $("tbody tr td svg").attr("shareid")
+	                  shareId = $("tbody tr td svg").attr("shareid")
               }
               else{
                   currentPath += "!!!/"
               }
-              layer--
-              if(layer <= 0){
-                  layer = 0
+              layerIndex--
+              if(layerIndex <= 0){
+                  layerIndex = 0
                   userName = ""
                   createdTime = ""
                   expiredTime = ""
               }
               initTable()
           })
+          // 得到保存路径
+          $.fn.selectDirForUser.ok(function(fileId, fileName){
+              let ids=[]
+		          var shareIds=[]
+              ids.push(userFileId)
+		          shareIds.push(shareId)
+              httpUtil.post("/resource/dump", JSON.stringify({
+                  userFileIds:ids,
+		              shareIds:shareIds,
+                  targetPath:fileId
+              }))
+		              .then(function(){
+		                  currentPath = "null"
+				              goUp = false
+				              shareId = ""
+		                  initTable()})})
       });
 	</script>
 </head>
@@ -295,5 +313,8 @@
 
 </div>
 </div>
+
+<!--选择目录模态框-->
+<div th:replace="common/selectDir :: selectDir"></div>
 </body>
 </html>

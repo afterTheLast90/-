@@ -42,8 +42,9 @@
 
 	<script type="module">
 			import httpUtil from "../static/httpUtil.js";
+			let userFileId
+			let shareId
       $(function(){
-          console.log("[[${shareId}]]")
           // 密码未验证成功
 			    if([[${not pwdPass}]]){
               $("#pwdCheck").modal("show")
@@ -62,6 +63,8 @@
 							    $("#expireTime b").text(res.data[0].expireTime.replace("T", " ")=='1970-01-01 07:59:59'?"永久":res.data[0].expireTime.replace("T", " "))
 							    // 文件大小
                   $("#fileSize").text(convertFileSize(res.data[0].fileSize))
+							    $("#dumpBtn").attr("userFileId", res.data[0].userFileId)
+							    $("#dumpBtn").attr("shareId", res.data[0].shareId)
 							    // 是否还有 下载/转存 次数
 							    if(!res.data[0].haveDown){
                       $("#downBtn").prop("disabled", "disabled")
@@ -69,6 +72,12 @@
 			            if(!res.data[0].haveDump){
 			                $("#dumpBtn").prop("disabled", "disabled")
 			            }
+			            // 转存按钮
+							    $("#dumpBtn").click(function(){
+							        userFileId = $(this).attr("userFileId")
+									    shareId = $(this).attr("shareId")
+                      $.fn.selectDirForUser.show()
+							    })
 					    })
 			    }
 			    // 密码验证
@@ -95,6 +104,22 @@
                       }, 500)
                   })
 		      })
+
+          // 得到保存路径
+          $.fn.selectDirForUser.ok(function(fileId, fileName){
+              let ids=[]
+              var shareIds=[]
+              ids.push(userFileId)
+              shareIds.push(shareId)
+              httpUtil.post("/resource/dump", JSON.stringify({
+                  userFileIds:ids,
+                  shareIds:shareIds,
+                  targetPath:fileId
+              }))
+                  .then(function(){
+                      window.location.reload()
+                  })
+          })
 		})
 	</script>
 
@@ -104,6 +129,7 @@
 <body>
 <div th:replace="common/nav-header :: nav-header"></div>
 <div th:if="${pwdPass}" class="row main" style="margin-top:8px;">
+	<!-- 主内容区 	-->
 	<div class="rMain container shadow">
 		<!--	分享信息	-->
 		<section class="fileInfo pt-3">
@@ -119,7 +145,8 @@
 			</span>
 			<div class="float-right">
 				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
-				<button  class="btn btn-primary mr-3" id="dumpBtn" th:if="${not isOwner}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
+				<!--		不是所有者 且 登录才能保存文件		-->
+				<button  class="btn btn-primary mr-3" id="dumpBtn" th:if="${(not isOwner) and isLogin}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
 				<button class="btn btn-primary" id="downBtn">
 					<i class="bi bi-box-arrow-in-down"></i>
 					下载(<span id="fileSize"></span>)
@@ -129,6 +156,29 @@
 		<!--	文件预览	-->
 		<section></section>
 	</div>
+	<!-- 取消分享模态框 -->
+	<div class="modal fade" id="cancelShareModal">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<!-- 模态框头部 -->
+				<div class="modal-header">
+					<h5 class="modal-title">确认操作</h5>
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<!-- 模态框主体 -->
+				<div class="modal-body py-4 mx-2">
+					<span>确认取消分享该文件?</span>
+				</div>
+				<!-- 模态框底部 -->
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--选择目录模态框-->
+	<div th:replace="common/selectDir :: selectDir"></div>
 </div>
 
 <!-- 密码检测模态框 -->
@@ -154,27 +204,6 @@
 					<input type="button" class="btn btn-primary col-2 ml-2" id="pwdCheckBtn" value="确定">
 				</div>
 			</form>
-		</div>
-	</div>
-</div>
-<!-- 取消分享模态框 -->
-<div class="modal fade" id="cancelShareModal">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<!-- 模态框头部 -->
-			<div class="modal-header">
-				<h5 class="modal-title">确认操作</h5>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
-			</div>
-			<!-- 模态框主体 -->
-			<div class="modal-body py-4 mx-2">
-				<span>确认取消分享该文件?</span>
-			</div>
-			<!-- 模态框底部 -->
-			<div class="modal-footer">
-				<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-			</div>
 		</div>
 	</div>
 </div>

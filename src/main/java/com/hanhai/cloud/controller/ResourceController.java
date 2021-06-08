@@ -5,6 +5,7 @@ import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.UserShare;
+import com.hanhai.cloud.params.DumpResourceParams;
 import com.hanhai.cloud.params.ResourceSearchParams;
 import com.hanhai.cloud.service.ResourceService;
 import com.hanhai.cloud.service.ShareService;
@@ -16,10 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.spec.RC2ParameterSpec;
 import javax.validation.constraints.NotBlank;
@@ -283,6 +281,13 @@ public class ResourceController {
             return "getShareFolder";
         } else
             return "getShareFile";
+    }
+
+    @PostMapping("/resource/dump")
+    @ResponseBody
+    public R resourceDump(@RequestBody DumpResourceParams resourceParams){
+        resourceService.resourceDump(resourceParams.getUserFileIds(), resourceParams.getTargetPath(), resourceParams.getShareIds());
+        return new R(ResultCode.SUCCESS).setData("保存成功");
     }
 
 //    // 链接失效界面测试

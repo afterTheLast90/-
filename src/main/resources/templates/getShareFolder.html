@@ -77,7 +77,7 @@
     let createdTime = ""
     let expiredTime = ""
     let goUp = false
-    // let layer = 0
+		let method = false    // false为转存单个文件，true为多个
 
 		$(function() {
 		    // 密码未匹配
@@ -214,18 +214,94 @@
                         goUp = false
                         initTable()
                     })
+                },
+		            // 表格渲染完成后
+		            onPostBody: function(){
+                    // 单击复选框时，判断如果选中数>2,则不可下载
+                    // $("input[type='checkbox']").click(function(){
+                    //     console.log(1111)
+                    //     let rows = $('#tTable').bootstrapTable('getSelections')
+                    //     console.log(rows)
+                    //     if(rows.length > 1){
+                    //         $("#downBtn").attr("disabled", "disabled")
+                    //     }else{
+                    //         $("#downBtn").removeAttr("disabled")
+                    //     }
+                    // })
+				            // 转存单个文件
+				            $(".rUpload").click(function(){
+				                userFileId = $(this).parent().siblings().eq(1).children("svg").attr("userfileid")
+                        method = false
+                        $.fn.selectDirForUser.show()
+                    })
+		            },
+                onCheck:function(row, $element){
+										checkRows()
+                },
+                onUncheck:function(row, $element){
+                    checkRows()
+                },
+                onCheckAll: function (rowsAfter,rowsBefore) {
+                    checkRows()
+                },
+                onUncheckAll: function (rowsAfter,rowsBefore) {
+                    checkRows()
                 }
-            })
-        }
+          })}
         // 单击返回上级目录
         $("#parentBtn").click(function(){
             goUp = true
-            if(typeof($("tbody tr td svg").attr("currentpath"))!="undefined")
+            if(typeof($("tbody tr td svg").attr("currentpath"))!="undefined"){
                 currentPath = $("tbody tr td svg").attr("currentpath")
+            }
             else
                 currentPath += "!!!/"
             initTable()
         })
+				// 保存多个文件
+				$("#dumpBtn").click(function(){
+            let rows = $('#sTable').bootstrapTable('getSelections')
+            if(rows.length == 0){
+                layer.msg("请选择保存的文件")
+            }
+            else{
+                $.fn.selectDirForUser.show()
+		            method = true
+            }
+        })
+				// 得到保存路径
+        $.fn.selectDirForUser.ok(function(fileId, fileName){
+            let ids=[]
+            let shareIds=[]
+            shareIds.push("[[${shareId}]]")
+            if(!method){
+                ids.push(userFileId)
+            }
+            else{
+                let rows = $('#sTable').bootstrapTable('getSelections')
+								for(let row of rows)
+										ids.push(row.userFileId)
+            }
+            httpUtil.post("/resource/dump", JSON.stringify({
+                userFileIds:ids,
+                shareIds:shareIds,
+                targetPath:fileId
+            }))
+                .then(function(){   // 刷新页面
+                    currentPath = "init"
+                    goUp = false
+                    shareId: shareIds
+                    initTable()
+                })
+        })
+				// 检查选中行数
+				function checkRows(){
+						let rows = $('#sTable').bootstrapTable('getSelections')
+						if(rows.length > 1){
+						    $("#downBtn").attr("disabled", "disabled")
+						}else
+						    $("#downBtn").removeAttr("disabled")
+        }
 		})
 	</script>
 
@@ -249,7 +325,8 @@
 			</span>
 			<div class="float-right">
 				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
-				<button class="btn btn-primary mr-3" id="dumpBtn" th:if="${not isOwner}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
+				<!--		不是所有者 且 登录才能保存文件		-->
+				<button class="btn btn-primary mr-3" id="dumpBtn" th:if="${(not isOwner) and isLogin}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
 				<button class="btn btn-primary" id="downBtn">
 					<i class="bi bi-box-arrow-in-down"></i>
 					下载
@@ -265,6 +342,29 @@
 		<!--	文件列表显示	-->
 		<table id="sTable">
 		</table>
+	</div>
+	<!--选择目录模态框-->
+	<div th:replace="common/selectDir :: selectDir"></div>
+	<!-- 取消分享模态框 -->
+	<div class="modal" id="cancelShareModal"  data-backdrop="static">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content">
+				<!-- 模态框头部 -->
+				<div class="modal-header">
+					<h5 class="modal-title">确认操作</h5>
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<!-- 模态框主体 -->
+				<div class="modal-body py-4 mx-2">
+					<span>确认取消分享该文件?</span>
+				</div>
+				<!-- 模态框底部 -->
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
+					<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+				</div>
+			</div>
+		</div>
 	</div>
 </div>
 
@@ -292,26 +392,6 @@
 		</div>
 	</div>
 </div>
-<!-- 取消分享模态框 -->
-<div class="modal" id="cancelShareModal"  data-backdrop="static">
-	<div class="modal-dialog modal-sm">
-		<div class="modal-content">
-			<!-- 模态框头部 -->
-			<div class="modal-header">
-				<h5 class="modal-title">确认操作</h5>
-				<button type="button" class="close" data-dismiss="modal">&times;</button>
-			</div>
-			<!-- 模态框主体 -->
-			<div class="modal-body py-4 mx-2">
-				<span>确认取消分享该文件?</span>
-			</div>
-			<!-- 模态框底部 -->
-			<div class="modal-footer">
-				<button type="button" class="btn btn-danger" id="cancelShareConfirm">确定</button>
-				<button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-			</div>
-		</div>
-	</div>
-</div>
+
 </body>
 </html>
