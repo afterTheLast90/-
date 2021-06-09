@@ -160,12 +160,12 @@
       .selectUsers {
         display: inline-block;
         margin-left: 1rem;
-        max-height: 60px;
+        /*max-height: 60px;*/
 	      min-height: 38px;
         min-width: 50%;
         vertical-align: top;
-        overflow-y: auto;
-	      overflow-x: hidden;
+        /*overflow-y: auto;*/
+	      /*overflow-x: hidden;*/
         text-overflow: ellipsis;
 	      border-radius: 5px;
         background-color: rgb(241,243,245);
@@ -193,12 +193,23 @@
         text-overflow: ellipsis;
       }
 
-      .selectUsers li .cancleSelect {
+      .selectUsers li .cancelSelect {
 	      font-size: 20px;
 	      color: red;
         padding-right: 0.5rem;
         cursor: pointer;
       }
+
+      #gAddModal .modal-body {
+        height: 200px;
+				overflow-y: auto;
+			}
+
+			#uAddModal .modal-body {
+				max-height: 350px;
+        height: 250px;
+				overflow-y: auto;
+			}
 	</style>
 
 	<script type="module">
@@ -245,7 +256,7 @@
                       $("#gAddUsers").append("<li userId='"+ $(this).val() +"'>" +
                           "<span>"+ $(this).children("option").eq(clickedIndex).text()
                           +"</span>" +
-                          "<i class=\"bi cancleSelect bi-x\"></i>" +
+                          "<i class=\"bi cancelSelect bi-x\"></i>" +
                           "</li>")
                   }
                   else{
@@ -256,7 +267,7 @@
                   $("#addGroup-addUser").selectpicker("refresh")
               }
               // 取消用户选择
-              $(".cancleSelect").click(function() {
+              $(".cancelSelect").click(function() {
                   $(this).parent().remove()
               })
           })
@@ -333,7 +344,7 @@
                       $("#pushUsers").append("<li userId='"+ $(this).val() +"'>" +
                           "<span>"+ $(this).children("option").eq(clickedIndex).text()
                           +"</span>" +
-                          "<i class=\"bi cancleSelect bi-x\"></i>" +
+                          "<i class=\"bi cancelSelect bi-x\"></i>" +
                           "</li>")
                   }
                   else{
@@ -342,7 +353,7 @@
                   initSelect()
               }
               // 取消用户选择
-              $(".cancleSelect").click(function() {
+              $(".cancelSelect").click(function() {
                   $(this).parent().remove()
               })
           })
@@ -629,15 +640,15 @@
 						</select>
 					</div>
 
-					<div class="modal-footer">
-						<!-- 按钮	-->
-						<div class="row form-group">
-							<button type="button" class="btn pl-4 pr-4 btn-primary uAddConfirm">确定</button>
-							<button type="button" class="btn pl-4 pr-4 ml-2 btn-secondary" data-dismiss="modal">关闭</button>
-						</div>
-					</div>
-
 				</form>
+			</div>
+
+			<div class="modal-footer">
+				<!-- 按钮	-->
+				<div class="row form-group">
+					<button type="button" class="btn pl-4 pr-4 btn-primary uAddConfirm">确定</button>
+					<button type="button" class="btn pl-4 pr-4 ml-2 btn-secondary" data-dismiss="modal">关闭</button>
+				</div>
 			</div>
 
 		</div>
@@ -661,13 +672,13 @@
 					<!--	群组名称	-->
 					<div class="row form-group">
 						<label class="col-form-label offset-1 col-md-3 col-sm-3 text-right">群组名:</label>
-						<input type="text" name="nGName" id="nGName" class="form-control col-6" placeholder="群组名"
+						<input type="text" name="nGName" id="nGName" class="form-control ml-2 col-6" placeholder="群组名"
 						       required>
 					</div>
 					<!-- 已选用户 -->
 					<div class="pb-3">
 						<label class="col-form-label offset-1 col-3 text-right">已选用户:</label>
-						<ul class="mb-0 pl-3 col-6 selectUsers" id="gAddUsers">
+						<ul class="mb-0 ml-0 col-6 selectUsers" id="gAddUsers">
 						</ul>
 					</div>
 					<!--	查询用户	-->
