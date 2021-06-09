@@ -1,10 +1,13 @@
 package com.hanhai.cloud.controller;
 
 import com.hanhai.cloud.base.R;
+import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.CopyMoveFileParams;
 import com.hanhai.cloud.params.CreateDirectoryParam;
+import com.hanhai.cloud.params.DeletedParams;
+import com.hanhai.cloud.params.ReNameParams;
 import com.hanhai.cloud.service.UserFileService;
 import com.hanhai.cloud.utils.BeanUtils;
 import com.hanhai.cloud.vo.UserFileVO;
@@ -14,10 +17,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
 @Controller
+@Validated
 public class MainController {
     @Autowired
     UserFileService userFileService;
@@ -72,7 +78,12 @@ public class MainController {
         return R.getSuccess().setData(BeanUtils.convertTo(dir,UserFileVO.class)).setMsg("文件夹创建成功");
     }
 
-
+    @PostMapping("/file/rename")
+    @ResponseBody
+    public R reName(@RequestBody @Validated ReNameParams param)throws UpdateException{
+        userFileService.reName(param);
+        return R.getSuccess();
+    }
     @PostMapping("/file/copy")
     @ResponseBody
     public R copy(@RequestBody @Validated  CopyMoveFileParams copyMoveFileParams){
@@ -87,12 +98,31 @@ public class MainController {
         userFileService.move(copyMoveFileParams.getIds(),copyMoveFileParams.getTarget());
         return R.getSuccess();
     }
-//    @PostMapping("/file/rename")
-//    @ResponseBody
-//    public R rename(@RequestBody @Validated ReNameParams reNameParams){
-//        System.out.println(reNameParams);
-//        userFileService.reName(reNameParams.getNewName(),reNameParams.getIds(),reNameParams.getTarget());
-//        return R.getSuccess();
+    @PostMapping("/file/deleted")
+    @ResponseBody
+    public R deleted(@RequestBody @Validated DeletedParams deletedParams){
+        System.out.println(deletedParams);
+        userFileService.deleted(deletedParams.getIds());
+        return R.getSuccess();
+    }
+//    @GetMapping("/getFileHistory")
+//    public String fileHistory( @RequestParam("fileId") String fileId,Model model){
+//        List <FileHistory> fileHistoryList= userFileService.getFileHistory(fileId);
+//        List <FileHistoryVO>history =new ArrayList<>(fileHistoryList.size());
+//        for(FileHistory fileHistory:fileHistoryList){
+//            history.add(BeanUtils.convertTo(fileHistory,FileHistoryVO.class));
+//        }
+//        model.addAttribute("history",history);
+//        return "main";
 //    }
-
+    @GetMapping("/getFileHistory")
+    @ResponseBody
+    public R history(@NotBlank(message = "ID不能为空") @NotNull(message = "ID不能为空") Long fileId){
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getFileHistory(fileId));
+    }
+    @GetMapping("/getByName")
+    @ResponseBody
+    public R getByName(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") String name){
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getByName(name));
+    }
 }

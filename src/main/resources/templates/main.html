@@ -5,19 +5,20 @@
     <th:block th:include="common/header :: header(~{::title})">
         <title>瀚海云盘</title>
     </th:block>
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />
-<!--    <script src="//at.alicdn.com/t/font_2539461_jy6ayp1p7wh.js"></script>-->
-    <script src="/static/iconfont/iconfont.js"></script>
+
 
     <!-- drawer.css -->
     <link rel="stylesheet" href="/static/drawer/drawer.min.css">
     <!-- iScroll.js -->
-    <script src="/static/iconfont/iconfont.js"></script>
+    <script src="/static/iScroll/iscroll.js"></script>
     <!-- drawer.js -->
-    <script src="/static/iconfont/iconfont.js"></script>
+    <script src="/static/drawer/drawer.min.js"></script>
+
+    <!--    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />-->
+    <!--    <script src="./iconfont.js"></script>-->
+
 
     <style type="text/css">
-
 
         .actions {
             justify-content: left;
@@ -109,28 +110,29 @@
             font-size: 20px
         }
 
-        /*.width26rem {*/
-        /*    width: 26rem;*/
-        /*}*/
+        .drawer-nav > ul > li {
+            margin-top: 10px;
+        }
 
+        .drawer-nav li .bi {
+            margin-top: -5px;
+            padding-left: 5px;
+            font-size: 20px;
+            color: #5a6268;
+            cursor: pointer;
+        }
+
+        .drawer-nav li .bi-eye-fill {
+            color: #1296db;
+        }
+
+        .col-my-drawer {
+            width: 400px;
+        }
 
     </style>
     <script>
         const currentPath = "[[${current}]]";
-    </script>
-    <script type="module">
-        import httpUtil from "/static/httpUtil.js";
-        $("#addfolderconfirm").click(function () {
-            httpUtil.post("/file/createDirectory", JSON.stringify({
-                // path: (currentPath.eq('/'))?currentPath:currentPath+'/',
-                path:currentPath,
-                fileName: $("#newfolder").val()
-            })).then(res => {
-                $('#addfolder').modal('hide');
-            }).catch(e => {
-                alert("新建文件夹失败！！！请重试");
-            })
-        })
     </script>
 
 </head>
@@ -140,7 +142,7 @@
 <div class="main">
     <div th:replace="common/nav-left :: nav-left"></div>
 
-    <div class="content"  style="overflow: hidden;margin-right: 1%">
+    <div class="content" style="overflow: hidden;margin-right: 1%">
         <div class="row  navbar bg-light  actions">
             <div class="dropdown">
                 <button type="button" class="btn btn-md btn-primary dropdown-toggle " data-toggle="dropdown"
@@ -159,22 +161,19 @@
             <button type="button" class="btn btn-outline-primary btn-md" id="download" disabled="disabled">
                 <span class="bi bi-cloud-download"></span>下载
             </button>
-            <button type="button" class="btn btn-outline-primary btn-md" id="delete" disabled="disabled">
+            <button type="button" class="btn btn-outline-primary btn-md" id="deleted" disabled="disabled" data-toggle="modal"
+                    data-target="#deleteConfirmation">
                 <span class="bi bi-trash"></span>删除
             </button>
-            <button type="button" class="btn btn-outline-primary btn-md" id="rename" disabled="disabled" data-toggle="modal"
-                    data-target="#renameModel">重命名</button>
+            <button type="button" class="btn btn-outline-primary btn-md" id="rename" disabled="disabled"
+                    data-toggle="modal"
+                    data-target="#renameModel">重命名
+            </button>
             <button type="button" class="btn btn-outline-primary btn-md" id="copy" disabled="disabled">复制到</button>
-
-
-
             <button type="button" class="btn btn-outline-primary btn-md" id="move" disabled="disabled">移动到</button>
             <form class="form-inline ml-auto " style="margin-top:10px;">
-                <script>
-
-                </script>
-                <input class="form-control mr-sm-2" type="search" placeholder="搜索您的文件" aria-label="serach">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">
+                <input class="form-control mr-sm-2" type=".search" placeholder="搜索您的文件" aria-label="search" id="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="btuSearch">
                     <i class="bi bi-search"></i>搜索
                 </button>
             </form>
@@ -185,9 +184,8 @@
                     <span class="bi bi-reply"></span>&nbsp;返回上一级
                 </button>
             </a>
-<!--            <div aria-label="breadcrumb" style=""><a href="#">全部文件</a>-->
-<!--            </div>-->
-            <span class="statistical ml-auto" id="counttext" style="margin-top: 8px ;margin-right: 30px" >已全部加载，共<span th:text="${files.size()}"></span>个文件</span>
+            <span class="statistical ml-auto" id="counttext" style="margin-top: 8px ;margin-right: 30px">已全部加载，共<span
+                    th:text="${files.size()}"></span>个文件</span>
         </div>
         <div class="row" id="filesTable">
             <table class="table files" style="background-color: white">
@@ -201,15 +199,17 @@
                     <th>更新时间</th>
                 </tr>
                 </thead>
-                <tbody style="display: block; height: calc(100vh - 280px);overflow-y: scroll;">
+                <tbody style="display: block; height: calc(100vh - 280px);overflow-y: scroll;" id="fileList">
                 <tr th:each="file : ${files}" class="files" style="display: flex"
                     th:userFileId="${file.getUserFileId()}">
                     <td>
-                        <input type="checkbox" name="num" style="margin-top: 5px" th:userFileId="${file.getUserFileId()}"/>
+                        <input type="checkbox" name="num" style="margin-top: 5px"
+                               th:userFileId="${file.getUserFileId()}"/>
                     </td>
 
                     <td>
-                        <a th:if="${'DIR' == (file.getFileType())}" th:href="${'/main?path='+file.getFileParentPath()+file.getUserFileId()+'/'}">
+                        <a th:if="${'DIR' == (file.getFileType())}"
+                           th:href="${'/main?path='+file.getFileParentPath()+file.getUserFileId()+'/'}">
                             <svg class="icon" aria-hidden="true">
                                 <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>
                             </svg>
@@ -224,8 +224,11 @@
                     </td>
                     <td class="action" style="color: #007bff">
                         <i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>
-                        <i class="bi bi-download" title="下载"></i>
-                        <i class="bi bi-three-dots more" title="更多"></i>
+                        <th:block th:if="${'DIR' != (file.getFileType())}">
+                            <i class="bi bi-download" title="下载"></i>
+                            <i class="bi bi-three-dots more drawer-toggle" title="更多"
+                               th:userFileId="${file.getUserFileId()}"></i>
+                        </th:block>
                     </td>
                     <td th:text="${file.getFileSize()}"></td>
                     <td th:text="${#temporals.format(file.getCreatedTime(), 'yyyy-MM-dd HH:mm:ss')}"></td>
@@ -254,7 +257,7 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-group">
-                    <label for="newTag" class="col-form-label col-4 offset-1 text-right">标签名:</label>
+                    <label class="col-form-label col-4 offset-1 text-right">标签名:</label>
                     <input type="text" name="newTag" class="form-control col-5" id="newTag" required placeholder="标签名">
                 </div>
             </div>
@@ -281,7 +284,7 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-inline">
-                    <label for="newTag" class="col-form-label text-right">文件夹名:</label>
+                    <label class="col-form-label text-right">文件夹名:</label>
                     <input type="text" name="newTag" class="form-control " id="newfolder" required
                            placeholder="在此输入文件夹名">
                 </div>
@@ -309,7 +312,7 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-inline">
-                    <label for="newTag" class="col-form-label text-right">新文件名:</label>
+                    <label class="col-form-label text-right">新文件名:</label>
                     <input type="text" name="newname" class="form-control " id="newname" required
                            placeholder="在此新文件名">
                 </div>
@@ -348,13 +351,45 @@
         </div>
     </div>
 </div>
-<nav class="drawer-nav width26rem" role="navigation" style="z-index: 20">
+
+<!-- 确认删除模态框 -->
+<div class="modal" id="deleteConfirmation">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                <div class="row form-inline">
+                    <label class="col-form-label" Style="text-align: center;">确认要把所选文件放入回收站吗?</label>
+                </div>
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary addConfirm" id="confirmDeletion">确定</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--右侧抽屉-->
+<nav class="drawer-nav" role="navigation" style="z-index: 20">
     <ul class="pl-0">
-        <li class="text-center" style="width: 100%;margin-top: 10px">
-            <img src="/static/img/logo.png" alt="" style="width: 40%;">
+        <li class="text-center" style="width: 100%">
+            <!--            <svg class="icon" aria-hidden="true">-->
+            <!--                <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>-->
+            <!--            </svg>-->
         </li>
-        <li class="row filename">
-            <span>大三上</span>
+        <li class="row">
+            <!--            <span class="offset-2"></span>-->
+            <!--            <span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName"></span>-->
         </li>
         <hr>
         <fieldset>
@@ -383,10 +418,10 @@
                     <th width="50"></th>
                 </tr>
                 </thead>
-                <tbody>
+                <tbody id="history">
+                <tr></tr>
+                <tr></tr>
                 <tr>
-                    <th>2020-6-3 12:00:00</th>
-                    <td>0</td>
                     <td class="action" style="color: #007bff">
                         <i class="bi bi bi-arrow-repeat" title="还原"></i>
                     </td>
@@ -397,80 +432,18 @@
 
     </ul>
 </nav>
+
 </div>
 </body>
 </html>
 
-<script type="module">
-    import httpUtil from "/static/httpUtil.js";
-
-    $(function(){
-        let method = 'copy'
-        $("#copy").click(function (){
-            method = 'copy'
-            $.fn.selectDirForUser.show()
-        })
-        $("#move").click(function (){
-            method = 'move'
-            $.fn.selectDirForUser.show()
-        })
-        $.fn.selectDirForUser.ok(function(a,b){
-            let checkedBox =$("input[name='num']:checked");
-            if(checkedBox.length===0){
-                layer.msg("请选择要操作的文件");
-                return;
-            }
-            let ids = [];
-            for(let i =0 ;i<checkedBox.length;i++){
-                if( checkedBox[i].getAttribute("userFileId"))
-                    ids.push(checkedBox[i].getAttribute("userFileId"))
-            }
-            let url = "/file/"+method;
-
-            httpUtil.post(url,JSON.stringify({
-                ids:ids,
-                target:a
-            })).then(res=>{
-            })
-        })
-    })
-</script>
-<script  type="module">
-    import httpUtil from "/static/httpUtil.js";
-    $(function (){
-        $("#renameconfirm").click(function () {
-            let checkedBox =$("input[name='num']:checked");
-            if(checkedBox.length===0){
-                layer.msg("请选择要操作的文件");
-                return;
-            }else if(checkedBox.length>1){
-                layer.msg("选择要操作的文件数大于1");
-                return;
-            }
-            let ids = [];
-            for(let i =0 ;i<checkedBox.length;i++){
-                if( checkedBox[i].getAttribute("userFileId"))
-                    ids.push(checkedBox[i].getAttribute("userFileId"))
-            }
-            httpUtil.post("/file/rename",JSON.stringify({
-                newName:$("#newname").val(),
-                ids:ids,
-                target:currentPath,
-            })).then(res=>{
-
-            }).catch(e => {
-                layer.msg("重命名失败！！！请重试");
-            })
-        })
-    })
-</script>
 <script>
     var allDom = document.getElementsByName("all")[0];  //找到全选框
     var numDoms = document.getElementsByName("num");
     allDom.onclick = function () {   //定义一个全选框的点击函数
         if (this.checked) {                 //判断全选框是否选中,如果返回值为true代表选中
             // $("#download")[0].removeAttribute("disabled");
-            $("#delete")[0].removeAttribute("disabled");
+            $("#deleted")[0].removeAttribute("disabled");
             // $("#rename")[0].removeAttribute("disabled");
             $("#copy")[0].removeAttribute("disabled");
             $("#move")[0].removeAttribute("disabled");
@@ -480,7 +453,7 @@
         } else {                                             //如果返回值为false代表未选中
             //$("#reduction")[0].setAttribute("disabled", "disabled");
             $("#download")[0].setAttribute("disabled", "disabled");
-            $("#delete")[0].setAttribute("disabled", "disabled");
+            $("#deleted")[0].setAttribute("disabled", "disabled");
             $("#rename")[0].setAttribute("disabled", "disabled");
             $("#copy")[0].setAttribute("disabled", "disabled");
             $("#move")[0].setAttribute("disabled", "disabled");
@@ -490,26 +463,25 @@
         }
     }
     $(function () {                 //页面加载完成后执行事件
-            // $("#counttext").text("已全部加载，共" + numDoms.length + "个");
             $("[name=num]").click(function () {
                 let selectLength = $("input[name='num']:checked").length;
 
                 if (selectLength === 0) {
                     // $("#reduction")[0].setAttribute("disabled", "disabled");
                     $("#download")[0].setAttribute("disabled", "disabled");
-                    $("#delete")[0].setAttribute("disabled", "disabled");
+                    $("#deleted")[0].setAttribute("disabled", "disabled");
                     $("#rename")[0].setAttribute("disabled", "disabled");
                     $("#copy")[0].setAttribute("disabled", "disabled");
                     $("#move")[0].setAttribute("disabled", "disabled");
                 } else {
                     // $("#reduction")[0].removeAttribute("disabled");
                     $("#download")[0].removeAttribute("disabled");
-                    $("#delete")[0].removeAttribute("disabled");
+                    $("#deleted")[0].removeAttribute("disabled");
                     $("#rename")[0].removeAttribute("disabled");
                     $("#copy")[0].removeAttribute("disabled");
                     $("#move")[0].removeAttribute("disabled");
                 }
-                if (selectLength>1){
+                if (selectLength > 1) {
                     $("#rename")[0].setAttribute("disabled", "disabled");
                     $("#download")[0].setAttribute("disabled", "disabled");
                 }
@@ -519,57 +491,189 @@
                     allDom.checked = false;
                 }
             });
-
-
-            let _width = $('#filesTable').width();
-            $('#filesTable th:first-child').width(_width * 0.01);
-            $('#filesTable td:first-child').width(_width * 0.01);
-
-            $('#filesTable th:nth-child(2)').width(_width * 0.15);
-            $('#filesTable td:nth-child(2)').width(_width * 0.15);
-
-            $('#filesTable th:nth-child(3)').width(_width * 0.14);
-            $('#filesTable td:nth-child(3)').width(_width * 0.14);
-
-            $('#filesTable th:nth-child(4)').width(_width * 0.19);
-            $('#filesTable td:nth-child(4)').width(_width * 0.19);
-
-            $('#filesTable th:nth-child(5)').width(_width * 0.2);
-            $('#filesTable td:nth-child(5)').width(_width * 0.2);
-
-            $('#filesTable th:nth-child(6)').width(_width * 0.2);
-            $('#filesTable td:nth-child(6)').width(_width * 0.2);
-
-
-            // let _widt=$('#FileHistory').width();
-            // $('#FileHistory th:first-child').width(_width*0.15);
-            // $('#FileHistory td:first-child').width(_width*0.15);
-            //
-            // $('#FileHistory th:nth-child(2)').width(_width*0.1);
-            // $('#FileHistory td:nth-child(2)').width(_width*0.1;
-            //
-            // $('#FileHistory th:nth-child(3)').width(_width*0.1);
-            // $('#FileHistory td:nth-child(3)').width(_width*0.1);
-            // 抽屉(必须先创建元素，再绑定事件）
-
-            // $('.drawer').drawer();
-
-
-            $(".more").click(function () {
-                $('.drawer').drawer('open');
-
+            $(this).hide();
+            // 单击分享按钮，得到文件名 & 文件id
+            $(".bi-share").click(function () {
+                let userFileId = $(this).parent().parent().attr("userfileid")
+                let fileName = $(this).parent().prev("td").children("div").children("span").text()
+                if (fileName == "") {
+                    fileName = $(this).parent().prev("td").children("a").children("span").text()
+                    $(".s_title").text("分享文件夹:  " + fileName)
+                } else {
+                    $(".s_title").text("分享文件:  " + fileName)
+                }
             })
 
+            initCols()
+            $('.drawer').drawer();
 
-            $(this).hide();
+            // 单击详情按钮，弹出抽屉
+            $(".more").click(function () {
+                // $(".drawer").drawer("open")
+                $(".drawer-nav").addClass("col-my-drawer")
+            })
+            // 单击遮罩层，关闭文件详情(并减少宽度)
+            $(".drawer-overlay").click(function () {
+                $(".drawer-nav").removeClass("col-my-drawer")
+            })
+            // 调整窗口大小时，移除抽屉宽度
+            $(window).resize(function () {
+                $(".drawer-nav").removeClass("col-my-drawer")
+                initCols()
+            });
         }
     );
 
-    $('.drawer').on('drawer.opened', function () {
-        console.log(123)
-    });
+    function initCols() {
+        let _width = $('#filesTable').width();
+        $('#filesTable th:first-child').width(_width * 0.01);
+        $('#filesTable td:first-child').width(_width * 0.01);
 
-    $('.drawer').on('drawer.closed', function () {
-        console.log(123)
-    });
+        $('#filesTable th:nth-child(2)').width(_width * 0.15);
+        $('#filesTable td:nth-child(2)').width(_width * 0.15);
+
+        $('#filesTable th:nth-child(3)').width(_width * 0.14);
+        $('#filesTable td:nth-child(3)').width(_width * 0.14);
+
+        $('#filesTable th:nth-child(4)').width(_width * 0.19);
+        $('#filesTable td:nth-child(4)').width(_width * 0.19);
+
+        $('#filesTable th:nth-child(5)').width(_width * 0.2);
+        $('#filesTable td:nth-child(5)').width(_width * 0.2);
+
+        $('#filesTable th:nth-child(6)').width(_width * 0.2);
+        $('#filesTable td:nth-child(6)').width(_width * 0.2);
+    }
+</script>
+<script type="module">
+    import httpUtil from "/static/httpUtil.js";
+
+    $(function () {
+        let method = 'copy'
+        $("#copy").click(function () {
+            method = 'copy'
+            $.fn.selectDirForUser.show()
+        })
+        $("#move").click(function () {
+            method = 'move'
+            $.fn.selectDirForUser.show()
+        })
+        $.fn.selectDirForUser.ok(function (a, b) {
+            let checkedBox = $("input[name='num']:checked");
+            if (checkedBox.length === 0) {
+                layer.msg("请选择要操作的文件");
+                return;
+            }
+            let ids = [];
+            for (let i = 0; i < checkedBox.length; i++) {
+                if (checkedBox[i].getAttribute("userFileId"))
+                    ids.push(checkedBox[i].getAttribute("userFileId"))
+            }
+            let url = "/file/" + method;
+
+            httpUtil.post(url, JSON.stringify({
+                ids: ids,
+                target: a
+            })).then(res => {
+                location.reload();
+            })
+        })
+
+        $("#addfolderconfirm").click(function () {
+            httpUtil.post("/file/createDirectory", JSON.stringify({
+                // path: (currentPath.eq('/'))?currentPath:currentPath+'/',
+                path: currentPath,
+                fileName: $("#newfolder").val()
+            })).then(res => {
+                // $("#newfolder").val("")
+                // $('#addfolderModel').modal('hide');
+                location.reload();
+            }).catch(e => {
+                $("#newfolder").val("");
+            })
+        })
+
+
+        $("#confirmDeletion").click(function () {
+            let checkedBox = $("input[name='num']:checked");
+            if (checkedBox.length === 0) {
+                layer.msg("请选择要操作的文件");
+                return;
+            }
+            let ids = [];
+            for (let i = 0; i < checkedBox.length; i++) {
+                if (checkedBox[i].getAttribute("userFileId"))
+                    ids.push(checkedBox[i].getAttribute("userFileId"))
+            }
+            httpUtil.post("/file/deleted", JSON.stringify({
+                ids: ids
+            })).then(res => {
+                location.reload();
+            }).catch(e => {
+                layer.msg("请求失败");
+            })
+        })
+
+        $("#renameconfirm").click(function () {
+            let checkedBox = $("input[name='num']:checked");
+            if (checkedBox.length === 0) {
+                layer.msg("请选择要操作的文件");
+                return;
+            }
+            if (checkedBox.length > 1) {
+                layer.msg("选择要操作的文件数大于1");
+                return;
+            }
+            httpUtil.post("/file/rename", JSON.stringify({
+                fileName: $("#newname").val(),
+                fileId: checkedBox[0].getAttribute("userFileId")
+            })).then(res => {
+                // $("#newname").val("");
+                // $('#renameModel').modal('hide');
+                location.reload();
+            }).catch(e => {
+                $("#newname").val("");
+            })
+        })
+
+        // 分享操作
+        $(".bi-share").click(function (){
+            $.fn.shareManage($(this).parent().parent().attr("userfileid"),
+                $(this).parent().prev("td").children("div").children("span").text() == "" ?
+                    $(this).parent().prev("td").children("a").children("span").text()
+                    : $(this).parent().prev("td").children("div").children("span").text(),
+                $(this).parent().siblings().eq(1).children().children("svg").children().attr("href").substring(6,10)
+            )
+        });
+
+
+        $("#btuSearch").click(function () {
+            httpUtil.get("/getByName", JSON.stringify({
+                params: {
+                    name: $("#Search").val()
+                }
+            })).then(res =>{
+                layer.msg("请求成功");
+            }).catch(e => {
+                layer.msg("请求失败");
+            })
+        })
+
+        $(".more").click(function (e) {
+            httpUtil.get("/getFileHistory", {
+                params: {
+                    fileId: e.target.getAttribute("userfileid")
+                }
+            }).then(res => {
+                $("#history tr").remove()
+                for (let i = 0; i < res.data.length; i++) {
+                    $("#history").append('<tr><td>' + res.data[i].updatedTime + '</td><td>' + res.data[i].updatePerson +
+                        '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat" title="还原"></i></td></tr>')
+                }
+            }).catch(e => {
+
+            })
+        })
+
+    })
 </script>
