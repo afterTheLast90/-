@@ -46,12 +46,12 @@
     .selectMember {
       display: inline-block;
       margin-left: 1rem;
-      max-height: 60px;
+      /*max-height: 60px;*/
       min-height: 38px;
       min-width: 50%;
       vertical-align: top;
-      overflow-y: auto;
-      overflow-x: hidden;
+      /*overflow-y: auto;*/
+      /*overflow-x: hidden;*/
       text-overflow: ellipsis;
       border-radius: 5px;
       background-color: rgb(241,243,245);
@@ -59,7 +59,7 @@
 
     .selectMember li {
       display: inline-block;
-      height: 80%;
+      height: 6%;
       padding: .3rem 0 .3rem 1rem;
       margin: .3rem 0 .3rem .2rem;
       line-height: 100%;
@@ -84,6 +84,12 @@
       color: red;
       padding-right: 0.5rem;
       cursor: pointer;
+    }
+
+    #shareSelect form {
+      height: 500px;
+			overflow-y: auto;
+	    overflow-x: hidden;
     }
 	</style>
 	<!-- 自定义js -->

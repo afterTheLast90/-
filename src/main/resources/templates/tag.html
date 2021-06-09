@@ -394,8 +394,12 @@
                       }))
                           .then(res => {
                               $("#selectTags").append('<li tagRelationshipId="' + res.data.tagRelationshipId + '">' +
-                                  '<span>' + $(this).children("option").eq(clickedIndex).text() + '</span><i class="bi cancelSelect bi-x"></i>' +
+                                  '<span>' + $(this).children("option").eq(clickedIndex).text() + '</span><i class="bi new cancelSelect bi-x"></i>' +
                                   '</li>')
+		                          $(".new").click(function () {
+                                  relationIdLi = $(this).parent()
+                                  $("#delTagModal2").modal("show")
+                              })
                           })
                   }
               })
