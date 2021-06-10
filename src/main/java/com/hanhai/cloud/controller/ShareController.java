@@ -78,7 +78,7 @@ public class ShareController {
     @ResponseBody
     public R<UserShareVO> getShareDetail(@RequestParam("shareId")String shareId) {
         // 测试时删除
-        systemInfo.setSiteUrl("http://localhost:8080");
+        systemInfo.setSiteUrl("http://localhost:8080/");
         return new R(ResultCode.SUCCESS_NO_SHOW)
                     .setData(shareService.getShareDetail(shareId).setShareUrl(systemInfo.getSiteUrl()));
     }
@@ -122,7 +122,7 @@ public class ShareController {
         userShare = shareService.addShare(userShare);
         // 返回 回显信息
         CreateShareVO createShareVO = BeanUtils.convertTo(userShare, CreateShareVO.class);
-        createShareVO.setShareUrl("http://localhost:8080");
+        createShareVO.setShareUrl("http://localhost:8080/");
         return new R(ResultCode.SUCCESS_NO_SHOW).setData(createShareVO);
     }
 
@@ -165,7 +165,7 @@ public class ShareController {
         // 回显数据
         userShare = shareService.addInnerShare(userShare, innerShare.getGroupIds(), innerShare.getUserIds());
         CreateShareVO shareVO = BeanUtils.convertTo(userShare, CreateShareVO.class);
-        shareVO.setShareUrl("http://localhost:8080");
+        shareVO.setShareUrl("http://localhost:8080/");
         return new R(ResultCode.SUCCESS).setData(shareVO);
     }
 

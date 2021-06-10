@@ -51,7 +51,7 @@ public class UserShareVO {
     private Boolean status;
 
     public UserShareVO setShareUrl(String url) {
-        this.shareUrl = url+"/s/"+shareId;
+        this.shareUrl = url+"s/"+shareId;
         return this;
     }
 

@@ -20,7 +20,7 @@
 	<style>
     .main {
       display: flex;
-      height: calc(100vh - 88px);
+      height: calc(100vh - 176px);
       width: 100%;
       overflow-y: hidden;
       margin-top: 10px;
@@ -28,7 +28,6 @@
     }
 
     .rMain {
-      margin-top: 10px;
       padding-left: 15px;
       padding-right: 15px;
       background-color: #fff;
@@ -36,7 +35,7 @@
     }
 
     #expireTime{
-      margin-left: 3%;
+      margin-left: 1vw;
       line-height: 1.5rem;
       font-size: 1rem;
       color: #5a6268;
@@ -52,13 +51,13 @@
     }
 
     #sTable tbody .rUpload {
-      font-size: 26px;
-      margin-right: 20px;
+      font-size: 1.7rem;
+      margin-right: 1rem;
     }
 
     #sTable tbody .rDownload {
       /*display: none;*/
-      font-size: 23px;
+      font-size: 1.5rem;
     }
 
     .pointer {
@@ -68,27 +67,90 @@
     .modal-backdrop.show{
       opacity: 0.3;
     }
+
+    #phoneLogin {
+      max-height: 79vh;
+	    overflow-y: auto;
+	    overflow-x: hidden;
+    }
+
+    #fileList{
+      padding-left: 0;
+    }
+
+    #fileList li {
+      position: relative;
+	    margin-left: 0;
+      margin-right: 0;
+	    padding-left: 2rem;
+      list-style: none;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .phoneIcon {
+      margin-left: .3rem;
+      width: 12vw;
+	    height: 12vh;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      overflow: hidden;
+    }
+
+    #fileList .fileInfo {
+      margin-left: .2rem;
+      height: 12vh;
+      width: 50vw;
+      text-align: left;
+    }
+
+    #pFileName {
+      margin-top: .5rem;
+      margin-left: .4rem;
+	    font-size: 1.5rem;
+    }
+
+    #pExpireTime {
+	    /*margin-top: -.8rem;*/
+      margin-left: .5rem;
+    }
+
+    .pDownload {
+	    position: absolute;
+	    font-size: 2rem;
+      color: #1296db;
+	    top: 20%;
+	    right: 8%;
+    }
 	</style>
 
 	<script type="module">
 		import httpUtil from "../static/httpUtil.js";
     let currentPath = "init"    // 记录当前路径
     let userFileId
-    let createdTime = ""
-    let expiredTime = ""
-    let goUp = false
+    let goUp = false      // 确认向上/向下操作，true返回上级目录
 		let method = false    // false为转存单个文件，true为多个
 
 		$(function() {
 		    // 密码未匹配
         if([[${not pwdPass}]]){
-            $("#pwdCheck").modal("show")
-            setTimeout(function(){
-                layer.msg("[[${msg}]]")
-            }, 200)
+	            $("#pwdCheck").modal("show")
+	            setTimeout(function(){
+	                layer.msg("[[${msg}]]")
+	            }, 200)
         }
         else {
-            initTable()
+            if(!isPhoneLogin()){   // 电脑端登录
+                $("#phoneLogin").hide()
+                $("#computerLogin").show()
+                initTable()
+            }
+            else{                 // 手机端
+                $("#computerLogin").hide()
+                $("body").css("minWidth", "320px")
+                $("#phoneLogin").show()
+		            // 渲染手机端数据
+		            initPhoneData()
+            }
         }
         // 密码检验
         $("#pwdCheckBtn").click(function(){
@@ -114,6 +176,47 @@
                     }, 500)
                 })
         })
+				// 初始化手机数据
+				function initPhoneData(){
+            httpUtil.get("/s/shareInfo", {
+                params:{
+                    shareId: "[[${shareId}]]",
+                    userFileId: userFileId,
+                    currentPath: currentPath,
+                    goUp: goUp,
+                }
+            })
+                .then(res => {
+                    let expireTime
+                    $("#fileList").html("")
+                    for(let data of res.data){
+                        expireTime = data.expireTime.replace("T", " ")
+                        expireTime = expireTime=='1970-01-01 07:59:59'?'永久':expireTime
+                        $("#fileList").append(
+                            "<li>\n" +
+                            "<div class='row'>\n" +
+                            "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n" +
+                            "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n" +
+                            "</svg>\n" +
+                            "<div class='fileInfo'>\n" +
+                            "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
+                            "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
+                            "</div>\n" +
+                            "<i class='bi bi-download pDownload'></i>\n" +  // 需要添加禁止冒泡事件，防止单击此按钮，触发li的事件
+                            "</div>\n" +
+                            "</li>"
+                        )
+                    }
+                    $("#phoneParentBtn").removeAttr("disabled")
+                    // 点击li，进入子文件夹
+		                $("#fileList li .row svg[fileType='DIR']").parent().parent().click(function(){
+		                    userFileId = $(this).children(".row").children("svg").attr("userfileid")
+				                currentPath = $(this).children(".row").children("svg").attr("currentpath")
+				                goUp = false
+				                initPhoneData()
+		                })
+                })
+				}
         // 初始化表格
         function initTable() {
             // 先销毁表格
@@ -124,7 +227,7 @@
                 dataField: 'data',              // 设置数据域
                 data_local: "zh-US",            // 表格汉化
                 classes: 'table',               // 表格 样式类
-                height: 700,                    // 表格高度
+                height: 550,                    // 表格高度
                 queryParams: function () {  // 查询 和 请求响应
                     return {
                         shareId: "[[${shareId}]]",
@@ -192,11 +295,10 @@
                         align: 'center',
                         formatter: function operationFormatter(value, row, index) {
                             let isLogin = [[${isLogin}]]
-                            value = ""
                             if(isLogin)
-                                return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><i class=\"bi bi bi-download rDownload\"></i>"
+                                return "<i class='bi bi-box-arrow-in-right rUpload'></i><i class='bi bi bi-download rDownload'></i>"
                             else
-                                return "<i class=\"bi bi bi-download rDownload\"></i>"
+                                return "<i class='bi bi-download rDownload'></i>"
                         }
                     }
                 ],
@@ -208,7 +310,7 @@
                     }
                     $("svg[filetype='DIR']").parent().addClass("pointer")
                     // 单击文件分享，查看内部文件
-                    $("svg[filetype='DIR']").parent().click(function() {
+                    $("#computerLogin svg[filetype='DIR']").parent().click(function() {
                         currentPath = $(this).children().attr("currentpath")
                         userFileId = $(this).children().attr("userfileid")
                         goUp = false
@@ -217,38 +319,16 @@
                 },
 		            // 表格渲染完成后
 		            onPostBody: function(){
-                    // 单击复选框时，判断如果选中数>2,则不可下载
-                    // $("input[type='checkbox']").click(function(){
-                    //     console.log(1111)
-                    //     let rows = $('#tTable').bootstrapTable('getSelections')
-                    //     console.log(rows)
-                    //     if(rows.length > 1){
-                    //         $("#downBtn").attr("disabled", "disabled")
-                    //     }else{
-                    //         $("#downBtn").removeAttr("disabled")
-                    //     }
-                    // })
 				            // 转存单个文件
 				            $(".rUpload").click(function(){
 				                userFileId = $(this).parent().siblings().eq(1).children("svg").attr("userfileid")
                         method = false
                         $.fn.selectDirForUser.show()
                     })
+                    $("#parentBtn").removeAttr("disabled")
 		            },
-                onCheck:function(row, $element){
-										checkRows()
-                },
-                onUncheck:function(row, $element){
-                    checkRows()
-                },
-                onCheckAll: function (rowsAfter,rowsBefore) {
-                    checkRows()
-                },
-                onUncheckAll: function (rowsAfter,rowsBefore) {
-                    checkRows()
-                }
           })}
-        // 单击返回上级目录
+        // 单击返回上级目录（电脑端）
         $("#parentBtn").click(function(){
             goUp = true
             if(typeof($("tbody tr td svg").attr("currentpath"))!="undefined"){
@@ -257,7 +337,18 @@
             else
                 currentPath += "!!!/"
             initTable()
+		        $(this).attr("disabled","disabled")
         })
+        // 单击返回上级目录（手机端）
+				$("#phoneParentBtn").click(function(){
+				    goUp = true
+						if(typeof($("#fileList li .row svg").attr("currentpath"))!="undefined"){
+						    currentPath = $("#fileList li .row svg").attr("currentpath")
+						}
+						else currentPath += "!!!/"
+						initPhoneData()
+						$(this).attr("disabled", "disabled")
+				})
 				// 保存多个文件
 				$("#dumpBtn").click(function(){
             let rows = $('#sTable').bootstrapTable('getSelections')
@@ -294,22 +385,30 @@
                     initTable()
                 })
         })
-				// 检查选中行数
-				function checkRows(){
-						let rows = $('#sTable').bootstrapTable('getSelections')
-						if(rows.length > 1){
-						    $("#downBtn").attr("disabled", "disabled")
-						}else
-						    $("#downBtn").removeAttr("disabled")
-        }
 		})
+
+
+		// 判断是否手机登录
+		function isPhoneLogin(){
+        let system ={};
+        let p = navigator.platform;
+        system.win = p.indexOf("Win") == 0;
+        system.mac = p.indexOf("Mac") == 0;
+        system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+        if(system.win||system.mac || system.xll){//如果是电脑跳转到
+            return false
+        }else{  //如果是手机,跳转到
+            return true
+        }
+		}
 	</script>
 
 </head>
 
-<body>
+<body style="overflow-x: hidden">
 <div th:replace="common/nav-header :: nav-header"></div>
-<div th:if="${pwdPass}" class="row main" style="margin-top:8px;">
+<!--  电脑端显示  -->
+<div th:if="${pwdPass}" class="row main mb-2 mt-2" id="computerLogin" >
 	<div class="rMain container shadow">
 		<!--	分享信息	-->
 		<section class="fileInfo pt-3">
@@ -327,9 +426,6 @@
 				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
 				<!--		不是所有者 且 登录才能保存文件		-->
 				<button class="btn btn-primary mr-3" id="dumpBtn" th:if="${(not isOwner) and isLogin}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
-				<button class="btn btn-primary" id="downBtn">
-					<i class="bi bi-box-arrow-in-down"></i>
-					下载
 				</button>
 			</div>
 		</section>
@@ -367,7 +463,20 @@
 		</div>
 	</div>
 </div>
-
+<!--  手机端显示  -->
+<div th:if="${pwdPass}" id="phoneLogin" >
+	<!--	返回上级目录 -->
+	<div class="row">
+		<button class="btn btn-light btn-lg" id="phoneParentBtn">
+			<i class="bi bi-reply"></i>&nbsp;返回上一级
+		</button>
+	</div>
+	<hr class="my-1">
+	<!-- 文件列表	-->
+	<ul id="fileList">
+	</ul>
+</div>
+<footer class="shadow-lg container-fluid" style="height: 10vh;position: absolute; bottom: 0">1111</footer>
 <!-- 密码检测模态框 -->
 <div  th:if="${not pwdPass}" class="modal fade" id="pwdCheck" style="margin-top: 14%" data-backdrop="static">
 	<div class="modal-dialog modal-md">
@@ -381,7 +490,7 @@
 			</div>
 			<!-- 模态框主体 -->
 			<div class="row mt-4 ml-5 mb-0">
-				<label class="col-4">请输入密码：</label>
+				<label class="col-6">请输入密码：</label>
 			</div>
 			<form action="" method="get">
 				<div class="modal-body ml-5 mt-0 pt-2 mb-5 row">
