@@ -136,9 +136,21 @@ public class ResourceController {
         }
         // 判断分享类型（0，3，4不需要登录，就可访问）
         if (shareType == 0) {
+            // 未登录 且 链接无下载次数啦
+            if(!isLogin && !getShareVO.getHaveDown()){
+                errorInfo = "没有下载次数啦，登录后保存在自己网盘吧";
+                model.addAttribute("errorInfo", errorInfo);
+                return "getShareFail";
+            }
             return getShareTypePath(fileType);
         }
         if (shareType == 3) {
+            // 未登录 且 链接无下载次数啦
+            if(!isLogin && !getShareVO.getHaveDown()){
+                errorInfo = "没有下载次数啦，登录后保存在自己网盘吧";
+                model.addAttribute("errorInfo", errorInfo);
+                return "getShareFail";
+            }
             // 属主不用验证
             if (isLogin && isOwner) {
                 return getShareTypePath(fileType);

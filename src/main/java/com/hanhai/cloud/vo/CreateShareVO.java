@@ -11,7 +11,7 @@ public class CreateShareVO {
     private String shareUrl;
 
     public CreateShareVO setShareUrl(String url){
-        this.shareUrl = url+"/s/"+shareId;
+        this.shareUrl = url+"s/"+shareId;
         return this;
     }
 }

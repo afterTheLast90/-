@@ -27,7 +27,7 @@
 
     .main {
       display: flex;
-      height: calc(100vh - 88px);
+      height: calc(100vh - 176px);
       width: 100%;
       overflow-y: hidden;
       margin-top: 10px;
@@ -118,7 +118,7 @@
                   pageList: [10, 20, 30, 40],     // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
                   data_local: "zh-US",            // 表格汉化
                   classes: 'table',               // 表格 样式类
-                  height: 660,                    // 表格高度
+                  height: 550,                    // 表格高度
                   queryParams: function (params) {  // 查询 和 请求响应
                       // console.log(currentPath)
                       return {
@@ -233,6 +233,7 @@
 		                      shareId = $(this).parent().siblings(":first").children("svg").attr("shareid")
                           $.fn.selectDirForUser.show()
                       })
+                      $("#parentBtn").removeAttr("disabled")
 		              }
               })
 
@@ -256,6 +257,7 @@
                   expiredTime = ""
               }
               initTable()
+              $(this).attr("disabled", "disabled")
           })
           // 得到保存路径
           $.fn.selectDirForUser.ok(function(fileId, fileName){
@@ -278,8 +280,8 @@
 </head>
 <body>
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="row main" style="margin-top:8px;">
-	<div class="rMain container shadow">
+<div class="row main mt-2">
+	<div class="rMain container shadow mb-2">
 		<!--	自定义搜索框	-->
 		<div class=".rSearch">
 			<div class="panel-body pt-1 pb-1">
@@ -310,9 +312,9 @@
 			</thead>
 		</table>
 	</div>
-
 </div>
 </div>
+<footer class="shadow-lg container-fluid" style="height: 88px">1111</footer>
 
 <!--选择目录模态框-->
 <div th:replace="common/selectDir :: selectDir"></div>

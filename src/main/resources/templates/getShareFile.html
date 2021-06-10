@@ -13,7 +13,7 @@
 	<style>
     .main {
       display: flex;
-      height: calc(100vh - 88px);
+      height: calc(100vh - 176px);
       width: 100%;
       overflow-y: hidden;
       margin-top: 10px;
@@ -21,7 +21,6 @@
     }
 
     .rMain {
-      margin-top: 10px;
       padding-left: 15px;
       padding-right: 15px;
       background-color: #fff;
@@ -38,6 +37,73 @@
     .modal-backdrop.show{
 	    opacity: 0.3;
     }
+
+
+
+
+    .computerIcon {
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: -0.4em;
+      fill: currentColor;
+      overflow: hidden;
+    }
+
+    #phoneLogin {
+      max-height: 79vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #fileList{
+      padding-left: 0;
+    }
+
+    #fileList li {
+      position: relative;
+      margin-left: 0;
+      margin-right: 0;
+      padding-left: 2rem;
+      list-style: none;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .phoneIcon {
+      margin-left: .3rem;
+      width: 12vw;
+      height: 12vh;
+      vertical-align: -0.15em;
+      fill: currentColor;
+      overflow: hidden;
+    }
+
+
+    #fileList .fileInfo {
+      margin-top: .8rem;
+      margin-left: .2rem;
+      height: 12vh;
+      width: 50vw;
+      text-align: left;
+    }
+
+    #pFileName {
+      margin-top: .5rem;
+      margin-left: .4rem;
+      font-size: 1.5rem;
+    }
+
+    #pExpireTime {
+      /*margin-top: -.8rem;*/
+      margin-left: .5rem;
+    }
+
+    .pDownload {
+      position: absolute;
+      font-size: 2rem;
+      color: #1296db;
+      top: 20%;
+      right: 8%;
+    }
 	</style>
 
 	<script type="module">
@@ -53,32 +119,73 @@
 					    }, 200)
 			    }
 			    else {
-							httpUtil.get("/s/shareInfo", {
-							    params: {
-							        shareId: "[[${shareId}]]",
-									    currentPath: "init"
-					    }})
-					    .then(res => {
-                  $("#fileName").text(res.data[0].fileName)
-							    $("#expireTime b").text(res.data[0].expireTime.replace("T", " ")=='1970-01-01 07:59:59'?"永久":res.data[0].expireTime.replace("T", " "))
-							    // 文件大小
-                  $("#fileSize").text(convertFileSize(res.data[0].fileSize))
-							    $("#dumpBtn").attr("userFileId", res.data[0].userFileId)
-							    $("#dumpBtn").attr("shareId", res.data[0].shareId)
-							    // 是否还有 下载/转存 次数
-							    if(!res.data[0].haveDown){
-                      $("#downBtn").prop("disabled", "disabled")
-							    }
-			            if(!res.data[0].haveDump){
-			                $("#dumpBtn").prop("disabled", "disabled")
-			            }
-			            // 转存按钮
-							    $("#dumpBtn").click(function(){
-							        userFileId = $(this).attr("userFileId")
-									    shareId = $(this).attr("shareId")
-                      $.fn.selectDirForUser.show()
-							    })
-					    })
+              if(!isPhoneLogin()){        // 电脑端
+                  $("#phoneLogin").hide()
+                  $("#computerLogin").show()
+		              // 渲染电脑端数据
+                  httpUtil.get("/s/shareInfo", {
+                      params: {
+                          shareId: "[[${shareId}]]",
+                          currentPath: "init"
+                      }
+                  })
+                      .then(res => {
+                          $("#computerLogin div section svg use").attr("xlink:href", "#icon-"+res.data[0].fileType.toLowerCase())
+                          $("#fileName").text(res.data[0].fileName)
+                          $("#expireTime b").text(res.data[0].expireTime.replace("T", " ") == '1970-01-01 07:59:59' ? "永久" : res.data[0].expireTime.replace("T", " "))
+                          // 文件大小
+                          $("#fileSize").text(convertFileSize(res.data[0].fileSize))
+                          $("#dumpBtn").attr("userFileId", res.data[0].userFileId)
+                          $("#dumpBtn").attr("shareId", res.data[0].shareId)
+                          // 是否还有 下载/转存 次数
+                          if (!res.data[0].haveDown) {
+                              $("#downBtn").prop("disabled", "disabled")
+                          }
+                          if (!res.data[0].haveDump) {
+                              $("#dumpBtn").prop("disabled", "disabled")
+                          }
+                          // 转存按钮
+                          $("#dumpBtn").click(function () {
+                              userFileId = $(this).attr("userFileId")
+                              shareId = $(this).attr("shareId")
+                              $.fn.selectDirForUser.show()
+                          })
+                      })
+              }
+              else {                      // 手机端
+                  $("#computerLogin").hide()
+                  $("body").css("minWidth", "320px")
+                  $("#phoneLogin").show()
+                  // 渲染手机端数据
+                  httpUtil.get("/s/shareInfo", {
+                      params:{
+                          shareId: "[[${shareId}]]",
+                          currentPath: "init"
+                      }
+                  })
+                      .then(res => {
+                          let expireTime
+                          $("#fileList").html("")
+                          for(let data of res.data){
+                              expireTime = data.expireTime.replace("T", " ")
+                              expireTime = expireTime=='1970-01-01 07:59:59'?'永久':expireTime
+                              $("#fileList").append(
+                                  "<li>\n" +
+                                  "<div class='row'>\n" +
+                                  "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n" +
+                                  "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n" +
+                                  "</svg>\n" +
+                                  "<div class='fileInfo'>\n" +
+                                  "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
+                                  "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
+                                  "</div>\n" +
+                                  "<i class='bi bi-download pDownload'></i>\n" +
+                                  "</div>\n" +
+                                  "</li>"
+                              )
+                          }
+                      })
+              }
 			    }
 			    // 密码验证
 			    $("#pwdCheckBtn").click(function(){
@@ -121,6 +228,20 @@
                   })
           })
 		})
+
+      // 判断是否手机登录
+      function isPhoneLogin(){
+          let system ={};
+          let p = navigator.platform;
+          system.win = p.indexOf("Win") == 0;
+          system.mac = p.indexOf("Mac") == 0;
+          system.x11 = (p == "X11") || (p.indexOf("Linux") == 0);
+          if(system.win||system.mac || system.xll){//如果是电脑跳转到
+              return false
+          }else{  //如果是手机,跳转到
+              return true
+          }
+      }
 	</script>
 
 
@@ -128,17 +249,18 @@
 
 <body>
 <div th:replace="common/nav-header :: nav-header"></div>
-<div th:if="${pwdPass}" class="row main" style="margin-top:8px;">
+<!-- 电脑端显示 -->
+<div th:if="${pwdPass}" class="row main mb-2 mt-2" id="computerLogin" style="margin-top:8px;">
 	<!-- 主内容区 	-->
 	<div class="rMain container shadow">
 		<!--	分享信息	-->
-		<section class="fileInfo pt-3">
+		<section class="fileInfo mt-3">
 			<!--	图标		-->
-			<svg fileType="" class='icon ml-4 mr-1 mt-1' aria-hidden='true'>
-				<use xlink:href='#icon-mp3'></use>
+			<svg fileType="" class='computerIcon ml-4 mr-1' aria-hidden='true'>
+				<use xlink:href=''></use>
 			</svg>
 			<!--	文件名		-->
-			<span id="fileName"></span>
+			<span id="fileName" class="pb-2"></span>
 			<!--	过期时间		-->
 			<span id="expireTime">
 				过期时间: <i class="bi bi-stopwatch pl-2"></i><b style="font-weight: normal;"></b>
@@ -180,6 +302,14 @@
 	<!--选择目录模态框-->
 	<div th:replace="common/selectDir :: selectDir"></div>
 </div>
+<!--  手机端显示  -->
+<div th:if="${pwdPass}" id="phoneLogin" >
+	<!--	返回上级目录 -->
+	<!-- 文件列表	-->
+	<ul id="fileList">
+	</ul>
+</div>
+<footer class="shadow-lg container-fluid"  style="height: 88px;position: absolute; bottom: 0">1111</footer>
 
 <!-- 密码检测模态框 -->
 <div  th:if="${not pwdPass}" class="modal fade" id="pwdCheck" style="margin-top: 14%" data-backdrop="static">
@@ -196,7 +326,7 @@
 
 			<!-- 模态框主体 -->
 			<div class="row mt-4 ml-5 mb-0">
-				<label class="col-4">请输入密码：</label>
+				<label class="col-6">请输入密码：</label>
 			</div>
 			<form action="" method="get">
 				<div class="modal-body ml-5 mt-0 pt-2 mb-5 row">
@@ -207,6 +337,5 @@
 		</div>
 	</div>
 </div>
-
 </body>
 </html>
