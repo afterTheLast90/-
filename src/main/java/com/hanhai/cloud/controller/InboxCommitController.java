@@ -30,9 +30,6 @@ public class InboxCommitController {
         model.addAttribute("fileInbox",fileInboxList.get(0));
         String publisherName=inboxCommitService.getPublisherName(fileInboxList.get(0).getPublisher()); //通过发布者ID获取发布者姓名
         model.addAttribute("publisherName",publisherName);
-//        System.out.println("******************************************");
-//        System.out.println("fileInbox="+model.getAttribute("fileInbox"));
-//        System.out.println("******************************************");
         int commitType=fileInboxList.get(0).getCommitType(); //提交权限 0：全部用户；1：登陆用户.
         boolean isLogin=StpUtil.isLogin(); //获取当前用户是否登陆
         model.addAttribute("isLogin",isLogin);
