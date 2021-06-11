@@ -69,9 +69,6 @@ public class UploadFileService extends BaseService {
      * @return
      */
     public FileUploadVO findByFileMd5(String md5){
-        System.out.println("===================================================================");
-        System.out.println("md5="+md5);
-        System.out.println("===================================================================");
         fileUploadVO = (FileUploadVO) fileUploadRedisUtils.get(md5);
         if(fileUploadVO==null)
             fileUploadVO=new FileUploadVO();
@@ -98,6 +95,7 @@ public class UploadFileService extends BaseService {
         }else{
             //上传过该文件，秒传即可
             fileUploadVO.setFlag("2");
+            fileUploadVO.setFileId(file.getFileId());
         }
         fileUploadRedisUtils.set(md5,fileUploadVO);
         return (FileUploadVO)fileUploadRedisUtils.get(md5);

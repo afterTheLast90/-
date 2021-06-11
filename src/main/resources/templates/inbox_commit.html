@@ -10,7 +10,7 @@
     <script src="/static/spark-md5.js"></script>
 
     <style>
-        .content{
+        .main{
             background-color: #EDF1F5;
         }
         .record-commit-body{
@@ -20,21 +20,20 @@
             padding: 20px 30px;
             border-radius: 12px 12px 0 0;
             background-color: #ffffff;
+            font-size: 16px;
         }
         .record-commit-content{
-            /*font-size: 18px;*/
+            margin-left: 15%;
         }
         .record-avatar{
             width: 40px;
             height: 40px;
-        }
-        #commitFile {
-            /*border: 1px solid #3a7ffb;*/
-            /*background: #3a7ffb;*/
-            /*border-radius: 6px;*/
+            border-radius: 50% !important;
         }
         #commit{
-
+            position:absolute;
+            right: 450px;
+            bottom: 100px;
         }
     </style>
 </head>
@@ -44,23 +43,45 @@
 <div class="main">
     <div class="content" style="overflow: hidden;margin-right: 1%">
         <div class="record-commit-body">
-            <div class="record-commit-content">
-                <h2 align="center">收件任务：[[${fileInbox.title}]]</h2><br>
-                <p>收集者： [[${publisherName}]] <img th:src="${'/avatar/'+fileInbox.publisher}" class="record-avatar"></p>
-                <p>
-                    <div class="form-group" width="20px">
-                        <label for="input_name">文件命名：[[${fileInbox.inputTips}]]</label>
-                        <input type="text" class="form-control" id="input_name" aria-describedby="input_name" style="width: 60%">
-                        <p style="font-size: 12px;color: #919191">提交的文件会根据输入信息重名</p>
+            <form>
+                <div class="form-group">
+                    <h2 align="center">
+                        收件任务：[[${fileInbox.title}]]
+                    </h2>
+                </div>
+                <div class="form-group">
+                    <div align="center" style="float:left;margin-left: 42%">
+                        <small class="form-text text-muted" style="font-size: 15px">
+                            收集者： [[${publisherName}]]
+                        </small>
                     </div>
-                </p>
-                <p>
-                    <input type="file" id="commitFile"/>
-                    <input type="button" id="commit" value="提交"/><br>
-                </p>
-                <p>截止时间：<span th:text="${#temporals.format(fileInbox.endTime, 'yyyy-MM-dd HH:mm:ss')}">123</span></p>
-                <p>收集详情：[[${fileInbox.content}]]</p>
-            </div>
+                    <div style="float: right;margin-right:30px">
+                        <small class="text text-muted" style="font-size: 10px">
+                            截止时间：
+                            <span th:text="${#temporals.format(fileInbox.endTime, 'yyyy-MM-dd HH:mm:ss')}">123</span>
+                        </small>
+                    </div>
+                </div>
+                <br><br><br>
+                <div class="record-commit-content">
+                    <div class="form-group" width="20px">
+                        <label for="input_name">请根据提示信息输入内容：[[${fileInbox.inputTips}]]</label>
+                        <input type="text" class="form-control" id="input_name" aria-describedby="input_name_help" style="width: 60%">
+                        <small id="input_name_help" class="form-text text-muted">提交的文件会根据输入信息重命名</small>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        任务详情：[[${fileInbox.content}]]
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" id="selectFile">选择文件</button>
+                        <span id="selectName"></span>
+                        <input type="file" id="commitFile" hidden="hidden"/>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="commit">提交</button>
+            </form>
         </div>
     </div>
 </div>
@@ -88,6 +109,15 @@
 
     })
 
+    $("#selectFile").click(function(){
+        $("#commitFile").click();
+    })
+    $("#commitFile").change(function(){
+        var file=$("#commitFile")[0].files[0];
+        console.log("file.name="+file.name);
+        $("#selectName").text(file.name);
+    })
+
     $("#commit").click(function (){
         if(![[${isCommit}]]){ //判断能否提交
             layer.msg("权限不够，请登陆后再提交！");
@@ -103,7 +133,6 @@
         fileOriName=file.name;  //文件原名
         if(inputName=="") //如果没有输入文件名，则输入名就变更为 文件原始名字
             inputName=file.name;
-
         //文件上传
         if(filesNum==0 && filesId==-1)
             filesNum=$("#commitFile")[0].files.length;
@@ -144,6 +173,7 @@
             filesId=-1;
             filesNum=0;
             $("#commitFile").val(null);
+            $("#selectName").text("");
             filesUpload();
         }else{
             if(selectedType==0)
@@ -169,8 +199,8 @@
                 return;
             }
             var form = new FormData();
-            form.append("path","1/2/3/4");
-            form.append("name","lemon.txt");
+            form.append("path","[[${fileInbox.savePath}]]");
+            form.append("name",file.name);
             form.append("userId",[[${fileInbox.publisher}]]);
             $.ajax({
                 url: "/noCover",
@@ -328,14 +358,16 @@
         }
     }
 
-
     function handleFastUpload(file,id,userFileId){
+        console.log("=============秒传=============");
+        console.log("fileId="+id);
         var form=new FormData();
         form.append("fileId",id);
         form.append("name",file.name);
         form.append("size",file.size);
         form.append("userFileId",userFileId);
         form.append("userId",[[${fileInbox.publisher}]]);
+        form.append("uploadPath","[[${fileInbox.savePath}]]");
         $.ajax({
             url: "/fastUpload",
             type: "POST",
@@ -390,6 +422,7 @@
         form.append("index", chunk+1);     //当前是第几片(从1开始)
         form.append("userFileId",userFileId);
         form.append("userId",[[${fileInbox.publisher}]]);
+        form.append("uploadPath","[[${fileInbox.savePath}]]");
 
         var index = chunk+1;
         //按大小切割文件段

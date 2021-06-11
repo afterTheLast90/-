@@ -127,6 +127,9 @@
         var fileMd5;
         var md5s=new Array();
         var r;
+        var checkIndex = layer.load(1, {
+            shade: [0.1,'#fff'] //0.1透明度的白色背景
+        });
         for(var i=0;i<files.length;i++) {
             file = files[i];
             names.push(file.name);
@@ -137,8 +140,10 @@
                 fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
                 console.log("md5="+fileMd5);
                 md5s.push(fileMd5);
-                if(md5s.length>=files.length)
+                if(md5s.length>=files.length){
+                    layer.close(checkIndex);
                     checkIsCover(files,md5s,names);
+                }
             })
         }
     }
@@ -347,7 +352,7 @@
     function filesUpload(){     //多文件上传
         var len=map.size;
         if(len<=0){
-            layer.msg("全部上传完毕！");
+            // layer.msg("全部上传完毕！");
             return;
         }
         if(len>0 && state==0){
