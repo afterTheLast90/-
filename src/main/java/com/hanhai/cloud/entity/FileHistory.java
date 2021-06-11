@@ -20,13 +20,13 @@ public class FileHistory extends BaseEntity implements Serializable,Cloneable {
     /** 历史id */
     private Long historyId ;
     /** 文件id */
-    private String fileId ;
+    private Long fileId ;
     /** 用户文件id */
-    private String userFileId ;
+    private Long userFileId ;
     /** 历史文件名 */
-    private String fileName ;
+    private String  fileName ;
     /** 历史文件大小 */
-    private String fileSize ;
+    private Long fileSize ;
     /** 修改人;0为匿名用户 */
     private Long updatePerson ;
 }

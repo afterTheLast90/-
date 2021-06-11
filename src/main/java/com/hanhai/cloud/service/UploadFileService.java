@@ -229,8 +229,8 @@ public class UploadFileService extends BaseService {
                         //历史版本表插入记录
                         FileHistory fileHistory=new FileHistory();
                         UserFile userFile1=userFileMapper.selectById(Long.parseLong(userFileId));
-                        fileHistory.setUserFileId(userFileId).setFileId(String.valueOf(userFile1.getFileId())).setFileName(userFile1.getFileName())
-                                .setFileSize(String.valueOf(userFile1.getFileSize()));
+                        fileHistory.setUserFileId(Long.parseLong(userFileId)).setFileId(userFile1.getFileId()).setFileName(userFile1.getFileName())
+                                .setFileSize(userFile1.getFileSize());
                         if(StpUtil.isLogin())
                             fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
                         else
@@ -298,8 +298,8 @@ public class UploadFileService extends BaseService {
             //历史版本表插入记录
             FileHistory fileHistory=new FileHistory();
             UserFile userFile1=userFileMapper.selectById(Long.parseLong(userFileId));
-            fileHistory.setUserFileId(userFileId).setFileId(String.valueOf(userFile1.getFileId())).setFileName(userFile1.getFileName())
-                    .setFileSize(String.valueOf(userFile1.getFileSize()));
+            fileHistory.setUserFileId(Long.parseLong(userFileId)).setFileId(userFile1.getFileId()).setFileName(userFile1.getFileName())
+                    .setFileSize(userFile1.getFileSize());
             if(StpUtil.isLogin())
                 fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
             else
