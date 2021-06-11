@@ -345,6 +345,32 @@
     </style>
 </head>
 
+<div class="modal fade" id="inputNewFolderName">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">输入新文件夹的名称</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- 模态框主体 -->
+            <div class="modal-body">
+                请输入新文件夹的名称：<input type="text" id="newFolderName">
+            </div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="createFolder">确定</button>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
 <form class="login-validation" novalidate action="/install" method="POST" id="installForm">
     <div class="wrapper">
 
@@ -354,6 +380,7 @@
                 <div class="wz-header">
                     <nav>
                         <a href="#">数据库</a>
+                        <a href="#">Reids</a>
                         <a href="#">网站信息</a>
                         <a href="#">管理员信息</a>
                         <a href="#">网站基本设置</a>
@@ -399,6 +426,37 @@
                             <div class="form-inline mb-1">
                                 <input type="password" class="form-control col-10" id="dbPassword"
                                        name="dbPassword" placeholder="请输入数据库密码">
+
+                            </div>
+                        </div>
+                        <!--                        <div class="form-group offset-9">-->
+                        <!--                            <button type="button" id="testDB" class="btn btn-success btn-xs">测试数据库连接-->
+                        <!--                            </button>-->
+                        <!--                        </div>-->
+                    </div>
+                    <div class="wz-step">
+                        <div class="form-group offset-1 col-12">
+                            <label for="dbAddress">Redis地址</label>
+                            <div class="form-inline mb-1">
+                                <input type="text" class="form-control col-10" id="redisAddress"
+                                       name="redisAddress" placeholder="127.0.0.1" value="127.0.0.1">
+                            </div>
+                            <!--                        </div>-->
+                        </div>
+                        <div class="form-group offset-1 col-12">
+                            <label for="dbPort">redis端口号</label>
+                            <div class="form-inline mb-1">
+                                <input type="number" class="form-control col-10" id="redisPort"
+                                       name="redisPort" placeholder="6379" value="6379">
+
+                            </div>
+                        </div>
+                        <div class="form-group offset-1 col-12">
+                            <label for="dbPassword">请输入Reids密码</label>
+                            <div class="form-inline mb-1">
+                                <input type="password" class="form-control col-10"
+                                       id="redisPassword"
+                                       name="redisPassword" placeholder="请输入redis密码">
 
                             </div>
                         </div>
@@ -530,7 +588,23 @@
                     }))
                 })
             },
-
+            function () {
+                return new Promise(function (resolve, reject) {
+                    if (!$("#redisPort").val() || !$("#redisAddress").val() ) {
+                        layer.msg("信息为空错误");
+                        reject("信息为空错误");
+                        return;
+                    }
+                    resolve("测试Redis连接中....");
+                }).then(res=>{
+                    layer.msg(res);
+                    return httpUtil.post("/system/testRedis", JSON.stringify({
+                        "redisPassword": $("#redisPassword").val(),
+                        "redisAddress": $("#redisAddress").val(),
+                        "redisPort": $("#redisPort").val()
+                    }))
+                })
+            },
 
             // function () {
 
@@ -716,15 +790,16 @@
 
     $(function () {
         getPath("");
+        $("#createFolderModelButton").click(function () {
+            if ($("#fileUploadPath").val() === "") {
+                layer.msg("请先选择一个文件夹")
+                return;
+            }
+            $("#inputNewFolderName").modal('show');
+        })
     })
 
-    $("#createFolderModelButton").click(function () {
-        if ($("#fileUploadPath").val() === "") {
-            layer.msg("请先选择一个文件夹")
-            return;
-        }
-        $("#inputNewFolderName").modal('show');
-    })
+
 
     // $("#testDB").click(function () {
     //

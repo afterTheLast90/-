@@ -68,4 +68,23 @@ public class InstallParams extends DateBaseParam {
     @NotBlank(message = "路径不能为空")
     @NotNull(message = "路径不能为空")
     private String fileUploadPath;
+
+    /**
+     * redis密码
+     */
+    private String redisPassword;
+
+    /**
+     * redis 地址
+     */
+    @NotNull(message = "数据库地址不能为空")
+    @NotBlank(message = "数据库地址不能为空")
+    private String redisAddress;
+    /**
+     * redis端口
+     */
+    @NotNull(message = "数据库端口不能为空")
+    @Min(value = 1 ,message = "数据库端口范围错误")
+    @Max(value = 65535 ,message = "数据库端口范围错误")
+    private Integer redisPort;
 }

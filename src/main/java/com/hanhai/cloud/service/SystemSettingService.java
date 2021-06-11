@@ -30,6 +30,23 @@ public class SystemSettingService extends BaseService {
         return setting == null ? "" : setting.getSettingValue();
     }
 
+    public SystemSetting updateById(String key,Object value){
+
+        SystemSetting systemSetting = systemSettingsMapper.selectById(key);
+        if (systemSetting==null){
+            systemSetting= new SystemSetting();
+            systemSetting.setSettingKey(key);
+            systemSetting.setSettingValue(value.toString());
+            systemSetting.setSettingComment("");
+            systemSettingsMapper.insert(systemSetting);
+        }else {
+            systemSetting.setSettingKey(key);
+            systemSetting.setSettingValue(value.toString());
+            systemSettingsMapper.updateById(systemSetting);
+        }
+        return systemSetting;
+    }
+
     /**
      * 安装系统
      *
@@ -67,6 +84,10 @@ public class SystemSettingService extends BaseService {
         out.println("spring.datasource.username=" + installParams.getDbUserName());
         out.println("spring.datasource.password=" + installParams.getDbPassword());
         out.println("system.info.installed=true");
+
+        out.println("spring.redis.host=" + installParams.getRedisAddress());
+        out.println("spring.redis.port=" + installParams.getRedisPort());
+        out.println("spring.redis.password=" + installParams.getRedisPassword());
         out.close();
 
         // 建表
