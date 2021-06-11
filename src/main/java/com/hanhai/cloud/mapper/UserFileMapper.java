@@ -57,6 +57,12 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     @Select("select * from user_files where file_parent_path=#{path} and user_id=#{userId} and deleted = 1 ")
     public List<UserFile> getReductionFilesByParent(@Param("path") String path,@Param("userId")  Long userId);
 
+    @Select("select file_type from user_files where user_file_id =#{userFileId} and user_id = #{userId}   and deleted = 0 ")
+    public String getFileTypeByUserFileId(@Param("userFileId") Long userFileId,@Param("userId") Long userId);
+    @Select("select file_id from user_files where user_file_id =#{userFileId} and user_id = #{userId}   and deleted = 0 ")
+    public Long getFileIdByUserFileId(@Param("userFileId") Long userFileId,@Param("userId") Long userId);
+
+
 
     @Select("select * from user_files where file_parent_path=#{path} and file_name=#{name} and user_id=#{userId} and deleted = 0 ")
     public List<UserFile> getByName(@Param("path") String path,@Param("name") String name,@Param("userId")  Long userId);

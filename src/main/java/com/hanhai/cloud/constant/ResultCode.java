@@ -32,6 +32,11 @@ public enum ResultCode {
     UPDATE_ERROR(453,"更新失败") ,
 
     /**
+     * 解压失败
+     */
+    UNZIP_ERROR(454,"解压失败") ,
+
+    /**
      * 参数错误
      */
     PARAMETER_ERROR(451,"参数错误"),

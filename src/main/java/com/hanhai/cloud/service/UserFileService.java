@@ -328,4 +328,12 @@ public class UserFileService extends BaseService {
         userFileMapper.updateById(file);
         return file;
     }
+
+
+    public String getFileTypeByUserFileId(Long userFileId){
+        return userFileMapper.getFileTypeByUserFileId(userFileId, StpUtil.getLoginIdAsLong());
+    }
+    public Long getFileIdByUserFileId(Long userFileId){
+        return userFileMapper.getFileIdByUserFileId(userFileId, StpUtil.getLoginIdAsLong());
+    }
 }
