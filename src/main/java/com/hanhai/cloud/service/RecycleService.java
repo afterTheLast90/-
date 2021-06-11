@@ -2,7 +2,9 @@ package com.hanhai.cloud.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.Recycle;
+import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserFile;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,17 +24,31 @@ public class RecycleService extends BaseService {
 
     @Transactional
     public void deleted(Long id) {
+        Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(id, StpUtil.getLoginIdAsLong());
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+        getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
+        userFileMapper.updateFiles(getFilesByRecycleId);
         recycleMapper.deleteById(id);
+        user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
+        userMapper.updateById(user);
     }
     public void deletedAll(){
         List<Recycle> sourceFiles= recycleMapper.getRecycleAllFiles();
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         for(Recycle s:sourceFiles){
+            Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(s.getRecycleId(), StpUtil.getLoginIdAsLong());
+            getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
+            userFileMapper.updateFiles(getFilesByRecycleId);
+
             recycleMapper.deleteById(s);
+            user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
+            userMapper.updateById(user);
         }
     }
     @Transactional
     public void reduction(Long[] ids, String target) {
         List<UserFile> targetFiles = userFileMapper.getFilesByParent(target, StpUtil.getLoginIdAsLong());
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         Set<String> targetFilesSet = new HashSet<String>();
         for (UserFile targetFile : targetFiles) {
             targetFilesSet.add((targetFile.getFileName() + " " + targetFile.getFileType()).toLowerCase());
@@ -57,6 +73,9 @@ public class RecycleService extends BaseService {
                     byRecycleIdTopOne.setCreatedTime(LocalDateTime.now());
                     userFileService.reductionById(byRecycleIdTopOne);
 
+                    user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
+                    userMapper.updateById(user);
+
                     recyclefile.setDeleted(true);
                     recycleMapper.reductionById(recyclefile);
 
@@ -76,12 +95,19 @@ public class RecycleService extends BaseService {
                                 file.setRecycleId(0L);
                                 file.setCreatedTime(LocalDateTime.now());
                                 userFileService.reductionById(file);
+
+                                user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                                userMapper.updateById(user);
+
                                 targetPath.add(targetPath.element()+file.getUserFileId()+'/');
                             }else{
                                 file.setDeleted(false);
                                 file.setRecycleId(0L);
                                 file.setCreatedTime(LocalDateTime.now());
                                 userFileService.reductionById(file);
+
+                                user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                                userMapper.updateById(user);
                             }
                         }
                         sourcePath.poll();
@@ -110,6 +136,9 @@ public class RecycleService extends BaseService {
                 byRecycleIdTopOne.setCreatedTime(LocalDateTime.now());
                 userFileService.reductionById(byRecycleIdTopOne);
 
+                user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
+                userMapper.updateById(user);
+
                 recyclefile.setDeleted(true);
                 recycleMapper.reductionById(recyclefile);
             }
@@ -118,6 +147,7 @@ public class RecycleService extends BaseService {
     @Transactional
     public void reducing(Long id,String target){
         List<UserFile> targetFiles = userFileMapper.getFilesByParent(target, StpUtil.getLoginIdAsLong());
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         Set<String> targetFilesSet = new HashSet<String>();
         for (UserFile targetFile : targetFiles) {
             targetFilesSet.add((targetFile.getFileName() + " " + targetFile.getFileType()).toLowerCase());
@@ -141,6 +171,9 @@ public class RecycleService extends BaseService {
                 byRecycleIdTopOne.setCreatedTime(LocalDateTime.now());
                 userFileService.reductionById(byRecycleIdTopOne);
 
+                user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
+                userMapper.updateById(user);
+
                 recyclefile.setDeleted(true);
                 recycleMapper.reductionById(recyclefile);
 
@@ -160,12 +193,19 @@ public class RecycleService extends BaseService {
                             file.setRecycleId(0L);
                             file.setCreatedTime(LocalDateTime.now());
                             userFileService.reductionById(file);
+
+                            user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                            userMapper.updateById(user);
+
                             targetPath.add(targetPath.element()+file.getUserFileId()+'/');
                         }else{
                             file.setDeleted(false);
                             file.setRecycleId(0L);
                             file.setCreatedTime(LocalDateTime.now());
                             userFileService.reductionById(file);
+
+                            user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                            userMapper.updateById(user);
                         }
                     }
                     sourcePath.poll();
@@ -193,6 +233,9 @@ public class RecycleService extends BaseService {
             byRecycleIdTopOne.setRecycleId(0L);
             byRecycleIdTopOne.setCreatedTime(LocalDateTime.now());
             userFileService.reductionById(byRecycleIdTopOne);
+
+            user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
+            userMapper.updateById(user);
 
             recyclefile.setDeleted(true);
             recycleMapper.reductionById(recyclefile);

@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.entity.FileHistory;
 import com.hanhai.cloud.entity.Recycle;
+import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.CreateDirectoryParam;
@@ -40,7 +41,7 @@ public class UserFileService extends BaseService {
     public void copy(Long [] ids, String target) {
         List<UserFile> sourceFiles = userFileMapper.getByIds(ids, StpUtil.getLoginIdAsLong());
         List<UserFile> targetFiles = userFileMapper.getFilesByParent(target, StpUtil.getLoginIdAsLong());
-
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         Set<String> targetFilesSet = new HashSet<String>();
         for (UserFile targetFile : targetFiles) {
             targetFilesSet.add((targetFile.getFileName() + " " + targetFile.getFileType()).toLowerCase());
@@ -58,10 +59,10 @@ public class UserFileService extends BaseService {
                 }
 
                 sourcePath.add(s.getFileParentPath()+ s.getUserFileId() + "/");
-                s.setFileParentPath(target);
-                s.setUserFileId(null);
-                s.setShareCount(0);
+                s.setFileParentPath(target).setUserFileId(null).setShareCount(0);
                 userFileMapper.insert(s);
+                user.setUsedSize(user.getUsedSize()+s.getFileSize());
+                userMapper.updateById(user);
                 targetPath.add(target+ s.getUserFileId() + "/");
                 while (!sourcePath.isEmpty()) {
                     List<UserFile> files = userFileMapper.getFilesByParent(sourcePath.element(), StpUtil.getLoginIdAsLong());
@@ -74,14 +75,19 @@ public class UserFileService extends BaseService {
                         file.setFileParentPath(targetPath.element());
                         if ("DIR".equals(file.getFileType())) {
                             sourcePath.add(sourcePath.element()+file.getUserFileId()+"/");
-                            file.setUserFileId(null);
-                            file.setShareCount(0);
+                            file.setUserFileId(null).setShareCount(0);
                             userFileMapper.insert(file);
+
+                            user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                            userMapper.updateById(user);
+
                             targetPath.add(targetPath.element()+file.getUserFileId()+"/");
                         }else{
-                            file.setUserFileId(null);
-                            file.setShareCount(0);
+                            file.setUserFileId(null).setShareCount(0);
                             userFileMapper.insert(file);
+
+                            user.setUsedSize(user.getUsedSize()+file.getFileSize());
+                            userMapper.updateById(user);
                         }
 
                     }
@@ -111,6 +117,9 @@ public class UserFileService extends BaseService {
                 s.setCreatedTime(null);
                 s.setShareCount(0);
                 userFileMapper.insert(s);
+
+                user.setUsedSize(user.getUsedSize()+s.getFileSize());
+                userMapper.updateById(user);
             }
         }
     }
@@ -184,50 +193,28 @@ public class UserFileService extends BaseService {
             }
         }
     }
-//    @Transactional
-//    public void reName(String newFileName,Long id) {
-//        UserFile userFile = userFileMapper.selectById(id);
-//        List<UserFile> targetFiles = userFileMapper.getFilesByParent(userFile.getFileParentPath(), StpUtil.getLoginIdAsLong());
-//
-//        Set<String> targetFilesSet = new HashSet<String>();
-//        for (UserFile targetFile : targetFiles) {
-//            targetFilesSet.add((newFileName+ " " + targetFile.getFileType()).toLowerCase());
-//        }
-//
-//            if ("DIR".equals(userFile.getFileType())) {
-//                if ((targetFilesSet.contains((newFileName + " " + userFile.getFileType()).toLowerCase()))) {
-//                    int i = 1;
-//                    while (targetFilesSet.contains((newFileName+ "(" + i + ")").toLowerCase())) {
-//                        i++;
-//                    }
-//                    userFile.setFileName(newFileName + "(" + i + ")");
-//                }
-//                userFileMapper.updateById(userFile);
-//            } else {
-//                int i = 1;
-//                int dotIndex = userFile.getFileType().lastIndexOf(".");
-//                // 如果重名进行重命名操作
-//                if ((targetFilesSet.contains((newFileName + " " + userFile.getFileType()).toLowerCase()))) {
-//                    String fileName, fileType;
-//                    fileName = newFileName;
-//                    if (dotIndex == -1) {
-////                       fileName = newFileName;
-//                        fileType = "";
-//                    } else {
-//                        fileType = userFile.getFileName().substring(dotIndex);
-//                    }
-//                    while (targetFilesSet.contains((fileName + "(" + i + ")" + fileType + " " + userFile.getFileType()).toLowerCase())) {
-//                        i++;
-//                    }
-//                    userFile.setFileName(fileName + "(" + i + ")" + fileType);
-//                }
-//                userFileMapper.updateById(userFile);
-//            }
-//
-//    }
+
+    @Transactional
+    public void restoringFiles(Long id){
+        FileHistory fileHistory=userFileMapper.getFileHistoryById(id);
+        UserFile userFile = userFileMapper.selectById(fileHistory.getUserFileId());
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+        FileHistory newHistory = new FileHistory();
+        newHistory.setFileId(userFile.getFileId())
+                .setFileName(userFile.getFileName())
+                .setFileSize(userFile.getFileSize());
+        fileHistoryMapper.insert(newHistory);
+        fileHistoryMapper.deleteById(fileHistory);
+        userFile.setFileId(fileHistory.getFileId()).setFileSize(userFile.getFileSize());
+        userFileMapper.updateById(userFile);
+        user.setUsedSize(user.getUsedSize()+fileHistory.getFileSize()-userFile.getFileSize());
+        userMapper.updateById(user);
+    }
+
     @Transactional
         public void deleted(Long [] ids){
         List<UserFile> sourceFiles = userFileMapper.getByIds(ids, StpUtil.getLoginIdAsLong());
+        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         for (UserFile s : sourceFiles) {
             if ("DIR".equals(s.getFileType())) {
                 Queue<String> sourcePath = new LinkedList<>();
@@ -235,20 +222,21 @@ public class UserFileService extends BaseService {
 
                 sourcePath.add(s.getFileParentPath()+ s.getUserFileId() + "/");
 
-
-
-//                s.setDeleted(true);
-
-
                 Recycle recycle=new Recycle();
-                recycle.setRecycleId(null).setFileName(s.getFileName()).setFileType(s.getFileType()).setCreatedTime(s.getCreatedTime()).setDeleted(false).setUpdatedTime(LocalDateTime.now());
+                recycle.setRecycleId(null)
+                        .setFileName(s.getFileName())
+                        .setFileType(s.getFileType())
+                        .setCreatedTime(s.getCreatedTime())
+                        .setDeleted(false)
+                        .setUpdatedTime(LocalDateTime.now());
                 recycleMapper.insert(recycle);
 
                 s.setRecycleId(recycle.getRecycleId());
                 userFileMapper.updateById(s);
 
                 userFileMapper.deleteById(s);
-
+                user.setUsedSize(user.getUsedSize()-s.getFileSize());
+                userMapper.updateById(user);
                 targetPath.add(s.getFileParentPath()+ s.getUserFileId() + "/");
                 while (!sourcePath.isEmpty()) {
                     List<UserFile> files = userFileMapper.getFilesByParent(sourcePath.element(), StpUtil.getLoginIdAsLong());
@@ -261,36 +249,28 @@ public class UserFileService extends BaseService {
                         file.setFileParentPath(targetPath.element());
                         if ("DIR".equals(s.getFileType())) {
                             sourcePath.add(sourcePath.element()+file.getUserFileId()+"/");
-//                            file.setDeleted(true);
-
-//
-//                            recycle.setRecycleId(null).setFileName(file.getFileName()).setFileType(file.getFileType()).setCreatedTime(file.getCreatedTime()).setDeleted(false).setUpdatedTime(LocalDateTime.now());
-//                            recycleMapper.insert(recycle);
 
                             file.setRecycleId(recycle.getRecycleId());
                             userFileMapper.updateById(file);
                             userFileMapper.deleteById(file);
+
+                            user.setUsedSize(user.getUsedSize()-file.getFileSize());
+                            userMapper.updateById(user);
 
                             targetPath.add(targetPath.element()+file.getUserFileId()+"/");
                         }else{
-//                           file.setDeleted(true);
-
-//
-//                            recycle.setRecycleId(null).setFileName(file.getFileName()).setFileType(file.getFileType()).setCreatedTime(file.getCreatedTime()).setDeleted(false).setUpdatedTime(LocalDateTime.now());
-//                            recycleMapper.insert(recycle);
-
                             file.setRecycleId(recycle.getRecycleId());
                             userFileMapper.updateById(file);
                             userFileMapper.deleteById(file);
+
+                            user.setUsedSize(user.getUsedSize()-file.getFileSize());
+                            userMapper.updateById(user);
                         }
                     }
                     sourcePath.poll();
                     targetPath.poll();
                 }
             } else {
-//                s.setDeleted(true);
-
-
                 Recycle recycleFile=new Recycle();
                 recycleFile.setRecycleId(null).setFileName(s.getFileName()).setFileType(s.getFileType()).setCreatedTime(s.getCreatedTime()).setDeleted(false).setUpdatedTime(LocalDateTime.now());
                 recycleMapper.insert(recycleFile);
@@ -298,6 +278,9 @@ public class UserFileService extends BaseService {
                 s.setRecycleId(recycleFile.getRecycleId());
                 userFileMapper.updateById(s);
                 userFileMapper.deleteById(s);
+
+                user.setUsedSize(user.getUsedSize()-s.getFileSize());
+                userMapper.updateById(user);
             }
         }
     }
@@ -336,4 +319,5 @@ public class UserFileService extends BaseService {
     public Long getFileIdByUserFileId(Long userFileId){
         return userFileMapper.getFileIdByUserFileId(userFileId, StpUtil.getLoginIdAsLong());
     }
+
 }
