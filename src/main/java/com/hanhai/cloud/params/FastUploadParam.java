@@ -17,4 +17,6 @@ public class FastUploadParam {
     private String userFileId;
     /** 获取用户ID */
     private String userId;
+    /** 获取上传路径 */
+    private String uploadPath;
 }

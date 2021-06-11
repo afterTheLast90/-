@@ -34,4 +34,6 @@ public class MultipartFileParam {
     private String userFileSize;
     /** 获取用户文件表用户ID */
     private String userId;
+    /** 获取用户文件表路径 */
+    private String uploadPath;
 }

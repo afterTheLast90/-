@@ -27,6 +27,9 @@
             max-width: 100%;
             size: 100px;
         }
+        #inbox_detailModal{
+            padding-right: 400px;
+        }
     </style>
 </head>
 
@@ -82,15 +85,16 @@
 
                 <div class="form-group">
                     <label for="savePath">保存路径：</label>
-                    <input type="email" class="form-control" id="savePath">
+                    <input type="text" class="form-control" id="savePath" disabled="disabled"/>
+                    <button type="button" id="btnPath" class="btn btn-primary" style="margin-top: 5px">选择路径</button>
                 </div>
 
                 <div class="form-group">
                     <label for="datetimepicker">截止时间：</label>
                     <div class="container">
                         <div class="row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
+<!--                            <div class="col-sm-6">-->
+                                <div class="form-group" style="width: 470px">
                                     <div class="input-group date" id="datetimepicker" data-target-input="nearest">
                                         <input type="text" id="datetimeText" style="width:100px"
                                                class="form-control datetimepicker-input" data-target="#datetimepicker"/>
@@ -102,7 +106,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+<!--                            </div>-->
                             <script type="text/javascript">
                                 $(function () {
                                     $('#datetimepicker').datetimepicker({
@@ -120,7 +124,7 @@
 
                 <div class="form-group">
                     <label for="textContext">收集内容：</label>
-                    <textarea class="form-control" id="textContext" rows="3"></textarea>
+                    <textarea class="form-control" id="textContext" rows="3" style="resize: none"></textarea>
                 </div>
             </div>
             <!-- 模态框尾部 -->
@@ -187,8 +191,8 @@
                     <label for="datetimepicker">截止时间：</label>
                     <div class="container">
                         <div class="row">
-                            <div class="col-sm-6">
-                                <div class="form-group">
+<!--                            <div class="col-sm-6">-->
+                                <div class="form-group" style="width: 470px">
                                     <div class="input-group date" id="up_datetimepicker" data-target-input="nearest">
                                         <input type="text" id="up_datetimeText" class="form-control datetimepicker-input"
                                                data-target="#up_datetimepicker"/>
@@ -200,7 +204,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+<!--                            </div>-->
                             <script type="text/javascript">
                                 $(function () {
                                     $('#up_datetimepicker').datetimepicker({
@@ -218,7 +222,7 @@
 
                 <div class="form-group">
                     <label for="textContext">收集内容：</label>
-                    <textarea class="form-control" id="up_textContext" rows="3"></textarea>
+                    <textarea class="form-control" id="up_textContext" rows="3" style="resize: none"></textarea>
                 </div>
                 <input type="email" class="form-control" id="up_inboxId" hidden="hidden"/>
             </div>
@@ -234,7 +238,7 @@
 <!-- 详情模态框 -->
 <div class="modal" tabindex="-1" id="inbox_detailModal">
     <div class="modal-dialog">
-        <div class="modal-content" style="width: 1200px;height: 800px">
+        <div class="modal-content" style="width: 1000px;height: 600px;">
             <div class="modal-header">
                 <h5 class="modal-title">收件详情</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -258,7 +262,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" id="btn_detailClose" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-                <button type="button" class="btn btn-primary">确定</button>
             </div>
         </div>
     </div>
@@ -454,7 +457,7 @@
                     },
                 ],
                 pageSize: 5,//首页显示多少行数据
-                pageList: [10, 15, 20],
+                pageList: [5, 8, 10],
                 queryParams: function (params) {//发送请求的参数
                     return {
                         //key: $('#templateKey').val(),
@@ -474,7 +477,7 @@
         }
 
         //保存路径选择
-        $("#savePath").click(function () {
+        $("#btnPath").click(function () {
             $("#inbox_newModal").modal('hide');
             $.fn.selectDirForUser.show();
         })
