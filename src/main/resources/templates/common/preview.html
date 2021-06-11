@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="previewModel">
+
+    <script src="/static/iconfont/iconfont.js"></script>
+    <script type="text/javascript" src="static/image/js/ImagePreview.js"></script>
+    <link rel="stylesheet" type="text/css" href="static/image/css/ImagePreview.css">
+    <script src="static/vidios/audiojs/audio.min.js"></script>
+    <link rel="stylesheet" href="static/vidios/includes/index.css" media="screen">
+
+    <style type="text/css">
+        /*body {*/
+        /*    background-color: #222*/
+        /*}*/
+        .videoed {
+            display: none;
+            width: 50px;
+            height: 50px;
+            position: absolute;
+            left: 45%;
+            top: 45%;
+            z-index: 99;
+            border-radius: 100%;
+        }
+        .icon {
+            width: 2em;
+            height: 2em;
+        }
+        .videos {
+            display: none;
+            border: 1px solid #080808;
+            position: fixed;
+            left: 30%;
+            top: 30%;
+            margin-left: -330px;
+            margin-top: -210px;
+            z-index: 100;
+            width: 1280px;
+            height: 720px;
+        }
+
+        .vclose {
+            position: absolute;
+            right: 1%;
+            top: 1%;
+            border-radius: 100%;
+            cursor: pointer;
+        }
+        #zipContent li{
+            margin-bottom: 4px;
+        }
+        #zipContent li:hover{
+            background-color: #F5F6F7;
+        }
+        #zipContent .icon{
+            margin-left: 10px;
+            margin-right: 10px;
+        }
+    </style>
+    <div id="zipContent">
+        <ul id="LastFloor">
+        </ul>
+        <ul id="unZipFileListDir">
+        </ul>
+        <ul id="unZipFileListNotDir">
+        </ul>
+    </div>
+    <div id="audio-action" style="width: 100px;height: 50px" >
+        <div class="container" style="margin-top: 100px">
+            <div class="videos"></div>
+        </div>
+    </div>
+    <script type="module">
+
+        import httpUtil from "/static/httpUtil.js";
+       $(function(){
+           // axios
+           // window.addEventListener('load', function() {
+           //     // preview("102555555555556")//PNG
+           //     // preview("1025555577777777")//JPG
+           //     preview("1025550000")//ZIP
+           //     // preview("160236107767899")//MP3
+           //     // preview("160677771518022")//MP4
+           //     // preview("102555555555555")//PDF
+           //     // preview("1025550000555555")//TXT
+           //     // preview("102555555555666")//DOCX
+           // });
+           // // preview("1025555577777777")//JPG
+           // // preview("160236107767899")//MP3
+           // // preview("160677771518022")//MP4
+           // // preview("102555555555555")//PDF
+           // // preview("102555555555666")//DOCX
+           let videoTypeSet=new Set(["MP4","WEBM"])
+           let audioTypeSet=new Set(["MP3","OGG","AAC","FLAC","M4R"])
+           let imageTypeSet=new Set(["PNG","GIF","JPG","JPEG","BMP","GIF","ICO","WEBP"])
+           let openOfficeTypeSet=new Set(["PPTX","XLSX","DOCX","DOC","HTML","RTF","TXT","TIFF","TTF","PPT","SVG","SWF","DBF","XLS","XLT","SQL","PDF"])
+           let modernPath=""
+           // let titleName="文件预览"
+           let userFileId = undefined;
+           $.fn.preview=function (userFileIds,filename){
+
+               // 先判断类型
+               userFileId=userFileIds
+               httpUtil.get("/getFileType",{
+                   params:{
+                       path:userFileId
+                   }
+               }).then(function (res){
+                   previewFile(res.data,undefined,filename)
+               }).catch(err=>{
+                   console.log(err)
+               })
+
+           }
+
+           function previewFile(type,url,filename){
+               if(!filename){
+                   filename="文件预览"
+               }
+               if(imageTypeSet.has(type)){
+                   let image = new ImagePreview();
+                   if (url){
+                       image.show(url);
+                   }
+                   else{
+                       // console.log(url)
+                       image.show('/preview/media?userFileId='+userFileId);
+                   }
+                   return;
+               }
+               if(openOfficeTypeSet.has(type)){
+                   if(url){
+                       layer.open({
+                           type: 2,
+                           title: filename,
+                           shadeClose: true,
+                           shade: 0.8,
+                           area: ['80%', '90%'],
+                           // content: "http://localhost:63342/shixun/ImagePreview/src/竹林幽径-0.0.0.1.jpg" //iframe的url
+                           content: url //iframe的url
+                       })
+                   }else {
+                       layer.open({
+                           type: 2,
+                           title: filename,
+                           shadeClose: true,
+                           shade: 0.8,
+                           area: ['80%', '90%'],
+                           // content: "http://localhost:63342/shixun/ImagePreview/src/竹林幽径-0.0.0.1.jpg" //iframe的url
+                           content: '/preview/document?userFileId='+userFileId//iframe的url
+                       })
+                   }
+                   return;
+               }
+               if(audioTypeSet.has(type)){
+                   // function display() {
+                   layer.open({
+                       type: 1, skin: 'demo-class',
+                       closeBtn: 1,
+                       shadeClose: true,
+                       shade: 0,
+                       resize:false,
+                       offset:"rt",
+                       area: ['500px', '120px'],
+
+                       success: function () {
+                           if(url){
+                               $("#audio-action").html("<audio src="+url+" preload='auto'></audio>")
+                           }else {
+                               $("#audio-action").html("<audio src='/preview/media?userFileId="+userFileId+"' preload='none'></audio>")
+                           }
+
+                           audiojs.events.ready(function () {
+                               audiojs.createAll();
+                           });
+                       },
+                       cancel:function (){
+                           $("#audio-action").html("")
+                       },
+                       content: $("#audio-action") //iframe的url
+                   });
+                   return;
+               }
+               if(videoTypeSet.has(type)){
+                   // var video ="http://localhost:8080/test1?userfileId=160677771518022"//获取视频路
+                   if(url){
+                       $('.videos').html("<video id=\"video\" style='width: 1280px' src="+url
+                           + " preload=\"auto\" controls=\"controls\" autoplay=\"autoplay\">" +
+                           "</video><img id='closeVideo' class=\"vclose\" src=\"/static/video/gb.png\" width=\"25\" height=\"25\"/>");
+                   }else {
+                       $('.videos').html("<video id=\"video\" style='width: 1280px'  type=\"video/mp4\" src='" + "/preview/media?userFileId="+userFileId
+                           + "' preload=\"auto\" controls=\"controls\" autoplay=\"autoplay\">" +
+                           "</video><img id='closeVideo' class=\"vclose\" src=\"/static/video/gb.png\" width=\"25\" height=\"25\"/>");
+
+                   }
+                   $("#closeVideo").click(function(){
+                       var v = document.getElementById('video');//获取视频节点
+                       $('.videos').hide();//点击关闭按钮关闭暂停视频
+                       v.pause();
+                       $('.videos').html();
+                   })
+                   $('.videos').show();
+
+                   return;
+               }
+               if(type==="ZIP"){
+                   if(!url){
+                       layer.open({
+                           type: 1,
+                           title:filename,
+                           zIndex:"1",
+                           // skin: 'layui-layer-rim', //加上边框
+                           area: ['420px', '440px'], //宽高
+                           content: $("#zipContent"),
+                           cancel: function(){
+
+                               $("#LastFloor").empty()
+                               $("#unZipFileListDir").empty()
+                               $("#unZipFileListNotDir").empty()
+                           }
+                       });
+                       getPath(userFileId)
+                       console.log(userFileId)
+                   }
+
+
+                   function getPath(path) {
+                       if (path===""){
+                           layer.msg("zip文件预览错误");
+                           return;
+                       }
+                       httpUtil.get("/preview/zip",{
+                           params:{
+                               path:path
+                           }
+                       }).then(res => {
+                           $("#LastFloor").empty()
+                           $("#unZipFileListDir").empty()
+                           $("#unZipFileListNotDir").empty()
+                           if(modernPath!=""){
+                               console.log(111)
+                               $("#LastFloor").append('<li >'+" <svg class='icon' aria-hidden='true'><use xlink:href='#icon-"+"dir"+"'></use></svg>"+"..."+'</li>');
+                           }
+                           for (let i=0;i< res.data.length;i++){
+                               // $("#unZipFileList").append('<li>' +" <svg class='icon' aria-hidden='true'><use xlink:href='#icon-"+type[i].type+"'></use></svg>"+type[i].name+'</li>');
+
+                               if (res.data[i].type==="dir"){
+                                   $("#unZipFileListDir").append('<li >'+" <svg class='icon' aria-hidden='true'><use xlink:href='#icon-"+res.data[i].type+"'></use></svg>"+res.data[i].name+'</li>');
+                               }else
+                                   // <use href='#icon-"+type[i].type+"'></use>
+                                   $("#unZipFileListNotDir").append('<li>' +" <svg class='icon' aria-hidden='true'><use  xlink:href='#icon-"+(fileTypeSet.has(res.data[i].type.toUpperCase())?res.data[i].type:"other")+"'></use></svg>"+res.data[i].name+'</li>');
+                           }
+                           $("#unZipFileListDir li").click(function (){
+                               getPath(userFileId+"/"+modernPath+"/"+$(this).text().trim())
+                               modernPath=modernPath+"/"+$(this).text().trim()
+                               console.log(modernPath)
+                           })
+                           $("#LastFloor li").click(function (){
+                               getPath(userFileId+"/"+modernPath.substring(0,modernPath.lastIndexOf("/")))
+                               modernPath=modernPath.substring(0,modernPath.lastIndexOf("/"))
+                           })
+                           $("#unZipFileListNotDir li").click(function (){
+                               let zipFileType = $(this).text().trim().substring($(this).text().trim().lastIndexOf(".")+1).toUpperCase()
+                               if (zipFileType==="ZIP"){
+                                   layer.msg("暂不支持该类型文件的预览")
+                               }
+                               let zipFileUrl="/preview/zip/file?path="+userFileId+modernPath+"/"+$(this).text().trim()
+                               console.log(zipFileUrl)
+                               previewFile(zipFileType,zipFileUrl,$(this).text().trim())
+                           })
+                       })
+                   }
+                   return;
+               }
+
+               layer.msg("暂不支持该类型文件的预览")
+           }
+       })
+    </script>
+</div>
+
+</html>
