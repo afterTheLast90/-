@@ -19,7 +19,6 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -140,10 +139,11 @@ public class UploadFileService extends BaseService {
         String year=String.valueOf(DateUtil.year(date));
         String month=String.valueOf(DateUtil.month(date)+1);
         String day=String.valueOf(DateUtil.dayOfMonth(date));
-        String fileSaveDirectory = systemInfo.getUpLoadPath()+"Uploads" + File.separator + year + File.separator
-                + month + File.separator + day ; //上传文件的文件夹
-        String tempSaveDirectory = fileSaveDirectory + File.separator + fileId+"_temp"; //上传文件的分片temp文件夹
-        String filePath = tempSaveDirectory + File.separator + filenameNoEx + "." + suffix;
+        String fileSaveDirectory = systemInfo.getUpLoadPath()+"Uploads" + "\\" + year + "\\"
+                + month + "\\" + day ; //上传文件的文件夹
+        String tempSaveDirectory = fileSaveDirectory + "\\" + fileId+"_temp"; //上传文件的分片temp文件夹
+        String filePath = tempSaveDirectory + "\\" + filenameNoEx + "." + suffix;
+        String savePath = year+"\\"+month+"\\"+day+"\\"+filenameNoEx+"."+suffix;
         //验证路径是否存在，不存在则创建目录
         File path = new File(tempSaveDirectory);
         if (!path.exists()) {
@@ -193,15 +193,20 @@ public class UploadFileService extends BaseService {
                     System.out.println("@@@@@@@@@@@@@@@@@@@@@@@删除完成@@@@@@@@@@@@@@@@@@@@@@@");
                     outputStream.close();
 
+                    //======================================================================
+                    //============================ 对数据库表操作 =============================
+                    //======================================================================
+
                     //文件表插入记录
                     Files files=new Files();
                     files.setFileId(Long.parseLong(fileId));
                     files.setFileMd5(md5);
-                    files.setFilePath(filePath);
+//                    files.setFilePath(filePath);
+                    files.setFilePath(savePath);
                     files.setFileSize(Long.valueOf(size));
                     files.setStorageLocation(0);
                     files.setCitationsCount(1L);
-//                    fileMapper.insert(files);
+                    fileMapper.insert(files);
 
                     //用户文件表插入记录
                     String userFileId=param.getUserFileId();
@@ -212,15 +217,15 @@ public class UploadFileService extends BaseService {
                     if(userFileId==null || "".equals(userFileId) || "undefined".equals(userFileId)){
                         //新建用户文件表记录
                         userFile.setFileId(Long.parseLong(fileId));
-                        userFile.setFileName(filenameNoEx+"."+suffix.toUpperCase());
+                        userFile.setFileName(filenameNoEx+"."+suffix);
                         userFile.setFileSize(Long.parseLong(size));
-                        userFile.setFileParentPath("1/2/3/4");
+                        userFile.setFileParentPath(param.getUploadPath());
                         userFile.setFileType(suffix.toUpperCase());
                         if(param.getUserId()==null)
                             userFile.setUserId(StpUtil.getLoginIdAsLong()); //获取当前登陆的用户ID
                         else
                             userFile.setUserId(Long.parseLong(param.getUserId()));
-//                        userFileMapper.insert(userFile);
+                        userFileMapper.insert(userFile);
 
                     }else{  //覆盖同名文件，修改用户文件表记录
                         //历史版本表插入记录
@@ -232,12 +237,12 @@ public class UploadFileService extends BaseService {
                             fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
                         else
                             fileHistory.setUpdatePerson(0L);
-//                        fileHistoryMapper.insert(fileHistory);
+                        fileHistoryMapper.insert(fileHistory);
 
                         userFile.setUserFileId(Long.parseLong(param.getUserFileId()));
                         userFile.setFileId(Long.parseLong(fileId));
                         userFile.setFileSize(Long.parseLong(size));
-//                        userFileMapper.updateById(userFile);
+                        userFileMapper.updateById(userFile);
                     }
                     fileUploadVO.setUserFileId(userFile.getUserFileId()); //获取用户文件ID
                     fileUploadVO.setChunk(null);
@@ -264,6 +269,12 @@ public class UploadFileService extends BaseService {
         System.out.println("秒传逻辑");
         System.out.println("===============================");
         Long fileId = Long.parseLong(param.getFileId());
+        //秒传文件表引用次数+1
+        Files files=new Files();
+        files=fileMapper.selectById(fileId);
+        files.setCitationsCount(files.getCitationsCount()+1);
+        fileMapper.updateById(files);
+
         String name = param.getName();
         String filenameNoEx = FileNameUtil.getFileNameNoEx(name);  //不带扩展名的文件名
         String suffix = FileNameUtil.getExtensionName(name);  //扩展名
@@ -276,15 +287,15 @@ public class UploadFileService extends BaseService {
         if(userFileId==null || "".equals(userFileId) || "undefined".equals(userFileId)){
             //新建用户文件表记录
             userFile.setFileId(fileId);
-            userFile.setFileName(filenameNoEx+"."+suffix.toUpperCase());
+            userFile.setFileName(filenameNoEx+"."+suffix);
             userFile.setFileSize(size);
-            userFile.setFileParentPath("1/2/3/4");
+            userFile.setFileParentPath(param.getUploadPath());
             userFile.setFileType(suffix.toUpperCase());
             if(param.getUserId()==null)
                 userFile.setUserId(StpUtil.getLoginIdAsLong()); //获取当前登陆的用户ID
             else
                 userFile.setUserId(Long.parseLong(param.getUserId()));
-//            userFileMapper.insert(userFile);
+            userFileMapper.insert(userFile);
         }else{  //覆盖同名文件，修改用户文件表记录
             //历史版本表插入记录
             FileHistory fileHistory=new FileHistory();
@@ -295,12 +306,12 @@ public class UploadFileService extends BaseService {
                 fileHistory.setUpdatePerson(StpUtil.getLoginIdAsLong());
             else
                 fileHistory.setUpdatePerson(0L);
-//            fileHistoryMapper.insert(fileHistory);
+            fileHistoryMapper.insert(fileHistory);
 
             userFile.setUserFileId(Long.parseLong(param.getUserFileId()));
             userFile.setFileId(fileId);
             userFile.setFileSize(size);
-//            userFileMapper.updateById(userFile);
+            userFileMapper.updateById(userFile);
         }
         return userFile.getUserFileId();
     }

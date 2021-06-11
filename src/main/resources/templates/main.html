@@ -13,6 +13,9 @@
     <script src="/static/iScroll/iscroll.js"></script>
     <!-- drawer.js -->
     <script src="/static/drawer/drawer.min.js"></script>
+    <!--    lemon-->
+
+    <script src="/static/spark-md5.js"></script>
 
     <!--    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />-->
     <!--    <script src="./iconfont.js"></script>-->
@@ -434,6 +437,8 @@
 </nav>
 
 </div>
+
+<div th:include="file_upload :: fileUpload"></div>
 </body>
 </html>
 
@@ -673,6 +678,13 @@
             }).catch(e => {
 
             })
+        })
+
+        $("#uploadFileMenuItem").click(function(){
+            $("#file").click();
+        })
+        $("#uploadFolderMenuItem").click(function(){
+            $("#files").click();
         })
 
     })
