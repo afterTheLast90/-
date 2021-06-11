@@ -19,5 +19,4 @@
         </foreach>
         and user_id = #{userId} and deleted = 0
     </select>
-
 </mapper>

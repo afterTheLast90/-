@@ -1,6 +1,7 @@
 package com.hanhai.cloud.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.UserFile;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -29,6 +30,9 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     public List<UserFile> getDirByName(@Param("path") String path,@Param("name") String name,@Param("userId")  Long userId);
 
     public List<UserFile> getByIds(@Param("ids") Long[] ids,@Param("userId")  Long userId);
+
+    @Select("select * from user_files where user_file_id=#{userFileId} and deleted=0 and user_id=#{userId}")
+    public List<UserFile> getFileById(@Param("userFileId") Long userFileId,@Param("userId") Long userId);
 
     @Select("select * from user_files where find_in_set(#{name},file_name) and user_id=#{userId} and  deleted=0 order by updated_time")
     public List<UserFile> getByName(@Param("name")String name,@Param("userId") Long usrId);
@@ -60,4 +64,9 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
 
     public List<UserFile> getByNames(@Param("path") String path ,@Param("names") String[] names, @Param("userId") Long userId);
 
+    @Select("select * from files where file_id=(select file_id from user_files where recycle_id =#{recycleId} and user_id=#{userId} order by created_time limit 1)")
+    public Files getFilesByRecycleId(@Param("recycleId")Long recycleId,@Param("userId")Long userId);
+
+    @Update("update files set citations_count=#{file.citations} where file_id=#{file.fileId}")
+    public Integer updateFiles(@Param("file") Files file);
 }

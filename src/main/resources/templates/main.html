@@ -386,13 +386,13 @@
 <nav class="drawer-nav" role="navigation" style="z-index: 20">
     <ul class="pl-0">
         <li class="text-center" style="width: 100%">
-            <!--            <svg class="icon" aria-hidden="true">-->
-            <!--                <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>-->
-            <!--            </svg>-->
+<!--                        <svg class="icon" aria-hidden="true">-->
+<!--                            <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>-->
+<!--                        </svg>-->
         </li>
         <li class="row">
-            <!--            <span class="offset-2"></span>-->
-            <!--            <span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName"></span>-->
+<!--                        <span class="offset-2"></span>-->
+<!--                        <span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName"></span>-->
         </li>
         <hr>
         <fieldset>
@@ -653,7 +653,7 @@
 
 
         $("#btuSearch").click(function () {
-            httpUtil.get("/getByName", JSON.stringify({
+            httpUtil.get("/Search", JSON.stringify({
                 params: {
                     name: $("#Search").val()
                 }
@@ -665,9 +665,10 @@
         })
 
         $(".more").click(function (e) {
+
             httpUtil.get("/getFileHistory", {
                 params: {
-                    fileId: e.target.getAttribute("userfileid")
+                    fileId: e.target.getAttribute("userFileId")
                 }
             }).then(res => {
                 $("#history tr").remove()
@@ -675,8 +676,11 @@
                     $("#history").append('<tr><td>' + res.data[i].updatedTime + '</td><td>' + res.data[i].updatePerson +
                         '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat" title="还原"></i></td></tr>')
                 }
-            }).catch(e => {
-
+            })
+            httpUtil.get("/fileInfo",JSON.stringify({
+                id:e.target.getAttribute("userFileId")
+            })).then(res=>{
+                console.log(res)
             })
         })
 
@@ -686,6 +690,5 @@
         $("#uploadFolderMenuItem").click(function(){
             $("#files").click();
         })
-
     })
 </script>

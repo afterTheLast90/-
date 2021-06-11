@@ -32,7 +32,9 @@ public class UserFileService extends BaseService {
     public Integer reductionById(UserFile file){
         return userFileMapper.reductionById(file,StpUtil.getLoginIdAsLong());
     }
-
+    public List<UserFile> getById(Long userFileId){
+        return userFileMapper.getFileById(userFileId,StpUtil.getLoginIdAsLong());
+    }
 
     @Transactional
     public void copy(Long [] ids, String target) {

@@ -117,12 +117,26 @@ public class MainController {
 //    }
     @GetMapping("/getFileHistory")
     @ResponseBody
-    public R history(@NotBlank(message = "ID不能为空") @NotNull(message = "ID不能为空") Long fileId){
+    public R history(@NotNull(message = "ID不能为空") Long fileId){
         return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getFileHistory(fileId));
     }
-    @GetMapping("/getByName")
+
+    @GetMapping("/search")
     @ResponseBody
-    public R getByName(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") String name){
-        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getByName(name));
+    public String getByName(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") String name,Model model){
+//        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getByName(name));
+        List<UserFile> searchFileList=userFileService.getByName(name);
+        List<UserFileVO>  searchFiles=new ArrayList<>(searchFileList.size());
+        for (UserFile userFile : searchFileList) {
+            searchFiles.add(BeanUtils.convertTo(userFile,UserFileVO.class));
+        }
+    model.addAttribute("searchFiles",searchFiles);
+    return "searchFiles";
+    }
+
+    @GetMapping("/fileInfo")
+    @ResponseBody
+    public R getFileId(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") Long id){
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getById(id));
     }
 }

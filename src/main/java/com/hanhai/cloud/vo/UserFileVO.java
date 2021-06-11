@@ -23,8 +23,8 @@ public class UserFileVO {
     private String fileType ;
     /** 共享次数 */
     private Integer shareCount ;
-
+    /**创建日期**/
     private LocalDateTime createdTime;
-
+    /**更新事件**/
     private LocalDateTime updatedTime;
 }
