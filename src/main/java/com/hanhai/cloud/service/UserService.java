@@ -20,13 +20,13 @@ public class UserService extends BaseService {
     }
 
 
-    @Cacheable(value = "userInfo",key = "#userId")
+    @Cacheable(value = "userInfo1",key = "#userId")
     public User getUserById(Long userId){
         return userMapper.selectById(userId);
     }
 
 
-    @CachePut(value = "userInfo",key = "#user.userId")
+    @CachePut(value = "userInfo1",key = "#user.userId")
     public User updateById(User user){
         userMapper.updateById(user);
         return  user;
@@ -50,6 +50,14 @@ public class UserService extends BaseService {
     }
     public Boolean checkUserEmail(String email){
         return userMapper.getUserByEmail(email)==null;
+    }
+
+
+    public User getUserByPhone(String phone){
+        return userMapper.getUserByPhone(phone) ;
+    }
+    public User getUserByEmail(String email){
+        return userMapper.getUserByEmail(email);
     }
     
     public void deleteUser(Long userId){

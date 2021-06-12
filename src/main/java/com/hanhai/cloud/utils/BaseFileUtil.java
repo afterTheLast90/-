@@ -58,9 +58,11 @@ public class BaseFileUtil {
      */
     public String saveFile(MultipartFile file) throws IOException {
         LocalDate now = LocalDate.now();
+
+        file.getOriginalFilename();
         String fileName =
                 now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth() + "/" +
-                        IdUtil.fastSimpleUUID() + file.getOriginalFilename();
+                        IdUtil.fastSimpleUUID() ;
         File f = new File(path + fileName);
         if (f.exists()) {
             fileName = now.getYear() + "/" + now.getMonthValue() + "/" + now.getDayOfMonth() + "/" +
@@ -79,7 +81,7 @@ public class BaseFileUtil {
      * @return
      * @throws FileNotFoundException
      */
-    public InputStream getFile(String fileName) throws FileNotFoundException {
+    public InputStream getFileInputStream(String fileName) throws FileNotFoundException {
         File f = new File(path + fileName);
         return new FileInputStream(f);
     }
@@ -117,5 +119,23 @@ public class BaseFileUtil {
             throw new  FileNotFoundException();
         }
         FileUtil.move(source,new File(deletePath+fileName),true);
+    }
+
+    /**
+     * 返回指定文件名称的文件
+     * @param fileName
+     * @return
+     */
+    public File getFile(String fileName){
+        return new File(path+fileName);
+    }
+
+    /**
+     * 测试指定的文件是否存在
+     * @param fileName
+     * @return
+     */
+    public boolean exists(String fileName){
+        return new File(path+fileName).exists();
     }
 }

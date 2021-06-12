@@ -32,9 +32,9 @@ public class User extends BaseEntity  implements Serializable,Cloneable{
     /** 手机号 */
     private String userPhone ;
     /** 电子邮箱是否验证通过 */
-    private String emailChecked ;
+    private Boolean emailChecked ;
     /** 手机号是否验证通过 */
-    private String phoneChecked ;
+    private Boolean phoneChecked ;
     /** 空间大小（字节为单位） */
     private Long spaceSize ;
     /** 已使用空间大小 */
