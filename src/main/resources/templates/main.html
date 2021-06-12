@@ -1,11 +1,10 @@
 <!DOCTYPE>
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <script src="static/popper/popper.min.js"></script>
+    <script src="../static/popper/popper.min.js"></script>
     <th:block th:include="common/header :: header(~{::title})">
         <title>瀚海云盘</title>
     </th:block>
-
 
     <!-- drawer.css -->
     <link rel="stylesheet" href="/static/drawer/drawer.min.css">
@@ -14,12 +13,17 @@
     <!-- drawer.js -->
     <script src="/static/drawer/drawer.min.js"></script>
     <!--    lemon-->
-
     <script src="/static/spark-md5.js"></script>
-
+    <!-- 引入bootstrap-table.css	-->
+    <link rel="stylesheet" href="/static/bootstrap-table/bootstrap-table.min.css">
+    <!--	引入bootstrap-table.js -->
+    <script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+    <!--	引入bootstrap-table中文包 -->
+    <script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+    <!--  转换文件大小函数  -->
+    <script src="/static/converFileSize.js"></script>
     <!--    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0;" name="viewport" />-->
     <!--    <script src="./iconfont.js"></script>-->
-
 
     <style type="text/css">
 
@@ -48,22 +52,26 @@
             margin-left: 0px;
         }
 
-        .files i {
+
+
+        .files td i {
             display: none;
+            /*padding: 5px;*/
+            padding: 3px 6px 3px 5px;
+            margin-right: 30px;
+            font-size: 1.3rem;
+            color: #007bff;
             cursor: pointer;
-            padding: 5px;
             border-radius: 50%;
         }
 
-        .files i:hover {
+        .files td i:hover {
             background-color: #7abaff;
             color: white;
         }
 
         tr:hover > td > i {
             display: inline-block;
-            margin-right: 30px;
-            /*display: flex;*/
         }
 
         tbody tr:hover {
@@ -125,12 +133,12 @@
             cursor: pointer;
         }
 
-        .drawer-nav li .bi-eye-fill {
-            color: #1296db;
-        }
-
         .col-my-drawer {
             width: 400px;
+        }
+
+        .pointer {
+            cursor: pointer;
         }
 
     </style>
@@ -141,11 +149,11 @@
 </head>
 <body class="drawer drawer--right">
 <div th:replace="common/nav-header :: nav-header"></div>
-
 <div class="main">
     <div th:replace="common/nav-left :: nav-left"></div>
 
     <div class="content" style="overflow: hidden;margin-right: 1%">
+        <!--    文件操作栏    -->
         <div class="row  navbar bg-light  actions">
             <div class="dropdown">
                 <button type="button" class="btn btn-md btn-primary dropdown-toggle " data-toggle="dropdown"
@@ -174,72 +182,24 @@
             </button>
             <button type="button" class="btn btn-outline-primary btn-md" id="copy" disabled="disabled">复制到</button>
             <button type="button" class="btn btn-outline-primary btn-md" id="move" disabled="disabled">移动到</button>
-            <form class="form-inline ml-auto " style="margin-top:10px;">
-                <input class="form-control mr-sm-2" type=".search" placeholder="搜索您的文件" aria-label="search" id="Search">
-                <button class="btn btn-outline-success my-2 my-sm-0" type="submit" id="btuSearch">
+            <div class="form-inline ml-auto " style="margin-top:10px;">
+                <input class="form-control mr-sm-2" type=".search" placeholder="搜索您的文件" aria-label="search" id="searchInput">
+                <button class="btn btn-outline-success my-2 my-sm-0" id="searchBtn">
                     <i class="bi bi-search"></i>搜索
                 </button>
-            </form>
+            </div>
         </div>
+        <!--    信息栏（返回上级、文件数）    -->
         <div class="row bg-light" style="margin-top: 5px; height: 3rem">
-            <a th:href="${'/main?path='+per}">
-                <button type="button" class="btn btn-light btn-lg">
-                    <span class="bi bi-reply"></span>&nbsp;返回上一级
-                </button>
-            </a>
-            <span class="statistical ml-auto" id="counttext" style="margin-top: 8px ;margin-right: 30px">已全部加载，共<span
-                    th:text="${files.size()}"></span>个文件</span>
+            <button type="button" class="btn btn-light btn-lg" id="parentBtn" parentPath="">
+                <span class="bi bi-reply"></span>&nbsp;返回上一级
+            </button>
+            <span class="statistical ml-auto" id="counttext" style="margin-top: 8px ;margin-right: 30px">
+                已全部加载，共<span id="fileNumber"></span>个文件
+            </span>
         </div>
-        <div class="row" id="filesTable">
-            <table class="table files" style="background-color: white">
-                <thead style="display:block;">
-                <tr class="success">
-                    <td><input type="checkbox" name="all" style="margin-top: 5px"/></td>
-                    <th>文件名</th>
-                    <th></th>
-                    <th>文件大小</th>
-                    <th>创建时间</th>
-                    <th>更新时间</th>
-                </tr>
-                </thead>
-                <tbody style="display: block; height: calc(100vh - 280px);overflow-y: scroll;" id="fileList">
-                <tr th:each="file : ${files}" class="files" style="display: flex"
-                    th:userFileId="${file.getUserFileId()}">
-                    <td>
-                        <input type="checkbox" name="num" style="margin-top: 5px"
-                               th:userFileId="${file.getUserFileId()}"/>
-                    </td>
-
-                    <td>
-                        <a th:if="${'DIR' == (file.getFileType())}"
-                           th:href="${'/main?path='+file.getFileParentPath()+file.getUserFileId()+'/'}">
-                            <svg class="icon" aria-hidden="true">
-                                <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>
-                            </svg>
-                            <span th:text="${file.getFileName()}"></span>
-                        </a>
-                        <div th:if="${'DIR' !=(file.getFileType())}">
-                            <svg class="icon" aria-hidden="true">
-                                <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>
-                            </svg>
-                            <span th:text="${file.getFileName()}"></span>
-                        </div>
-                    </td>
-                    <td class="action" style="color: #007bff">
-                        <i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>
-                        <th:block th:if="${'DIR' != (file.getFileType())}">
-                            <i class="bi bi-download" title="下载"></i>
-                            <i class="bi bi-three-dots more drawer-toggle" title="更多"
-                               th:userFileId="${file.getUserFileId()}"></i>
-                        </th:block>
-                    </td>
-                    <td th:text="${file.getFileSize()}"></td>
-                    <td th:text="${#temporals.format(file.getCreatedTime(), 'yyyy-MM-dd HH:mm:ss')}"></td>
-                    <td th:text="${#temporals.format(file.getUpdatedTime(), 'yyyy-MM-dd HH:mm:ss')}"></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
+        <!--    文件列表    -->
+        <table id="mTable" class="files " style="background-color: white"></table>
     </div>
 </div>
 <!--分享模态框-->
@@ -354,7 +314,6 @@
         </div>
     </div>
 </div>
-
 <!-- 确认删除模态框 -->
 <div class="modal" id="deleteConfirmation">
     <div class="modal-dialog modal-sm">
@@ -381,7 +340,6 @@
         </div>
     </div>
 </div>
-
 <!--右侧抽屉-->
 <nav class="drawer-nav" role="navigation" style="z-index: 20">
     <ul class="pl-0">
@@ -442,117 +400,41 @@
 </body>
 </html>
 
-<script>
-    var allDom = document.getElementsByName("all")[0];  //找到全选框
-    var numDoms = document.getElementsByName("num");
-    allDom.onclick = function () {   //定义一个全选框的点击函数
-        if (this.checked) {                 //判断全选框是否选中,如果返回值为true代表选中
-            // $("#download")[0].removeAttribute("disabled");
-            $("#deleted")[0].removeAttribute("disabled");
-            // $("#rename")[0].removeAttribute("disabled");
-            $("#copy")[0].removeAttribute("disabled");
-            $("#move")[0].removeAttribute("disabled");
-            for (var i = 0; i < numDoms.length; i++) {   //使用for循环选中列表框
-                numDoms[i].checked = true;
-            }
-        } else {                                             //如果返回值为false代表未选中
-            //$("#reduction")[0].setAttribute("disabled", "disabled");
-            $("#download")[0].setAttribute("disabled", "disabled");
-            $("#deleted")[0].setAttribute("disabled", "disabled");
-            $("#rename")[0].setAttribute("disabled", "disabled");
-            $("#copy")[0].setAttribute("disabled", "disabled");
-            $("#move")[0].setAttribute("disabled", "disabled");
-            for (var i = 0; i < numDoms.length; i++) {  //使用for循环取消列表框的选中状态
-                numDoms[i].checked = false;
-            }
-        }
-    }
-    $(function () {                 //页面加载完成后执行事件
-            $("[name=num]").click(function () {
-                let selectLength = $("input[name='num']:checked").length;
-
-                if (selectLength === 0) {
-                    // $("#reduction")[0].setAttribute("disabled", "disabled");
-                    $("#download")[0].setAttribute("disabled", "disabled");
-                    $("#deleted")[0].setAttribute("disabled", "disabled");
-                    $("#rename")[0].setAttribute("disabled", "disabled");
-                    $("#copy")[0].setAttribute("disabled", "disabled");
-                    $("#move")[0].setAttribute("disabled", "disabled");
-                } else {
-                    // $("#reduction")[0].removeAttribute("disabled");
-                    $("#download")[0].removeAttribute("disabled");
-                    $("#deleted")[0].removeAttribute("disabled");
-                    $("#rename")[0].removeAttribute("disabled");
-                    $("#copy")[0].removeAttribute("disabled");
-                    $("#move")[0].removeAttribute("disabled");
-                }
-                if (selectLength > 1) {
-                    $("#rename")[0].setAttribute("disabled", "disabled");
-                    $("#download")[0].setAttribute("disabled", "disabled");
-                }
-                if (selectLength === numDoms.length) {
-                    allDom.checked = true;
-                } else {
-                    allDom.checked = false;
-                }
-            });
-            $(this).hide();
-            // 单击分享按钮，得到文件名 & 文件id
-            $(".bi-share").click(function () {
-                let userFileId = $(this).parent().parent().attr("userfileid")
-                let fileName = $(this).parent().prev("td").children("div").children("span").text()
-                if (fileName == "") {
-                    fileName = $(this).parent().prev("td").children("a").children("span").text()
-                    $(".s_title").text("分享文件夹:  " + fileName)
-                } else {
-                    $(".s_title").text("分享文件:  " + fileName)
-                }
-            })
-
-            initCols()
-            $('.drawer').drawer();
-
-            // 单击详情按钮，弹出抽屉
-            $(".more").click(function () {
-                // $(".drawer").drawer("open")
-                $(".drawer-nav").addClass("col-my-drawer")
-            })
-            // 单击遮罩层，关闭文件详情(并减少宽度)
-            $(".drawer-overlay").click(function () {
-                $(".drawer-nav").removeClass("col-my-drawer")
-            })
-            // 调整窗口大小时，移除抽屉宽度
-            $(window).resize(function () {
-                $(".drawer-nav").removeClass("col-my-drawer")
-                initCols()
-            });
-        }
-    );
-
-    function initCols() {
-        let _width = $('#filesTable').width();
-        $('#filesTable th:first-child').width(_width * 0.01);
-        $('#filesTable td:first-child').width(_width * 0.01);
-
-        $('#filesTable th:nth-child(2)').width(_width * 0.15);
-        $('#filesTable td:nth-child(2)').width(_width * 0.15);
-
-        $('#filesTable th:nth-child(3)').width(_width * 0.14);
-        $('#filesTable td:nth-child(3)').width(_width * 0.14);
-
-        $('#filesTable th:nth-child(4)').width(_width * 0.19);
-        $('#filesTable td:nth-child(4)').width(_width * 0.19);
-
-        $('#filesTable th:nth-child(5)').width(_width * 0.2);
-        $('#filesTable td:nth-child(5)').width(_width * 0.2);
-
-        $('#filesTable th:nth-child(6)').width(_width * 0.2);
-        $('#filesTable td:nth-child(6)').width(_width * 0.2);
-    }
-</script>
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
-
+    // 文件详情
+    $.fn.bindEventForMore = function bindEventMore(){
+        $(".more").click(function (e) {
+            $(".drawer").drawer("open")
+            $(".drawer-nav").addClass("col-my-drawer")
+            // httpUtil.get("/getFileHistory", {
+            //     params: {
+            //         fileId: e.target.getAttribute("userFileId")
+            //     }
+            // })
+            //     .then(res => {
+            //     $("#history tr").remove()
+            //     for (let i = 0; i < res.data.length; i++) {
+            //         $("#history").append('<tr><td>' + res.data[i].updatedTime + '</td><td>' + res.data[i].updatePerson +
+            //             '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat" title="还原"></i></td></tr>')
+            //     }
+            // })
+            // httpUtil.get("/fileInfo",JSON.stringify({
+            //     id:e.target.getAttribute("userFileId")
+            // })).then(res=>{
+            //     // console.log(res)
+            // })
+        })
+    }
+    // 文件分享
+    $.fn.bindEventForShare = function bindEventShare(){
+        $(".bi-share").click(function (){
+            $.fn.shareManage($(this).parent().siblings().eq(1).children("svg").attr("userfileid"),
+                $(this).parent().siblings().eq(1).text(),
+                $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
+            )
+        });
+    }
     $(function () {
         let method = 'copy'
         $("#copy").click(function () {
@@ -563,127 +445,89 @@
             method = 'move'
             $.fn.selectDirForUser.show()
         })
-        $.fn.selectDirForUser.ok(function (a, b) {
-            let checkedBox = $("input[name='num']:checked");
-            if (checkedBox.length === 0) {
+        $.fn.selectDirForUser.ok(function (fileId, fileName) {
+            let rows = $('#mTable').bootstrapTable('getSelections')
+            console.log(rows)
+            if (rows.length == 0) {
                 layer.msg("请选择要操作的文件");
                 return;
             }
             let ids = [];
-            for (let i = 0; i < checkedBox.length; i++) {
-                if (checkedBox[i].getAttribute("userFileId"))
-                    ids.push(checkedBox[i].getAttribute("userFileId"))
+            for (let row of rows) {
+                ids.push(row.userFileId)
             }
-            let url = "/file/" + method;
-
-            httpUtil.post(url, JSON.stringify({
+            httpUtil.post("/file/"+method, JSON.stringify({
                 ids: ids,
-                target: a
+                target: fileId
             })).then(res => {
-                location.reload();
+                unCheckAll()
+                initTable()
             })
         })
 
         $("#addfolderconfirm").click(function () {
+            $("#addfolderModel").modal("hide")
+            if(path == "")
+                path = '/'
             httpUtil.post("/file/createDirectory", JSON.stringify({
-                // path: (currentPath.eq('/'))?currentPath:currentPath+'/',
-                path: currentPath,
+                path: path,
                 fileName: $("#newfolder").val()
             })).then(res => {
-                // $("#newfolder").val("")
-                // $('#addfolderModel').modal('hide');
-                location.reload();
-            }).catch(e => {
+                initTable()
                 $("#newfolder").val("");
             })
         })
-
-
         $("#confirmDeletion").click(function () {
-            let checkedBox = $("input[name='num']:checked");
-            if (checkedBox.length === 0) {
+            let rows = $('#mTable').bootstrapTable('getSelections')
+            $("#deleteConfirmation").modal("hide")
+            console.log(rows.length)
+            if (rows.length == 0) {
                 layer.msg("请选择要操作的文件");
                 return;
             }
             let ids = [];
-            for (let i = 0; i < checkedBox.length; i++) {
-                if (checkedBox[i].getAttribute("userFileId"))
-                    ids.push(checkedBox[i].getAttribute("userFileId"))
+            for (let row of rows) {
+                ids.push(row.userFileId)
             }
             httpUtil.post("/file/deleted", JSON.stringify({
                 ids: ids
             })).then(res => {
-                location.reload();
+                unCheckAll()
+                initTable()
             }).catch(e => {
                 layer.msg("请求失败");
             })
         })
-
         $("#renameconfirm").click(function () {
-            let checkedBox = $("input[name='num']:checked");
-            if (checkedBox.length === 0) {
+            let rows = $('#mTable').bootstrapTable('getSelections')
+            if (rows.length == 0) {
                 layer.msg("请选择要操作的文件");
                 return;
             }
-            if (checkedBox.length > 1) {
-                layer.msg("选择要操作的文件数大于1");
+            // if (rows.length > 1) {
+            //     layer.msg("不可为多个文件同时重命名");
+            //     return;
+            // }
+            if (rows[0].fileName == $("#newname").val().trim()) {
+                layer.msg("文件名未改变，请重新输入");
                 return;
             }
+            if($("#newname").val().trim() == ""){
+                layer.msg("请输入新文件名")
+                return
+            }
+            $("#renameModel").modal("hide")
             httpUtil.post("/file/rename", JSON.stringify({
-                fileName: $("#newname").val(),
-                fileId: checkedBox[0].getAttribute("userFileId")
+                fileName: $("#newname").val().trim(),
+                fileId: rows[0].userFileId
             })).then(res => {
-                // $("#newname").val("");
-                // $('#renameModel').modal('hide');
-                location.reload();
-            }).catch(e => {
+                unCheckAll()
+                initTable()
                 $("#newname").val("");
             })
         })
 
-        // 分享操作
-        $(".bi-share").click(function (){
-            $.fn.shareManage($(this).parent().parent().attr("userfileid"),
-                $(this).parent().prev("td").children("div").children("span").text() == "" ?
-                    $(this).parent().prev("td").children("a").children("span").text()
-                    : $(this).parent().prev("td").children("div").children("span").text(),
-                $(this).parent().siblings().eq(1).children().children("svg").children().attr("href").substring(6,10)
-            )
-        });
-
-
-        $("#btuSearch").click(function () {
-            httpUtil.get("/Search", JSON.stringify({
-                params: {
-                    name: $("#Search").val()
-                }
-            })).then(res =>{
-                layer.msg("请求成功");
-            }).catch(e => {
-                layer.msg("请求失败");
-            })
-        })
-
-        $(".more").click(function (e) {
-
-            httpUtil.get("/getFileHistory", {
-                params: {
-                    fileId: e.target.getAttribute("userFileId")
-                }
-            }).then(res => {
-                $("#history tr").remove()
-                for (let i = 0; i < res.data.length; i++) {
-                    $("#history").append('<tr><td>' + res.data[i].updatedTime + '</td><td>' + res.data[i].updatePerson +
-                        '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat" title="还原"></i></td></tr>')
-                }
-            })
-            httpUtil.get("/fileInfo",JSON.stringify({
-                id:e.target.getAttribute("userFileId")
-            })).then(res=>{
-                console.log(res)
-            })
-        })
-
+        // 上传文件(夹)
         $("#uploadFileMenuItem").click(function(){
             $("#file").click();
         })
@@ -691,4 +535,365 @@
             $("#files").click();
         })
     })
+</script>
+<script>
+    let path = ""
+    $(function () {                 //页面加载完成后执行事件
+        // 初始化
+        initTable()                 // 文件列表初始化
+        $('.drawer').drawer();      // 抽屉初始化
+
+        // 文件详情事件
+        $(".drawer-overlay").click(function () {
+            $(".drawer-nav").removeClass("col-my-drawer")
+            $(".drawer").drawer("close")
+        })   // 单击遮罩层，关闭文件详情(并减少宽度)
+        $(window).resize(function () {
+            $(".drawer-nav").removeClass("col-my-drawer")
+            $(".drawer").drawer("close")
+});            // 调整窗口大小时，移除抽屉宽度
+
+        // 返回上级目录
+        $("#parentBtn").click(function(){
+            // 最后一级空目录情况
+            if(typeof($("td svg").attr("filetype")) == 'undefined'){
+                let p = path
+                p = p.substring(0, p.lastIndexOf('/'))
+                path = p.substring(0, p.lastIndexOf('/')+1)
+            }
+            // 非第一级目录
+             else if($(this).attr("parentPath") != '/'){
+                let p = $(this).attr("parentPath")
+                p = p.substring(0, p.lastIndexOf('/'))
+                path = p.substring(0, p.lastIndexOf('/')+1)
+            }
+            else        // 第1级目录
+                path = $(this).attr("parentPath")
+            initTable()
+            unCheckAll()        // 清空选中状态
+            $(this).attr("disabled", "disabled")
+        })
+        // 模糊查找当前目录下的文件
+        $("#searchBtn").click(function(){
+            if($("#searchInput").val().trim() != ""){
+                queryFile()
+            }
+            $("#searchInput").val("")
+        })              // 点击按钮搜索
+        $("#searchInput").on("keypress", function(e){
+            if(e.keyCode == 13) {
+                queryFile()
+                $("#searchInput").val("")
+            }
+        })  // 回车搜索
+    });
+
+    // 初始化表格数据
+    function initTable() {
+        // 先销毁表格
+        $('#mTable').bootstrapTable('destroy');
+        $('#mTable').bootstrapTable({
+            url: "/main/data",   //请求后台的URL（*）
+            method: 'get',
+            dataField: 'data',              // 设置数据域
+            data_local: "zh-US",            // 表格汉化
+            classes: 'table',               // 表格 样式类
+            height: 720,                    // 表格高度
+            queryParams: function (params) {  // 查询 和 请求响应
+                return {
+                    path: path
+                };
+            },
+            // responseHandler: function (res) {
+            //     console.log(res)
+            //     return res
+            // },
+            columns: [
+                {
+                    checkbox: true,
+                },
+                {
+                    field: "fileType",
+                    title: "文件类型",
+                    align: "center",
+                    visible: false
+                },
+                {
+                    field: 'fileName',
+                    title: '文件名',
+                    align: 'left',
+                    halign: "center",
+                    formatter: function fileNameFormatter(value, row, index) {
+                        let fName = value
+                        value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' parentPath='"+ row.fileParentPath +"' shareId='"+ row.shareId +"' " +
+                            "currentPath='"+ row.currentPath +"' class='icon mr-2' style='margin-left: 30%;' aria-hidden='true'>"
+
+                        if(fileTypeSet.has(row.fileType))
+                            value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                        else
+                            value += "<use xlink:href='#icon-other'></use>"
+                        return value + "</svg>" + fName
+                    }
+                },
+                {
+                    field: "operation",
+                    align: 'center',
+                    width:230,
+                    formatter: function operationFormatter(value, row, index){
+                        value = '<i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>'
+                        if(row.fileType != 'DIR')
+                            value += '<i class="bi bi-download" title="下载"></i>' +
+                                    '<i class="bi bi-three-dots more drawer-toggle" title="更多" userFileId="'+ row.userFileId +'"' + '></i>'
+                        return value
+                    }
+                },
+                {
+                    field: 'fileSize',
+                    title: '文件大小',
+                    align: 'center',
+                    formatter: function fileSizeFormatter(value, row, index) {
+                        if(row.fileType == "DIR"){
+                            return '-'
+                        }
+                        return convertFileSize(value)
+                    }
+                },
+                {
+                    field: 'createdTime',
+                    title: '创建时间',
+                    align: 'center',
+                    formatter: function indexFormatter(value, row, index) {
+                        return value.replace("T"," ")
+                    }
+                },
+                {
+                    field: 'updatedTime',
+                    title: '更新时间',
+                    align: 'center',
+                    formatter: function dateFormatter(value, row, index) {
+                        return value.replace("T"," ")
+                    }
+                },
+            ],
+            onPostBody: function (data){
+                // 设置样式
+                $(".files td i").addClass(".files td i");
+                // 显示文件数量 & 上级目录 & 查询按钮
+                if(typeof(data[0]) != "undefined"){
+                    $("#fileNumber").text(data[0].fileNumber)
+                    $("#parentBtn").attr("parentPath", data[0].fileParentPath)
+                    $("#searchBtn").attr("parentPath", data[0].fileParentPath)
+                }
+                // 空目录情况
+                else{
+                    $("#fileNumber").text(0)
+                }
+                $("svg[filetype='DIR']").parent().addClass("pointer")
+                // 单击文件分享，查看内部文件
+                $("svg[filetype='DIR']").parent().click(function(){
+                    path = $(this).children("svg").attr("parentpath") +　$(this).children("svg").attr("userfileid") + "/"
+                    unCheckAll()        // 清空选中状态
+                    initTable()
+                })
+                $("#parentBtn").removeAttr("disabled")
+                // 文件详情
+                $.fn.bindEventForMore()
+                // 文件分享
+                $.fn.bindEventForShare()
+            },
+            onCheck: function(row, $element){
+                let rows = $('#mTable').bootstrapTable('getSelections')
+                // $("#reduction")[0].removeAttribute("disabled");
+                $("#download")[0].removeAttribute("disabled");
+                $("#rename")[0].removeAttribute("disabled");
+                $("#deleted")[0].removeAttribute("disabled");
+                $("#copy")[0].removeAttribute("disabled");
+                $("#move")[0].removeAttribute("disabled");
+                if (rows.length > 1) {      // 不可同时 下载多个文件 & 为多个文件重命名
+                    $("#rename")[0].setAttribute("disabled", "disabled");
+                    $("#download")[0].setAttribute("disabled", "disabled");
+                }
+            },
+            onUncheck: function(row, $element){
+                let rows = $('#mTable').bootstrapTable('getSelections')
+                // $("#reduction")[0].removeAttribute("disabled");
+                if(rows.length == 1){
+                    $("#rename")[0].removeAttribute("disabled", "disabled");
+                    $("#download")[0].removeAttribute("disabled", "disabled");
+                }
+                else if(rows.length == 0){
+                    unCheckAll()
+                }
+            },
+            onCheckAll: function (rowsAfter,rowsBefore) {
+                $("#deleted")[0].removeAttribute("disabled");
+                $("#copy")[0].removeAttribute("disabled");
+                $("#move")[0].removeAttribute("disabled");
+                $("#rename")[0].setAttribute("disabled", "disabled");
+                $("#download")[0].setAttribute("disabled", "disabled");
+            },
+            onUncheckAll: function (rowsAfter,rowsBefore) {
+                unCheckAll()
+            }
+        })
+
+    }
+    // 查询当前目录下的文件
+    function queryFile() {
+        // 先销毁表格
+        $('#mTable').bootstrapTable('destroy');
+        $('#mTable').bootstrapTable({
+            url: "/main/query",               //请求后台的URL（*）
+            method: 'get',
+            dataField: 'list',
+            totalField: 'total',
+            pagination: true,                 // 设置为 true 会在表格底部显示分页条。
+            pageList: [10, 20, 30, 40],       // 可供选择的每页的行数（*），当记录条数大于最小可选择条数时才会出现
+            sidePagination: 'server',         // 分页处理方式
+            data_local: "zh-US",              // 表格汉化
+            classes: 'table',                 // 表格 样式类
+            height: 720,                      // 表格高度
+            queryParams: function (params) {       // 查询 和 请求响应
+                return {
+                    pageNum: params.offset / params.limit + 1,  // 当前页码
+                    pageSize: params.limit,
+                    fileName: $("#searchInput").val().trim(),
+                    fileParentPath: $("#searchBtn").attr("parentPath")
+                };
+            },
+            responseHandler: function(res){
+                return res.data;
+            },
+            columns: [
+                {
+                    checkbox: true,
+                },
+                {
+                    field: "fileType",
+                    title: "文件类型",
+                    align: "center",
+                    visible: false
+                },
+                {
+                    field: 'fileName',
+                    title: '文件名',
+                    align: 'left',
+                    halign: "center",
+                    formatter: function fileNameFormatter(value, row, index) {
+                        let fName = value
+                        value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' parentPath='"+ row.fileParentPath +"' shareId='"+ row.shareId +"' " +
+                            "currentPath='"+ row.currentPath +"' class='icon mr-2' style='margin-left: 30%;' aria-hidden='true'>"
+
+                        if(fileTypeSet.has(row.fileType))
+                            value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                        else
+                            value += "<use xlink:href='#icon-other'></use>"
+                        return value + "</svg>" + fName
+                    }
+                },
+                {
+                    field: "operation",
+                    align: 'center',
+                    width:230,
+                    formatter: function operationFormatter(value, row, index){
+                        value = '<i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>'
+                        if(row.fileType != 'DIR')
+                            value += '<i class="bi bi-download" title="下载"></i>' +
+                                '<i class="bi bi-three-dots more drawer-toggle" userFileId="'+ row.userFileId +'" title="更多" userFileId="'+ row.userFileId +'"' + '></i>'
+                        return value
+                    }
+                },
+                {
+                    field: 'fileSize',
+                    title: '文件大小',
+                    align: 'center',
+                    formatter: function fileSizeFormatter(value, row, index) {
+                        if(row.fileType == "DIR"){
+                            return '-'
+                        }
+                        return convertFileSize(value)
+                    }
+                },
+                {
+                    field: 'createdTime',
+                    title: '创建时间',
+                    align: 'center',
+                    formatter: function indexFormatter(value, row, index) {
+                        return value.replace("T"," ")
+                    }
+                },
+                {
+                    field: 'updatedTime',
+                    title: '更新时间',
+                    align: 'center',
+                    formatter: function dateFormatter(value, row, index) {
+                        return value.replace("T"," ")
+                    }
+                },
+            ],
+            onPostBody: function (data){
+                unCheckAll()
+                // 显示文件数量 & 上级目录 & 查询按钮
+                if(data.length != 0){
+                    $("#fileNumber").text(data.length)
+                    // $("#parentBtn").attr("parentPath", '/')
+                }else
+                    $("#fileNumber").text(0)
+                $("svg[filetype='DIR']").parent().addClass("pointer")
+                // 单击文件分享，查看内部文件
+                $("svg[filetype='DIR']").parent().click(function(){
+                    path = $(this).children("svg").attr("parentpath") +　$(this).children("svg").attr("userfileid") + "/"
+                    unCheckAll()        // 清空选中状态
+                    initTable()
+                })
+                // 文件详情
+                $.fn.bindEventForMore()
+                // 文件分享
+                $.fn.bindEventForShare()
+            },
+            onCheck: function(row, $element){
+                let rows = $('#mTable').bootstrapTable('getSelections')
+                // $("#reduction")[0].removeAttribute("disabled");
+                $("#download")[0].removeAttribute("disabled");
+                $("#rename")[0].removeAttribute("disabled");
+                $("#deleted")[0].removeAttribute("disabled");
+                $("#copy")[0].removeAttribute("disabled");
+                $("#move")[0].removeAttribute("disabled");
+                if (rows.length > 1) {      // 不可同时 下载多个文件 & 为多个文件重命名
+                    $("#rename")[0].setAttribute("disabled", "disabled");
+                    $("#download")[0].setAttribute("disabled", "disabled");
+                }
+            },
+            onUncheck: function(row, $element){
+                let rows = $('#mTable').bootstrapTable('getSelections')
+                // $("#reduction")[0].removeAttribute("disabled");
+                if(rows.length == 1){
+                    $("#rename")[0].removeAttribute("disabled", "disabled");
+                    $("#download")[0].removeAttribute("disabled", "disabled");
+                }
+                else if(rows.length == 0){
+                    unCheckAll()
+                }
+            },
+            onCheckAll: function (rowsAfter,rowsBefore) {
+                $("#deleted")[0].removeAttribute("disabled");
+                $("#copy")[0].removeAttribute("disabled");
+                $("#move")[0].removeAttribute("disabled");
+                $("#rename")[0].setAttribute("disabled", "disabled");
+                $("#download")[0].setAttribute("disabled", "disabled");
+            },
+            onUncheckAll: function (rowsAfter,rowsBefore) {
+                unCheckAll()
+            }
+        })
+    }
+    // 取消全选，按钮全不可用
+    function unCheckAll(){
+        // $("#reduction")[0].setAttribute("disabled", "disabled");
+        $("#download")[0].setAttribute("disabled", "disabled");
+        $("#rename")[0].setAttribute("disabled", "disabled");
+        $("#deleted")[0].setAttribute("disabled", "disabled");
+        $("#copy")[0].setAttribute("disabled", "disabled");
+        $("#move")[0].setAttribute("disabled", "disabled");
+    }
 </script>

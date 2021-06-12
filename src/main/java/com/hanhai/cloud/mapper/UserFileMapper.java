@@ -79,4 +79,10 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
 
     @Select("select user_file_id from file_history where history_id=#{historyId}")
     public FileHistory getFileHistoryById(@Param("historyId") Long historyId);
+
+    // 根据文件名，搜索当前目录下所有文件
+    @Select("select * from user_files " +
+            "where file_parent_path like concat(#{parentPath},'%') and file_name like concat('%',#{fileName},'%') and " +
+            "user_id=#{userId} and deleted=0 order by updated_time desc")
+    public List<UserFile> getFileByNameAndPath(@Param("parentPath")String parentPath, @Param("fileName")String fileName, @Param("userId")Long userId);
 }

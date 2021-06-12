@@ -154,10 +154,14 @@
                       align: 'left',
                       halign: "center",
 		                  formatter: function fileNameFormatter(value, row, index) {
-                          return "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' shareId='"+ row.shareId +"' " +
-	                                "currentPath='"+ row.currentPath +"' class='icon ml-4' aria-hidden='true'>" +
-                                    "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
-		                              "</svg>" + value
+                          let fName = value
+                          value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' shareId='"+ row.shareId +"' " +
+                              "currentPath='"+ row.currentPath +"' class='icon ml-4' aria-hidden='true'>"
+                          if(fileTypeSet.has(row.fileType))
+                              value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                          else
+                              value += "<use xlink:href='#icon-other'></use>"
+                          return value + "</svg>" + fName
                       }
                   },
                   {

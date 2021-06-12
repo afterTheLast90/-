@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
+import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.params.DumpResourceParams;
 import com.hanhai.cloud.params.ResourceSearchParams;
@@ -155,7 +156,9 @@ public class ResourceController {
             if (isLogin && isOwner) {
                 return getShareTypePath(fileType);
             }
-            model.addAttribute("user", resourceService.getUserByShareId(shareId));
+            User user = resourceService.getUserByShareId(shareId);
+            user.setUserName(user.getUserName().substring(0,1) + "**");
+            model.addAttribute("user", user);
             // 第一次访问
             if (pwd == null) {
                 model.addAttribute("pwdPass", false);        // 密码检测

@@ -15,6 +15,7 @@
 	<script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
 	<!--	引入bootstrap-table中文包 -->
 	<script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+	<!-- 文件容量显示函数	-->
 	<script src="/static/converFileSize.js"></script>
 
 	<style>
@@ -192,20 +193,24 @@
                     for(let data of res.data){
                         expireTime = data.expireTime.replace("T", " ")
                         expireTime = expireTime=='1970-01-01 07:59:59'?'永久':expireTime
-                        $("#fileList").append(
-                            "<li>\n" +
+
+                        let value = "<li>\n" +
                             "<div class='row'>\n" +
-                            "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n" +
-                            "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n" +
-                            "</svg>\n" +
+                            "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n"
+                        if(fileTypeSet.has(data.fileType))
+                            value += "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n"
+                        else
+                            value += "<use xlink:href='#icon-other'></use>\n"
+                        value +=  "</svg>\n" +
                             "<div class='fileInfo'>\n" +
                             "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
                             "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
                             "</div>\n" +
-                            "<i class='bi bi-download pDownload'></i>\n" +  // 需要添加禁止冒泡事件，防止单击此按钮，触发li的事件
+                            "<i class='bi bi-download pDownload'></i>\n" +
                             "</div>\n" +
                             "</li>"
-                        )
+
+                        $("#fileList").append(value)
                     }
                     $("#phoneParentBtn").removeAttr("disabled")
                     // 点击li，进入子文件夹
@@ -258,10 +263,21 @@
                         align: 'left',
                         halign: "center",
                         formatter: function fileNameFormatter(value, row, index) {
-                            return "<svg fileType="+ row.fileType  +" userFileId='"+ row.userFileId +"' " +
-		                            "class='icon ml-5 ' aria-hidden='true' currentPath='"+ row.currentPath +"'>" +
-                                "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
-                                "</svg>" + value
+                            let fName = value
+                            value = "<svg fileType="+ row.fileType  +" userFileId='"+ row.userFileId +"' " +
+                                "class='icon ml-3 mr-2 ' aria-hidden='true' currentPath='"+ row.currentPath +"'>"
+
+                            if(fileTypeSet.has(row.fileType))
+                                value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                            else
+                                value += "<use xlink:href='#icon-other'></use>"
+                            return value + "</svg>" + fName
+
+                            //
+                            // return "<svg fileType="+ row.fileType  +" userFileId='"+ row.userFileId +"' " +
+		                        //     "class='icon ml-3 mr-2 ' aria-hidden='true' currentPath='"+ row.currentPath +"'>" +
+                            //     "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>" +
+                            //     "</svg>" + value
                         }
                     },
                     {
@@ -269,6 +285,9 @@
                         title: '文件大小',
                         align: 'center',
                         formatter: function sizeFormatter(value, row, index) {
+                            if(row.fileType == "DIR"){
+                                return '-'
+                            }
                             return convertFileSize(value)
                         }
                     },
@@ -295,8 +314,14 @@
                         align: 'center',
                         formatter: function operationFormatter(value, row, index) {
                             let isLogin = [[${isLogin}]]
-                            if(isLogin)
-                                return "<i class='bi bi-box-arrow-in-right rUpload'></i><i class='bi bi bi-download rDownload'></i>"
+		                        let isOwner = [[${isOwner}]]
+                            if(isLogin){
+                                value = "<i class='bi bi bi-download rDownload'></i>"
+		                            if(!isOwner){
+		                                value = "<i class='bi bi-box-arrow-in-right rUpload'></i><i class='bi bi bi-download rDownload'></i>"
+		                            }
+		                            return value
+                            }
                             else
                                 return "<i class='bi bi-download rDownload'></i>"
                         }

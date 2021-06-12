@@ -27,4 +27,6 @@ public class UserFileVO {
     private LocalDateTime createdTime;
     /**更新事件**/
     private LocalDateTime updatedTime;
+    /** 文件数量 */
+    private Integer fileNumber;
 }
