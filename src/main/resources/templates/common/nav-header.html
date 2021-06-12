@@ -41,6 +41,14 @@
             </div>
         </div>
         </th:block>
+
+        <th:block th:if ="${!isLogin}">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto"></ul>
+                <button href="/s/takeCode" class="btn btn-outline-primary mr-3 px-3" style="text-decoration: none" target="_blank">取件</button>
+                <button class="btn btn-outline-success mr-3 px-3">登录</button>
+            </div>
+        </th:block>
     </nav>
     <th:block th:if="${isLogin}">
     <!--个人信息模态框-->
