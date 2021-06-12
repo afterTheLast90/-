@@ -1,0 +1,697 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <script src="/static/popper/popper.min.js"></script>
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>仪表盘</title>
+    </th:block>
+
+    <script src="/static/echarts/echarts.min.js"></script>
+    <script src="/static/converFileSize.js"></script>
+
+    <style>
+        .card{
+            border:none;
+        }
+        .navbar{
+            background-color: #fff;
+        }
+        body{
+            background-color: #f9f9f9;
+        }
+        .content{
+            padding-top:20px;
+        }
+    </style>
+</head>
+<body>
+<th:block th:include="common/nav-header::nav-header"></th:block>
+
+
+<div class="main">
+    <th:block th:include="common/admin-left-nav::admin-left-nav('dashBoard')"></th:block>
+    <div class="content ">
+        <div class="row  ml-1 mr-1">
+
+            <div class="col mb-4 sm-6" title="用户总数">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">用户总数</h5>
+                        <hr>
+                        <h2 class="card-text text-center">10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4 sm-6">
+                <div class="card shadow-sm" >
+                    <div class="card-body">
+                        <h5 class="card-title">文件总数</h5>
+                        <hr>
+                        <h2 class="card-text text-center">10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4 sm-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">今日新增文件数</h5>
+                        <hr>
+                        <h2 class="card-text text-center">10</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="col mb-4 sm-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">今日访问量</h5>
+                        <hr>
+                        <h2 class="card-text text-center">10</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row mb-4 ml-1 mr-1" >
+
+            <div class="col mb-4 sm-6" >
+                <div id="cpu" class="shadow-sm"
+                     style="width: 100%;height:200px;margin: 0 auto;background-color: white;"></div>
+            </div>
+            <div class="col mb-4 sm-6 " >
+                <div id="mem" class="shadow-sm"
+                     style="width: 100%;height:200px;margin: 0 auto;background-color: white;"></div>
+            </div>
+            <div class="col mb-4 sm-6 ">
+                <div id="jvm" class="shadow-sm"
+                     style="width: 100%;height:200px;margin: 0 auto;background-color: white;"></div>
+            </div>
+            <div class="col mb-4 sm-6 ">
+                <div id="hardDisk" class="shadow-sm"
+                     style="width: 100%;height:200px;margin: 0 auto;background-color: white;"></div>
+            </div>
+        </div>
+
+
+
+        <div class="row mb-4 ml-1 mr-1" >
+            <div id="net" class="shadow-sm"
+                 style="width: 98%;height:400px;margin: 0 auto; min-width: 600px ;background-color: white;"></div>
+        </div>
+        <div class="row  ml-1 mr-1">
+            <div id="trafficStatistics" class="shadow-sm"
+                 style="width: 98%;height:400px;margin: 0 auto; min-width: 600px;background-color: white;"></div>
+
+        </div>
+        <!--            <div class="row">-->
+        <!--                <div id="trafficStatistics"-->
+        <!--                     style="width: 98%;height:500px;margin: 0 auto;"></div>-->
+        <!--            </div>-->
+    </div>
+</div>
+
+
+<script type="module">
+
+    import httpUtil from "/static/httpUtil.js";
+    // 基于准备好的dom，初始化echarts实例
+    let trafficStatistics = echarts.init(document.getElementById('trafficStatistics'));
+    let cpu = echarts.init(document.getElementById('cpu'));
+    let mem = echarts.init(document.getElementById('mem'));
+    let jvm = echarts.init(document.getElementById('jvm'));
+    let hardDisk = echarts.init(document.getElementById('hardDisk'));;
+    let net = echarts.init(document.getElementById('net'));
+
+    // 使用刚指定的配置项和数据显示图表。
+    trafficStatistics.setOption({
+        title: {
+            text: '十五天访问量统计',
+            x: 'center',
+            y: 'top',
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        legend: {
+            x: 'right',
+            y: 'top',
+        },
+        xAxis: {
+            data: []
+        },
+        yAxis: {},
+        series: [{
+            name: '访问量',
+            type: 'line',
+            // smooth: true,
+            data: []
+        }]
+    });
+
+    let CpuOption = {
+        title: {
+            text: "核心数：8",
+            x: "center",
+            y: "bottom",
+            textStyle: { //主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                fontFamily: 'Arial, Verdana, sans...',
+                fontSize: 12,
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+            }
+        },
+        series: [{
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+                show: false
+            },
+            progress: {
+                show: true,
+                overlap: false,
+                roundCap: true,
+                clip: false,
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: '#464646'
+                }
+            },
+            axisLine: {
+                lineStyle: {
+                    width: 10
+                }
+            },
+            splitLine: {
+                show: false,
+                distance: 0,
+                length: 10
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                show: false,
+                distance: 50
+            },
+            data: [{
+                value: 0,
+                name: 'CPU',
+                title: {
+                    offsetCenter: ['0%', '-20%']
+                },
+                detail: {
+                    offsetCenter: ['0%', '30%']
+                }
+            }
+            ],
+            title: {
+                fontSize: 30
+            },
+            detail: {
+                width: 50,
+                height: 15,
+                fontSize: 15,
+                color: 'auto',
+                borderColor: 'auto',
+                borderRadius: 20,
+                borderWidth: 1,
+                formatter: '{value}%'
+            }
+        }]
+    }
+    let memOption = {
+        title: {
+            text: "7000/8000",
+            x: "center",
+            y: "bottom",
+            textStyle: { //主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                fontFamily: 'Arial, Verdana, sans...',
+                fontSize: 12,
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+            }
+        },
+        series: [{
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+                show: false
+            },
+            progress: {
+                show: true,
+                overlap: false,
+                roundCap: true,
+                clip: false,
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: '#464646'
+                }
+            },
+            axisLine: {
+                lineStyle: {
+                    width: 10
+                }
+            },
+            splitLine: {
+                show: false,
+                distance: 0,
+                length: 10
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                show: false,
+                distance: 50
+            },
+            data: [{
+                value: 0,
+                name: '内存',
+                title: {
+                    offsetCenter: ['0%', '-20%']
+                },
+                detail: {
+                    offsetCenter: ['0%', '30%']
+                }
+            }
+            ],
+            title: {
+                fontSize: 30
+            },
+            detail: {
+                width: 50,
+                height: 15,
+                fontSize: 15,
+                color: 'auto',
+                borderColor: 'auto',
+                borderRadius: 20,
+                borderWidth: 1,
+                formatter: '{value}%'
+            }
+        }]
+    }
+    let jvmOption = {
+        title: {
+            text: "7000/8000",
+            x: "center",
+            y: "bottom",
+            textStyle: { //主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                fontFamily: 'Arial, Verdana, sans...',
+                fontSize: 12,
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+            }
+        },
+        series: [{
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+                show: false
+            },
+            progress: {
+                show: true,
+                overlap: false,
+                roundCap: true,
+                clip: false,
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: '#464646'
+                }
+            },
+            axisLine: {
+                lineStyle: {
+                    width: 10
+                }
+            },
+            splitLine: {
+                show: false,
+                distance: 0,
+                length: 10
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                show: false,
+                distance: 50
+            },
+            data: [{
+                value: 0,
+                name: 'JVM',
+                title: {
+                    offsetCenter: ['0%', '-20%']
+                },
+                detail: {
+                    offsetCenter: ['0%', '30%']
+                }
+            }
+            ],
+            title: {
+                fontSize: 30
+            },
+            detail: {
+                width: 50,
+                height: 15,
+                fontSize: 15,
+                color: 'auto',
+                borderColor: 'auto',
+                borderRadius: 20,
+                borderWidth: 1,
+                formatter: '{value}%'
+            }
+        }]
+    }
+    let diskOption = {
+        title: {
+            text: "0/0",
+            x: "center",
+            y: "bottom",
+            textStyle: { //主标题文本样式{"fontSize": 18,"fontWeight": "bolder","color": "#333"}
+                fontFamily: 'Arial, Verdana, sans...',
+                fontSize: 12,
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+            }
+        },
+        series: [{
+            type: 'gauge',
+            startAngle: 90,
+            endAngle: -270,
+            pointer: {
+                show: false
+            },
+            progress: {
+                show: true,
+                overlap: false,
+                roundCap: true,
+                clip: false,
+                itemStyle: {
+                    borderWidth: 1,
+                    borderColor: '#464646'
+                }
+            },
+            axisLine: {
+                lineStyle: {
+                    width: 10
+                }
+            },
+            splitLine: {
+                show: false,
+                distance: 0,
+                length: 10
+            },
+            axisTick: {
+                show: false
+            },
+            axisLabel: {
+                show: false,
+                distance: 50
+            },
+            data: [{
+                value: 0,
+                name: '磁盘',
+                title: {
+                    offsetCenter: ['0%', '-20%']
+                },
+                detail: {
+                    offsetCenter: ['0%', '30%']
+                }
+            }
+            ],
+            title: {
+                fontSize: 30
+            },
+            detail: {
+                width: 50,
+                height: 15,
+                fontSize: 15,
+                color: 'auto',
+                borderColor: 'auto',
+                borderRadius: 20,
+                borderWidth: 1,
+                formatter: '{value}%'
+            }
+        }]
+    }
+    let netOption = {
+        title: {
+            text: '流量统计图',
+            x: 'center',
+            y: 'top',
+        },legend: {
+            data: ['流入流量', '流出流量'],
+                x: 'right',
+                y: 'top'
+
+        },
+
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                console.log(params)
+
+                return params[0].data[0]+'<br/>'+ params[0].marker+params[0].seriesName+":"+convertFileSize(params[0].value[1])+'<br/>'+params[1].marker+params[1].seriesName+":"+convertFileSize(params[1].value[1]);
+            },
+            axisPointer: {
+                animation: false
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'time',
+            axisLabel:{
+                formatter:'{H}:{m}:{s}'
+            }
+        },
+        yAxis: {
+            type: 'value'
+        },
+        series: [
+            {
+                name: '流入流量',
+                type: 'line',
+                stack: '流入流量',
+                data: [
+                ]
+            },
+            {
+                name: '流出流量',
+                type: 'line',
+                stack: '流出流量',
+                data: [ ]
+            }
+        ]
+    };
+    cpu.setOption(CpuOption)
+    mem.setOption(memOption)
+    jvm.setOption(jvmOption)
+    hardDisk.setOption(diskOption)
+    net.setOption(netOption)
+    $(function () {
+        $("[data-toggle='tooltip']").tooltip();
+        httpUtil.get("/dashBoard/visits", {
+            params: {
+                days: 15
+            }
+        }).then(res => {
+            trafficStatistics.setOption({
+                xAxis: {
+                    data: res.data.xaxisData
+                },
+                series: [{
+                    // 根据名字对应到相应的系列
+                    name: '访问量',
+                    data: res.data.seriesData
+                }]
+            });
+        })
+
+        function setColor(options) {
+            if (options.series[0].data[0].value < 50)
+                options.color = ["#73d13d"];
+            if (options.series[0].data[0].value >= 50 && options.series[0].data[0].value < 75)
+                options.color = ["#fa8c16"];
+            if (options.series[0].data[0].value >= 75) {
+                options.color = ["#cf1322"];
+            }
+
+        }
+
+        function getInfo() {
+            axios.get("/dashBoard/getSystemInfo").then(res => {
+                CpuOption.series[0].data[0].value = (100 - res.data.data.cpu.free).toFixed(2);
+                CpuOption.title.text = "核心数" + res.data.data.cpu.cpuNum;
+
+                let cpuInfo = "\r";
+                cpuInfo+="CPU核心数："+res.data.data.cpu.cpuNum+"\r\r";
+                cpuInfo+="CPU系统使用率："+res.data.data.cpu.sys+"% \r\r";
+                cpuInfo+="CPU用户使用率："+res.data.data.cpu.used+"% \r\r";
+                cpuInfo+="CPU当前等待率："+res.data.data.cpu.wait+"% \r\r";
+                cpuInfo+="CPU当前空闲率："+res.data.data.cpu.free+"% \r\r\r";
+                $("#cpu")[0].setAttribute("title",cpuInfo);
+
+                memOption.series[0].data[0].value = (
+                    res.data.data.mem.used / res.data.data.mem.total * 100).toFixed(2);
+                memOption.title.text = convertFileSize(res.data.data.mem.used) + "/" +
+                    convertFileSize(res.data.data.mem.total);
+
+                let memInfo = "\r\r";
+                memInfo+="内存总容量："+convertFileSize(+res.data.data.mem.total)+"\r\r";
+                memInfo+="内存使用量："+convertFileSize(res.data.data.mem.used)+"\r\r";
+                memInfo+="内存空闲量："+convertFileSize(res.data.data.mem.free)+"\r\r";
+                $("#mem")[0].setAttribute("title",memInfo);
+
+
+                let jvmInfo = "\r\r";
+                jvmInfo+="JVM占用总量："+convertFileSize(+res.data.data.jvm.total)+"\r\r";
+                jvmInfo+="JVM最大可用内存："+convertFileSize(res.data.data.jvm.max)+"\r\r";
+                jvmInfo+="JVM空虚内存："+convertFileSize(res.data.data.jvm.free)+"\r\r";
+                jvmInfo+="JDK版本："+res.data.data.jvm.version+"\r\r";
+                jvmInfo+="JDK路径："+res.data.data.jvm.home+"\r\r";
+                $("#jvm")[0].setAttribute("title",jvmInfo);
+
+
+                jvmOption.series[0].data[0].value = (
+                    res.data.data.jvm.used / res.data.data.jvm.total * 100).toFixed(2);
+                jvmOption.title.text = convertFileSize(res.data.data.jvm.used) + "/" + convertFileSize(
+                    res.data.data.jvm.total);
+
+                let usedDisk = 0;
+
+                let total = 0;
+                let used = 0;
+                let fileSystemInfo = "\r\r";
+                for (let i = 0; i < res.data.data.sysFiles.length; i++) {
+                    fileSystemInfo+=res.data.data.sysFiles[i].typeName+" : "+convertFileSize(res.data.data.sysFiles[i].used)+"/"+convertFileSize(res.data.data.sysFiles[i].total)+"\r\r"
+                    total += res.data.data.sysFiles[i].total;
+                    used += res.data.data.sysFiles[i].used;
+                    usedDisk += res.data.data.sysFiles[i].usage;
+                }
+
+                diskOption.series[0].data[0].value
+                    = (usedDisk / res.data.data.sysFiles.length).toFixed(2);
+
+                diskOption.title.text = convertFileSize(used) + "/" + convertFileSize(total);
+                $("#hardDisk")[0].setAttribute("title",fileSystemInfo);
+
+
+                let now = new Date();
+                netOption.series[0].data.push([dateFormat("YYYY-mm-dd HH:MM:SS",now),res.data.data.net.in])
+                netOption.series[1].data.push([dateFormat("YYYY-mm-dd HH:MM:SS",now),res.data.data.net.out])
+                if(netOption.series[0].data.length>20){
+                    netOption.series[0].data.shift();
+                    netOption.series[1].data.shift();
+                }
+
+                // net.series[0].data.push({
+                //     name:str(now.getHours())+":"+str(now.getMinutes())+str(now.getSeconds())
+                //     value: res.data.data.net.out
+                // })
+                setColor(CpuOption);
+                setColor(memOption);
+                setColor(jvmOption);
+                setColor(diskOption);
+
+                cpu.setOption(CpuOption, true);
+                mem.setOption(memOption, true);
+                jvm.setOption(jvmOption, true);
+                hardDisk.setOption(diskOption, true);
+                net.setOption(netOption, true);
+            })
+        }
+
+        getInfo();
+        setInterval(getInfo, 10000);
+
+
+
+
+        function dateFormat(fmt, date) {
+            let ret;
+            const opt = {
+                "Y+": date.getFullYear().toString(),        // 年
+                "m+": (date.getMonth() + 1).toString(),     // 月
+                "d+": date.getDate().toString(),            // 日
+                "H+": date.getHours().toString(),           // 时
+                "M+": date.getMinutes().toString(),         // 分
+                "S+": date.getSeconds().toString()          // 秒
+                // 有其他格式化字符需求可以继续添加，必须转化成字符串
+            };
+            for (let k in opt) {
+                ret = new RegExp("(" + k + ")").exec(fmt);
+                if (ret) {
+                    fmt = fmt.replace(ret[1], (ret[1].length == 1) ? (opt[k]) : (opt[k].padStart(ret[1].length, "0")))
+                };
+            };
+            return fmt;
+        }
+    })
+</script>
+<!--<div class="col-my-1 left-nav">-->
+<!--    <div class="panel-group" id="accordion">-->
+<!--        <ul>-->
+<!--            <li data-toggle="collapse" data-parent="#accordion" href="#item-Myfile" id="headMyfile"-->
+<!--                class="nav-item">-->
+<!--                <i class="bi bi-file-earmark-text navigation"></i>我的文件-->
+
+<!--            </li>-->
+<!--            <div id="item-Myfile" class="panel-collapse collapse">-->
+<!--                <div class="item-body">-->
+<!--                    <ul class="list-unstyled">-->
+<!--                        <li class="item-second" id='a'><a href="a.html" style="text-align: center"><i-->
+<!--                                class="bi bi-image-alt"></i>图片</a></li>-->
+
+<!--                        <li class="item-second" id='b'><a href="b.html" style="text-align: center"><i-->
+<!--                                class="bi bi-file-earmark-word"></i>文档</a></li>-->
+
+<!--                        <li class="item-second" id='c'><a href="c.html" style="text-align: center"><i-->
+<!--                                class="bi bi-film"></i>视频</a></li>-->
+
+<!--                        <li class="item-second" id='d'><a href="d.html" style="text-align: center"><i-->
+<!--                                class="bi bi-music-note-list"></i>音乐</a></li>-->
+
+<!--                        <li class="item-second" id='e'><a href="e.html" style="text-align: center"><i-->
+<!--                                class="bi bi-question"></i>其他</a></li>-->
+
+<!--                    </ul>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <li href="#item-Inbox" id="headInbox" class="nav-item">-->
+<!--                <i class="bi bi-inbox navigation"></i>收件箱-->
+<!--            </li>-->
+<!--            <li href="#item-Sharetherecord" id="Sharetherecord" class="nav-item">-->
+<!--                <i class="bi bi-share navigation"></i>分享记录-->
+<!--            </li>-->
+
+<!--            <li href="#item-group" id="headgroup" class="nav-item">-->
+<!--                <i class="bi bi-people-fill navigation"></i>群组-->
+<!--            </li>-->
+
+<!--            <li href="#item-Labelmanagement" id="headLabelmanagement" class="nav-item">-->
+<!--                <i class="bi bi-tags navigation"></i>标签管理-->
+<!--            </li>-->
+
+<!--            <li href="#item-Recyclebin" id="headRecyclebin" class="nav-item">-->
+<!--                <i class="bi bi-trash navigation"></i>回收站-->
+<!--            </li>-->
+
+<!--            <li href="#item-Search" id="headsearch" class="nav-item">-->
+<!--                <i class="bi bi-search navigation"></i>搜索-->
+<!--            </li>-->
+<!--        </ul>-->
+<!--    </div>-->
+<!--</div>-->
+</body>
+</html>

@@ -1,6 +1,6 @@
 <!DOCTYPE>
-<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml"  xmlns:th="http://www.thymeleaf.org">
-<head >
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
     <th:block th:include="common/header :: header(~{::title})">
         <title>欢迎登录瀚海云盘</title>
     </th:block>
@@ -53,13 +53,14 @@
      class="container  justify-content-center col-md-12 col-lg-4 col-xl-3 col-sm-12 col-12">
     <img src="/static/img/logo.png" class="logo offset-5 d-none d-md-block" alt="">
 
-        <div class="align-self-center">
+    <div class="align-self-center">
 
         <p style="font-size: 30px; text-align: center;">瀚海云盘用户登录</p>
         <br>
         <form class="login-validation" novalidate action="/login" method="POST" id="formLogin">
             <div class="row form-group mb-4">
-                <input type="text" class="form-control col-12 " placeholder="请输入邮箱/手机号" title="请输入邮箱/手机号"
+                <input type="text" class="form-control col-12 " placeholder="请输入邮箱/手机号"
+                       title="请输入邮箱/手机号"
                        name="username" required
                        pattern="([a-z0-9]+([._\\-]*[a-z0-9])*@([a-z0-9]+[-a-z0-9]*[a-z0-9]+.){1,63}[a-z0-9]+)|(1[358]\d{9})">
                 <div style="text-align: left" class="invalid-feedback">请输入格式正确的邮箱或手机号</div>
@@ -72,7 +73,7 @@
             </div>
             <div class="row form-group  mb-4">
                 <input type="text" class="form-control col-6" name="captcha"
-                       placeholder="请输入四位验证码" pattern="^[a-zA-Z0-9]{4}"
+                       placeholder="请输入四位验证码" pattern="^[a-zA-Z0-9]{4}" id="inputCaptcha"
                        required title="请输入验证码">
 
                 <img src="/captcha" id="captcha" class="col-4 offset-1 "
@@ -86,13 +87,238 @@
             </div>
 
             <div class="row mt-4">
-                <a href="" class="col-4">忘记密码</a>
-                <a href="" class="offset-4 col-4">注册账号</a>
+                <div class="col-4">
+                    <a href="#"
+                       th:if="${systemInfo.getEmailEnabled() || systemInfo.getAlySmsEnabled()}"
+                       id="forget">忘记密码</a>
+                </div>
+                <div class="offset-4 col-4">
+                    <a href="#" th:if="${systemInfo.getOpenRegistration()}" id="register">注册账号</a>
+                </div>
             </div>
 
         </form>
     </div>
 
+</div>
+<div class="modal fade" id="forgetPassword" tabindex="-1" role="dialog"
+     aria-labelledby="forgetPasswordLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">忘记密码</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group row">
+
+                    <label for="account" class="col-sm-2 col-form-label">账户：</label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control" id="account"
+                               placeholder="请输入手机号或者邮箱">
+                    </div>
+
+                    <button class="btn btn-primary  btn-sm" id="sendCaptcha">发送验证码</button>
+                </div>
+                <div class="form-group row">
+                    <label for="captchaCode" class="col-sm-2 col-form-label">验证码:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="captchaCode"
+                               placeholder="请输入验证码">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="newPassword" class="col-sm-2 col-form-label">新密码:</label>
+                    <div class="col-sm-10">
+                        <input type="password" class="form-control" id="newPassword"
+                               placeholder="请输入新密码">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="forgetPasswordSubmit">提交</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+
+
+<div class="modal fade" id="userInfo" tabindex="-1" aria-labelledby="userInfoLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">注册</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body" style="padding-left: 20px;padding-right: 20px">
+                <form id="user" class="needs-validation" novalidate>
+                    <div class="form-group">
+                        <div class="row">
+                            <label for="userName" class="col-form-label col-3">用户名:</label>
+                            <input type="text" class="form-control col-8" id="userName"
+                                   name="userName"
+                                   required>
+
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入用户名
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <label for="userPassword" class="col-form-label col-3">密码:</label>
+                            <input class="form-control  col-8" id="userPassword" type="password"
+                                   name="userPassword" required>
+
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入密码
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <label for="userGender" class="col-form-label col-3">性别：</label>
+                            <select class="custom-select col-8" id="userGender" required
+                                    name="userGender">
+                                <option value="0">男</option>
+                                <option value="1">女</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="row mb-3">
+                            <label for="userEmail" class="col-form-label col-3">电子邮箱：</label>
+                            <input class="form-control  col-5" type="email" id="userEmail" required
+                                   name="userEmail">
+                            <button type="button" class="btn btn-primary ml-1"
+                                    id="sendRegisterEmail">发送验证码
+                            </button>
+
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入邮箱
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+
+                        <div class="row">
+                            <label for="registerEmailVerificationCode" class="col-form-label col-3">验证码：</label>
+                            <input class="form-control  col-8" type="email"
+                                   id="registerEmailVerificationCode"
+                                   required
+                                   name="userEmail">
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入验证码
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <div class="row mb-3">
+                            <label for="userEmail" class="col-form-label col-3">手机号：</label>
+                            <input class="form-control  col-5" type="email" id="userPhone" required
+                                   name="userEmail">
+                            <button type="button" class="btn btn-primary ml-1"
+                                    id="sendRegisterPhone">发送验证码
+                            </button>
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入手机号
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+
+                        <div class="row">
+                            <label for="registerPhoneVerificationCode" class="col-form-label col-3">验证码：</label>
+                            <input class="form-control  col-5" type="email"
+                                   id="registerPhoneVerificationCode"
+                                   required
+                                   name="userEmail">
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入验证码
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="registerSubmit">提交
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<div class="modal fade" id="verificationMailAndPhone" tabindex="-1" role="dialog"
+     aria-labelledby="forgetPasswordLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="verificationMailAndPhoneLabel">验证邮箱和手机号</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                    &times;
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="phoneVerification">
+
+                    <div class="form-group row">
+
+                        <label for="account" class="col-sm-2 col-form-label">手机号</label>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" id="phone"
+                                   placeholder="请输入手机号" readonly>
+                        </div>
+
+                        <button class="btn btn-primary  btn-sm" id="sendPhoneCaptcha">发送验证码</button>
+                    </div>
+                    <div class="form-group row">
+                        <label for="phoneCaptchaCode" class="col-sm-2 col-form-label">验证码</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="phoneCaptchaCode"
+                                   placeholder="请输入手机验证码">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="emailVerification">
+                    <div class="form-group row">
+
+                        <label for="account" class="col-sm-2 col-form-label">邮箱</label>
+                        <div class="col-sm-7">
+                            <input type="text" class="form-control" id="email" readonly
+                                   placeholder="请输入邮箱">
+                        </div>
+
+                        <button class="btn btn-primary  btn-sm" id="sendEmailCaptcha">发送验证码</button>
+                    </div>
+                    <div class="form-group row">
+                        <label for="emailCaptchaCode" class="col-sm-2 col-form-label">验证码:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="emailCaptchaCode"
+                                   placeholder="请输入邮箱验证码">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary"
+                            id="verificationMailAndPhoneSubmit">提交
+                    </button>
+                </div>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
 </div>
 
 <script type="module">
@@ -103,6 +329,44 @@
     $("#captcha").click(function () {
         $("#captcha")[0].setAttribute("src", "/captcha?a=" + Math.random());
     })
+
+    $("#sendRegisterPhone").click(function () {
+
+        httpUtil.post("/register/send/sms", {
+            account: $("#userPhone").val()
+        }).then(res => {
+            intervalDisabled($("#sendRegisterPhone"), "发送验证码")
+        })
+
+    })
+    $("#sendRegisterEmail").click(function () {
+
+        httpUtil.post("/register/send/email", {
+            account: $("#userEmail").val()
+        }).then(res => {
+            intervalDisabled($("#sendRegisterEmail"), "发送验证码")
+        })
+
+    })
+    $("#registerSubmit").click(function () {
+
+        if ($("#user")[0].checkValidity() === true) {
+            $("#user").removeClass("was-validated");
+            httpUtil.post("/register", {
+                userName: $("#userName").val(),
+                userPassword: $("#userPassword").val(),
+                userGender: $("#userGender").val(),
+                userEmail: $("#userEmail").val(),
+                userPhone: $("#userPhone").val(),
+                registerPhoneVerificationCode: $("#registerPhoneVerificationCode").val(),
+                registerEmailVerificationCode: $("#registerEmailVerificationCode").val(),
+            }).then(res => {
+                $("#userInfo").modal("hide");
+            })
+        } else {
+            $("#userForm").addClass("was-validated");
+        }
+    })
     $("form").submit(function (event) {
         event.preventDefault(); // 阻止提交表单
         event.stopPropagation();
@@ -110,16 +374,98 @@
         if ($(this)[0].checkValidity() === true) {
             httpUtil.post("/login", $("#formLogin").serializeObject()).then(res => {
                 window.location.href = "/";
-            }).catch(err=>{
+            }).catch(err => {
                 $("#captcha")[0].setAttribute("src", "/captcha?a=" + Math.random());
-            })
+                $("#inputCaptcha").val("");
+                if (err.code == 456) {
+                    $("#verificationMailAndPhone").modal("show")
+                    $("#phoneVerification").prop("hidden", err.data.phoneChecked)
+                    $("#emailVerification").prop("hidden", err.data.emailChecked)
+                    $("#phone").val(err.data.phone);
+                    $("#email").val(err.data.email);
+
+
+                }
+            });
         }
 
         $(this).addClass("was-validated");
 
-
     });
 
+    $("#forget").click(function () {
+        $("#forgetPassword").modal("show");
+    })
+
+    $("#sendCaptcha").click(function () {
+        httpUtil.post("/send/captcha", {
+            account: $("#account").val()
+        }).then(res => {
+            intervalDisabled($("#sendCaptcha"), "发送验证码")
+        })
+    })
+    $("#forgetPasswordSubmit").click(function () {
+        httpUtil.post("/forgetPassword", {
+            account: $("#account").val(),
+            newPassword: $("#newPassword").val(),
+            captcha: $("#captchaCode").val()
+        }).then(res => {
+            $("#forgetPassword").modal("hide");
+        })
+    })
+    $("#register").click(function () {
+        $("#userInfo").modal("show");
+    })
+
+    $("#sendPhoneCaptcha").click(function () {
+
+        httpUtil.post("/verified/send/sms").then(res => {
+            intervalDisabled($("#sendPhoneCaptcha"), "发送验证码")
+        })
+    })
+    $("#sendEmailCaptcha").click(function () {
+        httpUtil.post("/verified/send/email").then(res => {
+            intervalDisabled($("#sendEmailCaptcha"), "发送验证码")
+        })
+    })
+    $("#verificationMailAndPhoneSubmit").click(function () {
+        httpUtil.post("/verified", {
+            emailCaptchaCode: $("#emailCaptchaCode").val(),
+            phoneCaptchaCode: $("#phoneCaptchaCode").val()
+        }).then(res => {
+            $("#phoneVerification").prop("hidden", res.data.phoneChecked)
+            $("#emailVerification").prop("hidden", res.data.emailChecked)
+            if (res.data.phoneChecked && res.data.emailChecked) {
+                // $("#userInfo").modal("hide");
+                $("#verificationMailAndPhone").modal("hide");
+            }
+        })
+    })
+
+
+</script>
+<script type="text/javascript">
+    function intervalDisabled(e, text, d, u) {
+        e.attr({"disabled": "disabled"});     //控制按钮为禁用
+        if (d)
+            d.attr({"disabled": "disabled"});
+        if (u)
+            u.removeAttr("disabled");//将按钮可用
+
+        let second = 60;
+        let intervalObj = setInterval(function () {
+            e.text(text + "(" + second + ")");
+            if (second === 0) {
+                e.text(text);
+                e.removeAttr("disabled");//将按钮可用
+                /* 清除已设置的setInterval对象 */
+                clearInterval(intervalObj);
+                if (d)
+                    d.removeAttr("disabled");//将按钮可用
+            }
+            second--;
+        }, 1000);
+    }
 </script>
 </body>
 

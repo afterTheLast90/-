@@ -8,7 +8,7 @@ import com.hanhai.cloud.vo.UserDirListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -22,9 +22,9 @@ import java.util.stream.Collectors;
 public class UserFileController {
     @Autowired
     UserFileService userFileService;
-    @GetMapping("/getUserDir")
+    @GetMapping("/getUserDir/{id}")
     @ResponseBody
-    public R<List<UserDirListVO>> getUserDirs(@RequestParam("path")String path){
+    public R<List<UserDirListVO>> getUserDirs(@PathVariable("id") String path){
 
         return new R<List<UserDirListVO>>(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getDir(path).stream().map(i-> BeanUtils.convertTo(i,
                 UserDirListVO.class)).collect(Collectors.toList())).setMsg("获取信息成功");

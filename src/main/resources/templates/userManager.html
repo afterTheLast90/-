@@ -1,0 +1,444 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <script src="/static/popper/popper.min.js"></script>
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>用户管理</title>
+    </th:block>
+
+    <link href="/static/bootstrap-table/bootstrap-table.min.css" rel="stylesheet"/>
+    <script src="/static/bootstrap-table/bootstrap-table.min.js"></script>
+    <script src="/static/bootstrap-table/bootstrap-table-zh-CN.min.js"></script>
+    <script src="/static/converFileSize.js"></script>
+
+    <style>
+        .bs-bars {
+            width: 100%;
+        }
+        #table img{
+            width: 50px;
+            border-radius: 50%;
+            margin-right: 10px;
+            margin-left: auto;
+        }
+        .userName {
+            display: inline-block;
+            width: 70px;
+            overflow-x: hidden;
+            paddin-top: 20px;
+
+        }
+    </style>
+
+    <div class="modal fade" id="importExcelTips" tabindex="-1"
+         aria-labelledby="importExcelTipsLabel" aria-hidden="true" data-backdrop="static" >
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importExcelTipsLabel">导入结果</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="importExcelTipsContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">确认</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</head>
+<input type="file" hidden id="excelFile">
+<div id="toolbar">
+    <button class="btn float-left" style="background-color:#67c23a;color: white"
+            id="user_add"><i
+            class="bi bi-person-plus"></i>
+        添加用户
+    </button>
+
+    <div class="float-left  input-group" style="width: 40%">
+        <input type="text" class="form-control" style="margin-left: 30px;width: 80%"
+               placeholder="请输入用户名、电子邮箱或手机号查询..." id="searchText">
+
+        <div class="input-group-append" id="button-addon4">
+            <button type="button" class="btn btn-outline-info" id="search">
+                <i class="bi bi-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="dropdown">
+        <button class="btn btn-info float-right dropdown-toggle" type="button"
+                id="import" data-toggle="dropdown" aria-expanded="false" style="margin-right: 30px">
+            导入
+        </button>
+        <div class="dropdown-menu" aria-labelledby="import">
+            <a class="dropdown-item" href="/admin/template">下载模板</a>
+            <a class="dropdown-item" href="#" id="importExcel">导入数据</a>
+        </div>
+    </div>
+
+    <div class="dropdown">
+        <button class="btn btn-warning float-right dropdown-toggle" type="button"
+                id="export" data-toggle="dropdown" aria-expanded="false" style="margin-right: 30px">
+            导出数据
+        </button>
+        <div class="dropdown-menu" aria-labelledby="export">
+            <a class="dropdown-item" href="#" id="exportCurrent">导出当前页</a>
+            <a class="dropdown-item" href="#" id="exportAll">导出全部</a>
+        </div>
+    </div>
+    <!--    </div>-->
+</div>
+<div class="modal fade" id="userInfo" tabindex="-1" aria-labelledby="userInfoLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userInfoLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="needs-validation" novalidate id="userForm">
+                    <div class="form-group">
+                        <label for="userName" class="col-form-label">用户名:</label>
+                        <input type="text" class="form-control" id="userName" name="userName" required>
+                        <div class="invalid-feedback">
+                            请输入用户名
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="userPassword" class="col-form-label">密码：</label>
+                        <input class="form-control" id="userPassword" type="password" name="userPassword" required>
+                        <div class="invalid-feedback">
+                            请输入密码
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="userGender" class="col-form-label">性别：</label>
+                        <select class="custom-select" id="userGender" required name="userGender">
+                            <option value="0">男</option>
+                            <option value="1">女</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="userEmail" class="col-form-label">电子邮箱：</label>
+                        <input class="form-control mb-1" type="email" id="userEmail" required
+                               name="userEmail">
+                        <input type="checkbox"  id="emailChecked" name="emailChecked"
+                               value="true">
+                        不需要用户自行验证
+                        <div class="invalid-feedback">
+                            请输入电子邮箱
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="userPhone" class="col-form-label">手机号：</label>
+                        <input class="form-control"  id="userPhone"required  name="userPhone">
+                        <input type="checkbox"  id="phoneChecked" name="phoneChecked"  value="true">
+                        不需要用户自行验证
+                        <div class="invalid-feedback">
+                            请输入手机号
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="spaceSize" class="col-form-label">可用空间大小(字节)：</label>
+                        <input class="form-control"  id="spaceSize" required type="number"
+                               name="spaceSize">
+                        <div > <span id="size"></span></div>
+                        <div class="invalid-feedback">
+                            可用空间大小
+                        </div>
+                    </div>
+                    <div class="form-inline" id="adminInfo">
+                        <input id="admin" class="form-check-input" type="checkbox" name="admin"  value="true">
+                        <label class="form-check-label" for="admin" >管理权限</label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="addUserBtn">添加用户</button>
+                <button type="button" class="btn btn-primary" id="modifyUserBtn">修改用户信息</button>
+            </div>
+        </div>
+    </div>
+</div>
+<body>
+
+<th:block th:include="common/nav-header::nav-header"></th:block>
+
+
+<div class="main">
+    <th:block th:include="common/admin-left-nav::admin-left-nav('userManager')"></th:block>
+    <div class="content">
+        <div class="user_table">
+            <table id="table"></table>
+        </div>
+    </div>
+    <script type="module">
+
+        import httpUtil from "/static/httpUtil.js";
+        import httpUtilFormDate from "/static/httpUtilFormDate.js";
+        let p = undefined;
+
+        $("#exportCurrent").click(function(){
+            window.open("/admin/export?pageNum="+p.pageNum+"&pageSize="+p.pageSize+"&key="+p.key)
+        })
+        $("#exportAll").click(function(){
+            window.open("/admin/exportAll")
+        })
+
+        $("#importExcel").click(function(){
+            $("#excelFile").click();
+        })
+        $("#excelFile").change(function(){
+            if(!$("#excelFile")[0].files[0])
+                return
+
+            let formData=new FormData();
+            formData.append('file',$("#excelFile")[0].files[0]);
+            httpUtilFormDate.post("/admin/import",formData).then(res=>{
+                if(res.msg==="全部导入成功"){
+                    $("#importExcelTipsContent").html("<p>初始密码为123456，"+res.msg+"</p>")
+                }else{
+                    $("#importExcelTipsContent").html("<p>初始密码为123456，"+res.msg+"</p> <a href='/admin/importError'>下载导入失败数据</a>")
+                }
+
+                $('#table').bootstrapTable('refresh');
+                $("#importExcelTips").modal("show");
+            })
+            $("#excelFile").val("");
+        })
+        $('#table').bootstrapTable({
+            url: '/admin/users',
+            toolbar: "#toolbar",
+            pagination: true,//开启分页
+            dataType: "json",//数据类型
+            sidePagination: 'server',//分页方式：client客户端分页，server服务端分页（*）
+            pageNumber: 1, //当前地基页
+            pageSize: 10, //每页显示数据条数
+            pageList: "[10,20,50]",
+            idField: 'userId',//主键
+            dataField: 'list',
+            totalField: "total",
+            toolbarAlign: "right",
+            height: 800,
+            columns: [
+                {
+                    field: 'userId',
+                    visible: false
+                },
+                {
+                    field: 'userName',
+                    align: 'center',
+                    title: '用户名',
+                    formatter: function indexFormatter(value, row, index) {
+                      return "<img src='/avatar/"+row.userId+"'>"+
+                          "<div class='userName'>"+row.userName+"</div>"
+                    }
+                }, {
+                    field: 'userGender',
+                    align: 'center',
+                    title: '性别',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        if (value === 0)
+                            return "男"
+                        else
+                            return "女"
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+                }, {
+                    field: 'userEmail',
+                    align: 'center',
+                    title: '电子邮箱',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        if (!row.emailChecked)
+                            return value
+                                + " <i class='bi bi-bookmark-x-fill' style = 'color:#dc3545' title='该邮箱未通过核验'></i>"
+                        else
+                            return value
+                                + " <i class='bi bi-bookmark-check-fill' style = 'color:#35dc6d' title='该邮箱已通过核验'></i>"
+
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+
+                }, {
+                    field: 'userPhone',
+                    align: 'center',
+                    title: '手机号',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        if (!row.phoneChecked)
+                            return value
+                                + " <i class='bi bi-bookmark-x-fill' style = 'color:#dc3545' title='该手机号未通过核验'></i>"
+                        else
+                            return value
+                                + " <i class='bi bi-bookmark-check-fill' style = 'color:#35dc6d' title='该手机号已通过核验'></i>"
+
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+                }, {
+                    // field: 'userPhone',
+                    align: 'center',
+                    title: '空间使用情况',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        return convertFileSize(row.usedSize) + "/" + convertFileSize(row.spaceSize);
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+
+                }, {
+                    field: 'admin',
+                    align: 'center',
+                    title: '是否为管理员',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                        return row.admin?"是":"否"
+                        // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
+                    }
+
+                }, {
+                    align: 'center',
+                    title: '操作',
+                    formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+
+                        if (row.userId === [[${userInfo.userId}]])
+                            return "<button index='" + index +
+                                "' class='btn btn-primary modify'>修改信息</button> <button class='btn btn-danger disabled' title='用户不能删除自己'>删除</button>";
+                        return "<button index='" + index +
+                            "' class='btn btn-primary modify'>修改信息</button> <button userId='" +
+                            row.userId + "' index='" + index +
+                            "' class='btn btn-danger del'>删除</button>";
+
+                    }
+                }
+
+
+            ],
+            onPostBody:function(data) {
+                // rows=data;
+                $(".del").click(function (e){
+                    layer.confirm('是否确认要删除用户'+data[e.target.getAttribute("index")].userName+'？', {
+                        title:"确认删除",
+                        btn: ['是','否'] //按钮
+                    }, function(){
+                        httpUtil.delete("/admin/user/"+e.target.getAttribute("userId")).then(res=>{
+                            $('#table').bootstrapTable('refresh');
+                        })
+                    }, function(){
+                        layer.close(layer.index)
+                    });
+
+                })
+                $(".modify").click(function (e){
+                    let index = e.target.getAttribute("index");
+
+                    $("#adminInfo").prop("hidden",data[index].userId===[[${userInfo.userId}]]);
+
+
+                    $("#userForm").removeClass("was-validated");
+                    $("#userInfo").modal("show");
+                    $("#userGender").val(data[index].userGender);
+                    $("#userPassword").val("");
+                    $("#userPassword").prop("placeholder","若不修改密码，请留空");
+                    $("#userPassword").prop("required",false);
+                    $("#userPhone").val(data[index].userPhone);
+                    $("#userEmail").val(data[index].userEmail);
+                    $("#userName").val(data[index].userName);
+
+                    $("#emailChecked").prop("checked",data[index].emailChecked);
+                    $("#phoneChecked").prop("checked",data[index].phoneChecked);
+                    $("#spaceSize").val(data[index].spaceSize) ;
+                    // $("#email").val(data[index].);
+                    $("#size").text("约 "+convertFileSize(data[index].spaceSize))
+                    $("#admin").prop("checked",data[index].admin);
+                    $("#userInfoLabel").text("修改用户信息")
+                    $("#addUserBtn").prop("hidden",true);
+                    $("#modifyUserBtn").prop("hidden",false);
+                    $("#modifyUserBtn")[0].setAttribute("userId",data[index].userId);
+                })
+            },
+            responseHandler: function (res) {
+                return res.data;
+            },
+            queryParams: function (params) {//发送请求的参数
+                p= {
+                    pageNum: params.offset / params.limit + 1,//页码
+                    pageSize: params.limit, //页面大小
+                    key: $("#searchText").val()?$("#searchText").val():"",
+                };
+                return p;
+            }
+        });
+
+        $("#search").click(function (){
+            $('#table').bootstrapTable('refresh');
+        })
+
+
+    </script>
+</div>
+</body>
+<script type="module">
+    import httpUtil from "/static/httpUtil.js";
+    $("#user_add").click(function () {
+
+        $("#userForm").removeClass("was-validated");
+        $("#userInfo").modal("show");
+        $("#userGender").val(0);
+        $("#userPassword").val("");
+        $("#userPassword").prop("placeholder","");
+        $("#userPassword").prop("required",true);
+        $("#userPhone").val("");
+        $("#userEmail").val("");
+        $("#userName").val("");
+        $("#emailChecked").prop("checked", false);
+        $("#phoneChecked").prop("checked", false);
+        $("#admin").prop("checked", false);
+        $("#spaceSize").val( [[${defaultSpaceSize}]] ) ;
+        $("#email").val("");
+        $("#size").text("约 "+convertFileSize([[${defaultSpaceSize}]] ))
+        $("#userInfoLabel").text("添加用户")
+        $("#addUserBtn").prop("hidden",false);
+        $("#modifyUserBtn").prop("hidden",true);
+    })
+    $("#spaceSize").on('input',function(e){
+        if($("#spaceSize").val())
+         $("#size").text("约 "+convertFileSize($("#spaceSize").val()))
+        else
+            $("#size").text("")
+    })
+
+    $("#addUserBtn").click(function (){
+        if ($("#userForm")[0].checkValidity() === true) {
+            $("#userForm").removeClass("was-validated");
+            httpUtil.post("/admin/user",$("#userForm").serializeObject()).then(res=>{
+                $('#table').bootstrapTable('refresh');
+                $("#userInfo").modal("hide");
+            })
+
+        }else{
+            $("#userForm").addClass("was-validated");
+        }
+    });
+    $("#modifyUserBtn").click(function (e){
+
+        let userId = e.target.getAttribute("userId");
+        if ($("#userForm")[0].checkValidity() === true) {
+            $("#userForm").removeClass("was-validated");
+
+            httpUtil.put("/admin/user/"+userId,$("#userForm").serializeObject()).then(res=>{
+                $('#table').bootstrapTable('refresh');
+                $("#userInfo").modal("hide");
+            })
+
+        }else{
+            $("#userForm").addClass("was-validated");
+        }
+    });
+</script>
+</html>

@@ -1,8 +1,5 @@
 package com.hanhai.cloud.constant;
 
-import lombok.Data;
-import lombok.experimental.Accessors;
-
 /**
  * @author wmgx
  * @create 2021-05-03-8:09
@@ -52,6 +49,14 @@ public enum ResultCode {
      */
     CAPTCHA_ERROR(453,"验证码错误"),
 
+    /**
+     * 验证码错误
+     */
+    ACTION_ERROR(455,"操作失败"),
+    /**
+     * 验证码错误
+     */
+    NOT_VERIFIED(456,"未核验信息"),
 
     /**
      * 非法访问

@@ -13,20 +13,107 @@
             margin-left: auto;
         }
 
-        .personal-modal-body div {
-            margin-left: 30px;
-        }
-
-        .personal-modal-body div input {
-            margin-left: 15px;
-        }
-
-        .label-information {
-            font-size: 1rem;
-        }
 
     </style>
-    <!-- 模态框 -->
+
+    <div class="modal fade" id="emailChange">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- 模态框头部 -->
+                <div class="modal-header">
+                    <h4 class="modal-title" id="emailTitle">个人信息</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- 模态框主体 -->
+                <div class="modal-body personal-modal-body" >
+                    <div class="form-group">
+                        <div class="row mb-3">
+                            <label for="email" class="col-form-label col-3">邮箱：</label>
+                            <input class="form-control  col-5" type="email" id="email" required
+                                   name="email">
+                            <button type="button" class="btn btn-primary ml-1"
+                                    id="sendEmail">发送验证码
+                            </button>
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入邮箱
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                    <div class="row">
+                        <label for="emailVerificationCode" class="col-form-label col-3">验证码：</label>
+                        <input class="form-control  col-5" type="email"
+                               id="emailVerificationCode"
+                               required>
+                        <div class="invalid-feedback offset-3" style="text-align: left;">
+                            请输入验证码
+                        </div>
+                    </div>
+                </div>
+                    <!-- 模态框底部 -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="saveEmail">确认
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="phoneChange">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- 模态框头部 -->
+                <div class="modal-header">
+                    <h4 class="modal-title" id="phoneTitle">个人信息</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- 模态框主体 -->
+                <div class="modal-body personal-modal-body" >
+                    <div class="form-group">
+                        <div class="row mb-3">
+                            <label for="phone" class="col-form-label col-3">手机号：</label>
+                            <input class="form-control  col-5" type="email" id="phone" required
+                                   name="phone">
+                            <button type="button" class="btn btn-primary ml-1"
+                                    id="sendPhone">发送验证码
+                            </button>
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入手机号
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <div class="row">
+                            <label for="phoneVerificationCode" class="col-form-label col-3">验证码：</label>
+                            <input class="form-control  col-5" type="email"
+                                   id="phoneVerificationCode"
+                                   required>
+                            <div class="invalid-feedback offset-3" style="text-align: left;">
+                                请输入验证码
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 模态框底部 -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="savePhone">确认
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+   <!-- 模态框 -->
     <div class="modal fade" id="personalModal">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -53,8 +140,8 @@
                             axios.post("/userInfo/updateAvatar",forms ,configs).then(res=>{
                                 if (res.data.code===200){
                                     layer.msg("头像更新成功")
-                                    $("#userAvatar")[0].src="/avatar?avatar="+res.data.data;
-                                    $("#headerUserAvatar")[0].src="/avatar?avatar="+res.data.data;
+                                    $("#userAvatar")[0].src=$("#userAvatar")[0].src+"?a="+ Math.random();
+                                    $("#headerUserAvatar")[0].src=$("#userAvatar")[0].src;
                                 }else{
                                     layer.msg(res.data.msg)
                                 }
@@ -64,37 +151,54 @@
                         })
                     </script>
                         <img  class="rounded-circle img-responsive center-block"
-                             title="这是用户头像" alt="此处是用户头像" id="userAvatar" th:src="${'/avatar?avatar='+userInfo.userAvatar}" onclick="$('#selectAvatar').click()"><br>
+                             title="这是用户头像" alt="此处是用户头像" id="userAvatar"
+                              th:src="${'/avatar/'+userInfo.userId}"
+                              onclick="$('#selectAvatar').click()"><br>
 
                     <div class="form-group row">
-                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">用户名:</label>
-                        <input type='text' class="form-control col-md-5 col-sm-5" id="userName" name="userName"
+                        <label class="col-form-label col-3">用户名:</label>
+                        <input type='text' class="form-control col-8" id="userName" name="userName"
                                th:value="${userInfo.userName}">
                     </div>
-                    <div class="form-group row" id="sexGroup">
-                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">性 别:</label>
-                        <div class="form-group form-inline">
-                            <label class="radio-inline" style="margin-top: 5px">
-                                <input type="radio" value="0" name="sex" id="man" checked="checked"
-                                       th:checked="${userInfo.userGender==0}">男性
-                                <input type="radio" value="1" name="sex" id="woman"
-                                       th:checked="${userInfo.userGender==1}">女性
-                            </label>
-                        </div>
+                    <div class="form-group row">
+                            <label for="userGender" class="col-form-label col-3">性别：</label>
+                            <select class="custom-select col-8" id="userGender" required
+                                    name="userGender" th:value="${userInfo.userGender}">
+                                <option value="0">男</option>
+                                <option value="1">女</option>
+                            </select>
                     </div>
                     <div class="form-group row">
-                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">电子邮箱:</label>
-                        <input type='email' class="form-control col-md-5 col-sm-5" id="userEmail" name="userEmail"
-                               th:value="${userInfo.userEmail}">
+                        <label class="col-form-label col-3">电子邮箱:</label>
+                        <input type='email' class="form-control " id="userEmailShow"
+                               name="userEmail" readonly
+                               th:class="${emailEnabled?'col-5':'col-8'}"
+                               th:value="${userInfo.userEmail}" >
+                        <button class="btn btn-primary ml-1"
+                                th:if="${emailEnabled  && !userInfo.emailChecked}" id="vEmail">验证邮箱
+                        </button>
+                        <button class="btn btn-primary ml-1"
+                                th:if="${emailEnabled && userInfo.emailChecked}" id="cEmail">修改邮箱
+                        </button>
                     </div>
                     <div class="form-group row">
-                        <label class="col-form-label col-md-3 col-sm-3 mr-1 text-right label-information">手机号:</label>
-                        <input type='text' class="form-control col-md-5 col-sm-5" id="userPhone" name="userPhone"
+                        <label class="col-form-label col-3">手机号:</label>
+                        <input type='text' class="form-control col-5" id="userPhoneShow"
+                               name="userPhone" readonly
+                               th:class="${alySmsEnabled?'col-5':'col-8'}"
                                th:value="${userInfo.userPhone}">
+                        <button class="btn btn-primary ml-1"
+                                th:if="${alySmsEnabled && !userInfo.phoneChecked}" id="vPhone">验证手机号
+                        </button>
+                        <button class="btn btn-primary ml-1"
+                                th:if="${alySmsEnabled && userInfo.phoneChecked}" id="cPhone">修改手机号
+                        </button>
+
                     </div>
                     <!-- 模态框底部 -->
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-primary" id="btuSave">保存</button>
+                        <button type="button" class="btn btn-primary" id="userInfobtuSave">保存
+                        </button>
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
                     </div>
 
@@ -107,19 +211,117 @@
         import httpUtil from "/static/httpUtil.js";
 
         $(function (){
-            $("#btuSave").click(function () {
+            let modify = false;
+            $("#userInfobtuSave").click(function () {
                 httpUtil.put("/userInfo/update", JSON.stringify({
                     userName: $("#userName").val(),
                     userGender: $('input[name="sex"]:checked').val(),
-                    userEmail: $("#userEmail").val(),
-                    userPhone: $("#userPhone").val()
                 })).then(res => {
                     $('#personalModal').modal('hide');
                 }).catch(e => {
 
                 })
             })
+
+            $("#vEmail").click(function(){
+                modify=false;
+                $("#emailTitle").text("验证邮箱");
+                $("#email").val($("#userEmailShow").val());
+                $("#email").prop("readOnly",true);
+                $("#emailVerificationCode").val("");
+                $('#personalModal').modal('hide');
+                $("#emailChange").modal("show");
+            })
+            $("#cEmail").click(function(){
+                modify=true;
+                $("#emailTitle").text("修改邮箱");
+                $("#email").val("");
+                $("#email").prop("readOnly",false);
+                $("#emailVerificationCode").val("");
+                $('#personalModal').modal('hide');
+                $("#emailChange").modal("show");
+            })
+            $("#vPhone").click(function(){
+                modify=false;
+                $("#phoneTitle").text("验证手机号");
+                $("#phone").val($("#userPhoneShow").val());
+                $("#phone").prop("readOnly",true);
+                $("#phoneVerificationCode").val("");
+                $('#personalModal').modal('hide');
+                $("#phoneChange").modal("show");
+            })
+            $("#cPhone").click(function(){
+                modify=true;
+                $("#phoneTitle").text("修改手机号");
+                $("#phone").val("");
+                $("#phone").prop("readOnly",false);
+                $("#phoneVerificationCode").val("");
+                $('#personalModal').modal('hide');
+                $("#phoneChange").modal("show");
+            })
+
+            $("#sendEmail").click(function(){
+                httpUtil.post("/verified/email/send",{
+                    email:$("#email").val(),
+                    modify:modify
+                }).then(res=>{
+                    intervalDisabled($("#sendEmail"),"发送验证码")
+                })
+            })
+            $("#sendPhone").click(function(){
+                httpUtil.post("/verified/sms/send",{
+                    phone:$("#phone").val(),
+                    modify:modify
+                }).then(res=>{
+                    intervalDisabled($("#sendPhone"),"发送验证码")
+                })
+            })
+
+            $("#savePhone").click(function(){
+                httpUtil.post("/verified/sms",{
+                    phone:$("#phone").val(),
+                    code:$("#phoneVerificationCode").val()
+                }).then(res=>{
+                    // $("#userPhoneShow").val($("#phone").val());
+                    // $("#phoneChange").modal("hide");
+
+                    location.reload();
+                })
+            })
+
+            $("#saveEmail").click(function(){
+                httpUtil.post("/verified/Email",{
+                    email:$("#email").val(),
+                    code:$("#emailVerificationCode").val()
+                }).then(res=>{
+                    location.reload();
+                })
+            })
+
         })
+    </script>
+    <script type="text/javascript">
+        function intervalDisabled(e, text, d, u) {
+            e.attr({"disabled": "disabled"});     //控制按钮为禁用
+            if (d)
+                d.attr({"disabled": "disabled"});
+            if (u)
+                u.removeAttr("disabled");//将按钮可用
+
+            let second = 60;
+            let intervalObj = setInterval(function () {
+                e.text(text + "(" + second + ")");
+                if (second === 0) {
+                    e.text(text);
+                    e.removeAttr("disabled");//将按钮可用
+                    /* 清除已设置的setInterval对象 */
+                    clearInterval(intervalObj);
+                    if (d)
+                        d.removeAttr("disabled");//将按钮可用
+                }
+                second--;
+            }, 1000);
+        }
     </script>
 </div>
 

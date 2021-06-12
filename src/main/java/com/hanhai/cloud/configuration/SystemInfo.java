@@ -1,13 +1,12 @@
 package com.hanhai.cloud.configuration;
 
+import cn.hutool.core.util.StrUtil;
 import com.hanhai.cloud.service.SystemSettingService;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.core.env.StandardEnvironment;
 
 import javax.annotation.PostConstruct;
 
@@ -30,67 +29,77 @@ public class SystemInfo {
     /**
      * 上传路径
      */
-    private String upLoadPath;
+    private String upLoadPath="";
 
     /**
      * 站点名称
      */
-    private String siteName;
+    private String siteName="";
     /**
      * 站点url
      */
-    private String siteUrl;
+    private String siteUrl="";
     /**
      * 站点备案号
      */
-    private String siteIcp;
+    private String siteIcp="";
     /**
      * 是否开放注册
      */
-    private Boolean openRegistration;
+    private Boolean openRegistration=false;
 
     /**
      * 是否开启email服务
      */
-    private Boolean emailEnabled;
+    private Boolean emailEnabled=false;
     /**
      * smtp服务器
      */
-    private String smtpServer;
+    private String smtpServer="";
     /**
      * smtp端口号
      */
-    private Integer smtpPort;
+    private Integer smtpPort=25;
     /**
      * smtp用户名
      */
-    private String smtpUsername;
+    private String smtpUsername="";
     /**
      * smtp密码
      */
-    private String smtpPassword;
+    private String smtpPassword="";
     /**
      * smtp发送人名
      */
-    private String smtpSender;
+    private String smtpSender="";
 
 
     /**
-     * 阿里云短息服务是否开启
+     * 阿里云短信服务是否开启
      */
-    private Boolean alySmsEnabled;
+    private Boolean alySmsEnabled=false;
     /**
-     * 阿里云短息服务地区id
+     * 阿里云短信服务地区id
      */
-    private String alySmsRegionId;
+    private String alySmsRegionId="";
     /**
-     * 阿里云短息服务访问key
+     * 阿里云短信服务访问key
      */
-    private String alySmsAccessKeyId;
+    private String alySmsAccessKeyId="";
     /**
      * 阿里云短信服务访问密码
      */
-    private String alySmsSecret;
+    private String alySmsSecret="";
+
+    /**
+     * 阿里云消息服务模板id
+     */
+    private String alySmsTemplateCode="";
+
+    /**
+     * 默认空间大小
+     */
+    private Long defaultSpaceSize;
 
     @PostConstruct
     public void initSystemConfig() {
@@ -103,6 +112,9 @@ public class SystemInfo {
         this.siteName=systemSettingService.selectById("site_name");
         this.siteUrl=systemSettingService.selectById("site_url");
         this.siteIcp=systemSettingService.selectById("site_icp");
+        String default_space_size = systemSettingService.selectById("default_space_size");
+        this.defaultSpaceSize= StrUtil.isBlank(default_space_size)?10000:
+                Long.parseLong(default_space_size);
 
         this.openRegistration= Boolean.valueOf(systemSettingService.selectById("open_registration"));
 
@@ -117,7 +129,7 @@ public class SystemInfo {
         this.alySmsRegionId=systemSettingService.selectById("aly_sms_region_id");
         this.alySmsAccessKeyId=systemSettingService.selectById("aly_sms_access_key_id");
         this.alySmsSecret=systemSettingService.selectById("aly_sms_secret");
-
+        this.alySmsTemplateCode=systemSettingService.selectById("aly_sms_template_code");
 
     }
 

@@ -8,18 +8,19 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.poi.excel.ExcelReader;
 import cn.hutool.poi.excel.ExcelUtil;
 import cn.hutool.poi.excel.ExcelWriter;
+import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.configuration.SystemInfo;
+import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.exception.UpdateException;
+import com.hanhai.cloud.params.RePasswordParams;
 import com.hanhai.cloud.params.UserInfoParams;
 import com.hanhai.cloud.params.UserInfoUpdateParams;
 import com.hanhai.cloud.params.UserSearchParams;
 import com.hanhai.cloud.service.UserService;
-import com.hanhai.cloud.utils.BeanUtils;
-import com.hanhai.cloud.utils.PasswordEncryptionUtils;
-import com.hanhai.cloud.utils.StringUtil;
+import com.hanhai.cloud.utils.*;
 import com.hanhai.cloud.utils.utils.AvatarFileUtils;
 import com.hanhai.cloud.utils.utils.SystemInfoRedisUtils;
 import com.hanhai.cloud.vo.UserInfoVO;
@@ -32,12 +33,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.mail.MessagingException;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -55,6 +58,12 @@ public class UserController {
     SystemInfoRedisUtils systemInfoRedisUtils;
     @Autowired
     private SystemInfo systemInfo;
+
+    @Autowired
+    private MailUtils mailUtils;
+
+    @Autowired
+    private SmsUtils smsUtils;
 
     @PutMapping("/userInfo/update")
     @ResponseBody
@@ -118,7 +127,7 @@ public class UserController {
     @GetMapping("/userManager")
     public String userManager(Model model) {
 
-        model.addAttribute("defaultSpaceSize", 10000);
+        model.addAttribute("defaultSpaceSize", systemInfo.getDefaultSpaceSize());
         return "userManager";
     }
 
@@ -274,6 +283,7 @@ public class UserController {
             systemInfoRedisUtils.set("errorItems", unSuccess);
             return R.getSuccess().setMsg("成功导入" + i + "条，失败" + (readAll.size() - i) + "条");
         } else {
+            systemInfoRedisUtils.delete("errorItems");
             return R.getSuccess().setMsg("全部导入成功");
         }
     }
@@ -307,6 +317,40 @@ public class UserController {
         response.setContentType("application/vnd.ms-excel;charset=utf-8");
         response.setHeader("Content-Disposition", "attachment;filename=" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd " +
                 "hh:mm:ss")) + "_template.xls");
+        ServletOutputStream out = null;
+        try {
+            out = response.getOutputStream();
+            writer.flush(out, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            writer.close();
+        }
+        IoUtil.close(out);
+    }
+
+    @GetMapping("/admin/importError")
+    public void importError(HttpServletResponse response){
+        List<Map<String, Object>>  errorItems =    (List<Map<String, Object>> )systemInfoRedisUtils.get("errorItems");
+        ExcelWriter writer = ExcelUtil.getWriter();
+        writer.addHeaderAlias("姓名", "姓名");
+        writer.addHeaderAlias("性别", "性别");
+        writer.addHeaderAlias("邮箱", "邮箱");
+        writer.addHeaderAlias("手机号", "手机号");
+        writer.addHeaderAlias("邮箱是否不需要验证", "邮箱是否不需要验证");
+        writer.addHeaderAlias("手机号是否不需要验证", "手机号是否不需要验证");
+        writer.addHeaderAlias("空间大小", "空间大小");
+        writer.addHeaderAlias("是否是管理员", "是否是管理员");
+        writer.addHeaderAlias("错误原因", "错误原因");
+
+        writer.write(errorItems, true);
+
+        for (int i = 0; i < 8; i++) {
+            writer.autoSizeColumn(i);
+        }
+        response.setContentType("application/vnd.ms-excel;charset=utf-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd " +
+                "hh:mm:ss")) + "_error.xls");
         ServletOutputStream out = null;
         try {
             out = response.getOutputStream();
@@ -486,6 +530,71 @@ public class UserController {
         String[] color = beautifulColors[random.nextInt(len)].split(",");
         return new Color(Integer.parseInt(color[0]), Integer.parseInt(color[1]),
                 Integer.parseInt(color[2]));
+    }
+
+    @PostMapping("/forgetPassword")
+    @ResponseBody
+    public R forgotPassword(@Validated @RequestBody RePasswordParams rePasswordParams){
+        if (Validator.isMobile(rePasswordParams.getAccount())) {
+            if (!smsUtils.checkCode(rePasswordParams.getAccount(),rePasswordParams.getCaptcha())) {
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("验证码错误");
+            }
+            User user = userService.getUserByPhone(rePasswordParams.getAccount());
+            if (user==null)
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("用户不存在");
+
+            user.setUserPassword(PasswordEncryptionUtils.hashPassword(rePasswordParams.getNewPassword()));
+            userService.updateById(user);
+            return R.getSuccess().setMsg("密码重置成功");
+        }
+        if (Validator.isEmail(rePasswordParams.getAccount())){
+            if (!mailUtils.checkCode(rePasswordParams.getAccount(),rePasswordParams.getCaptcha())) {
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("验证码错误");
+            }
+            User user = userService.getUserByEmail(rePasswordParams.getAccount());
+            if (user==null)
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("用户不存在");
+
+            user.setUserPassword(PasswordEncryptionUtils.hashPassword(rePasswordParams.getNewPassword()));
+            userService.updateById(user);
+            return R.getSuccess().setMsg("密码重置成功");
+
+        }
+        throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("请输入正确的手机号或邮箱");
+    }
+    @PostMapping("/send/captcha")
+    @ResponseBody
+    public R sendCaptcha(@RequestBody Map map) throws UnsupportedEncodingException, MessagingException {
+        String account = (String) map.get("account");
+        if (Validator.isMobile(account)){
+            User user = userService.getUserByPhone(account);
+            if (user==null)
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("用户不存在");
+
+            if (!user.getPhoneChecked()){
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg(
+                        "用户手机号未通过核验，请通过邮箱修改密码或者联系管理员");
+            }
+
+            smsUtils.send(account);
+            return R.getSuccess().setMsg("发送成功");
+
+        }
+        if (Validator.isEmail(account)){
+            User user = userService.getUserByEmail(account);
+            if (user==null)
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("用户不存在");
+
+            if (!user.getEmailChecked()){
+                throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg(
+                        "用户邮箱未通过核验，请通过手机号修改密码或者联系管理员");
+            }
+
+            mailUtils.sendCode(account);
+            return R.getSuccess().setMsg("发送成功");
+
+        }
+        throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("请输入正确的手机号或邮箱");
     }
 
 }

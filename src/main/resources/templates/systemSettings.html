@@ -1,0 +1,287 @@
+<!DOCTYPE>
+<html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="common/header :: header(~{::title})">
+        <title>系统设置</title>
+    </th:block>
+    <link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
+    <script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
+    <style>
+        .infos {
+            width: 70%;
+            margin-left: 5%;
+        }
+    </style>
+</head>
+<body>
+<th:block th:include="common/nav-header::nav-header"></th:block>
+
+<div class="main">
+    <th:block th:include="common/admin-left-nav::admin-left-nav('settings')"></th:block>
+    <div class="content">
+        <h4>系统设置</h4>
+        <hr>
+        <div class="infos">
+
+            <div class="form-group row">
+                <label for="siteName" class="col-sm-2 col-form-label">网站名称:</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="siteName"
+                           th:value="${systemInfo.getSiteName()}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="siteUrl" class="col-sm-2 col-form-label">网站URL:</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="siteUrl"
+                           th:value="${systemInfo.getSiteUrl()}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="siteIcp" class="col-sm-2 col-form-label">网站备案号:</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="siteIcp"
+                           th:value="${systemInfo.getSiteIcp()}">
+                </div>
+            </div>
+            <div class="form-group " >
+                    <button class="btn btn-primary offset-11" id="savaWebSiteInfo">保存</button>
+            </div>
+        </div>
+        <hr>
+        <h4>消息服务</h4>
+        <hr>
+        <div class="infos">
+            <div class="form-group row">
+                <label for="openRegistration" class="col-sm-2 col-form-label">开放注册:</label>
+                <div class="col-sm-10">
+                    <input type="checkbox" class="switch-checkbox" id="openRegistration"
+                           th:checked="${systemInfo.getOpenRegistration()}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label for="emailEnabled" class="col-sm-2 col-form-label">Email服务:</label>
+                <div class="col-sm-10">
+                    <input type="checkbox" class="switch-checkbox" id="emailEnabled"
+                           th:checked="${systemInfo.getEmailEnabled()}">
+                </div>
+            </div>
+            <div class="infors" style="margin-left: 10%" id="emailConfig"
+                 th:hidden="${!systemInfo.getEmailEnabled()}">
+                <hr>
+                <div class="form-group row">
+                    <label for="smtpServer" class="col-sm-2 col-form-label">Smtp地址:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="smtpServer"
+                               th:value="${systemInfo.getSmtpServer()}" placeholder="请输入Smtp的服务器地址">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="smtpPort" class="col-sm-2 col-form-label">Smtp端口号:</label>
+                    <div class="col-sm-10">
+                        <input  class="form-control" id="smtpPort" type="number"
+                               placeholder="请输入Smtp的端口号"
+                               th:value="${systemInfo.getSmtpPort()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="smtpUsername" class="col-sm-2 col-form-label">Smtp用户名:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="smtpUsername"
+                               placeholder="请输入Smtp的用户名" th:value="${systemInfo.getSmtpUsername()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="smtpPassword" class="col-sm-2 col-form-label">Smtp密码:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="smtpPassword"
+                               placeholder="请输入Smtp的密码" th:value="${systemInfo.getSmtpPassword()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="smtpSender" class="col-sm-2 col-form-label">发送者名称:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="smtpSender"
+                               placeholder="请输入发送者的名称" th:value="${systemInfo.getSmtpSender()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="testRec" class="col-sm-2 col-form-label">邮件地址:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="testRec"
+                               placeholder="请输入接收测试邮件的邮件地址" >
+                    </div>
+                </div>
+
+                <div class="form-group " >
+                    <button class="btn  btn-info offset-6 mr-5" id="sendTestEmail">发送测试邮件</button>
+                    <button class="btn btn-primary " id="saveEmailConfig">保存并开启Email服务</button>
+                </div>
+                <hr>
+            </div>
+            <div class="form-group row">
+                <label for="alySmsEnabled" class="col-sm-2 col-form-label">阿里云短信服务:</label>
+                <div class="col-sm-10">
+                    <input type="checkbox" class="switch-checkbox" id="alySmsEnabled"
+                           th:checked="${systemInfo.getAlySmsEnabled()}">
+                </div>
+
+
+            </div>
+            <div class="infors" style="margin-left: 10%" id="smsConfig"
+                 th:hidden="${!systemInfo.getAlySmsEnabled()}">
+                <hr>
+                <div class="form-group row">
+                    <label for="alySmsRegionId" class="col-sm-2 col-form-label">地区id
+                        :</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="alySmsRegionId"
+                               placeholder="请输入阿里云短信服务的地区id"
+                               th:value="${systemInfo.getAlySmsRegionId()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alySmsAccessKeyId" class="col-sm-2 col-form-label">
+                        key:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="alySmsAccessKeyId"
+                               placeholder="请输入阿里云服务访问key"
+                               th:value="${systemInfo.getAlySmsAccessKeyId()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alySmsSecret" class="col-sm-2 col-form-label">密码:
+                    </label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="alySmsSecret"
+                               placeholder="请输入阿里云服务访问密码"
+                               th:value="${systemInfo.getAlySmsSecret()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="alyTemplateCode" class="col-sm-2 col-form-label">模板id:
+                    </label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="alyTemplateCode"
+                               placeholder="请输入阿里云短息服务模板id"
+                               th:value="${systemInfo.getAlySmsTemplateCode()}">
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label for="testPhoneRec" class="col-sm-2 col-form-label">手机号:</label>
+                    <div class="col-sm-10">
+                        <input type="text" class="form-control" id="testPhoneRec"
+                               placeholder="请输入接收测试短信手机号">
+                    </div>
+                </div>
+
+                <div class="form-group " >
+                    <button class="btn  btn-info offset-6 mr-5" id="sendTestSms">发送测试短信</button>
+                    <button class="btn btn-primary " id="saveSmsConfig">保存并开启Sms服务</button>
+                </div>
+                <hr>
+            </div>
+        </div>
+        <hr>
+    </div>
+
+
+    <script type="module">
+        import httpUtil from "/static/httpUtil.js";
+        let bz=0;
+        $(".switch-checkbox").bootstrapSwitch();
+        $("#openRegistration").on('switchChange.bootstrapSwitch', function (event, state) {
+            if(bz!==0){
+                bz--;
+                return;
+            }
+            httpUtil.post("/admin/openRegistration",{
+                "status":state
+            }).then(res=>{}).catch(e=>{
+                bz++;
+                $('#openRegistration').bootstrapSwitch('state', !state);
+            })
+        });
+        $("#emailEnabled").on('switchChange.bootstrapSwitch', function (event, state) {
+            $("#emailConfig").prop("hidden", !state);
+            // 关闭
+            if(!state){
+                httpUtil.post("/admin/emailEnabled/close",).then(res=>{
+                    // if (!res.data){
+                        bz++;
+                        $('#openRegistration').bootstrapSwitch('state', false);
+                    // }
+                }).catch(e=>{
+                    $('#emailEnabled').bootstrapSwitch('state', true);
+                })
+            }
+
+        });
+        $("#alySmsEnabled").on('switchChange.bootstrapSwitch', function (event, state) {
+            $("#smsConfig").prop("hidden", !state);
+            if(!state){
+                httpUtil.post("/admin/sms/close",).then(res=>{
+                    // if (!res.data){
+                        bz++;
+                        $('#openRegistration').bootstrapSwitch('state', false);
+                    // }
+                }).catch(e=>{
+                    $('#alySmsEnabled').bootstrapSwitch('state', true);
+                })
+            }
+        });
+
+        $("#sendTestEmail").click(function(){
+            httpUtil.post("/admin/email/test",{
+                testRec:$("#testRec").val(),
+                smtpServer:$("#smtpServer").val(),
+                smtpPort:$("#smtpPort").val(),
+                smtpUsername:$("#smtpUsername").val(),
+                smtpPassword:$("#smtpPassword").val(),
+                smtpSender:$("#smtpSender").val()
+            }).then(res=>{}).catch(e=>{
+            })
+        })
+        $("#saveEmailConfig").click(function(){
+            httpUtil.post("/admin/email/setSetting",{
+                smtpServer:$("#smtpServer").val(),
+                smtpPort:$("#smtpPort").val(),
+                smtpUsername:$("#smtpUsername").val(),
+                smtpPassword:$("#smtpPassword").val(),
+                smtpSender:$("#smtpSender").val()
+            }).then(res=>{}).catch(e=>{
+            })
+        })
+        $("#sendTestSms").click(function (){
+            httpUtil.post("/admin/sms/test",{
+                alySmsRegionId:$("#alySmsRegionId").val(),
+                alySmsAccessKeyId:$("#alySmsAccessKeyId").val(),
+                alySmsSecret:$("#alySmsSecret").val(),
+                alyTemplateCode:$("#alyTemplateCode").val(),
+                testPhoneRec:$("#testPhoneRec").val()
+            }).then(res=>{}).catch(e=>{
+            })
+        })
+        $("#saveSmsConfig").click(function (){
+            httpUtil.post("/admin/sms/config",{
+                alySmsRegionId:$("#alySmsRegionId").val(),
+                alySmsAccessKeyId:$("#alySmsAccessKeyId").val(),
+                alySmsSecret:$("#alySmsSecret").val(),
+                alyTemplateCode:$("#alyTemplateCode").val(),
+                testPhoneRec:$("#testPhoneRec").val()
+            }).then(res=>{}).catch(e=>{
+            })
+        })
+
+        $("#savaWebSiteInfo").click(function (){
+            httpUtil.post("/admin/webInfo/config",{
+                siteName:$("#siteName").val(),
+                siteUrl:$("#siteUrl").val(),
+                siteIcp:$("#siteIcp").val(),
+            }).then(res=>{}).catch(e=>{
+            })
+        })
+    </script>
+</div>
+</body>
+</html>
