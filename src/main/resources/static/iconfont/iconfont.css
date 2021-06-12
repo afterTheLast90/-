@@ -1,8 +1,8 @@
 @font-face {
   font-family: "iconfont"; /* Project id 2539461 */
-  src: url('iconfont.woff2?t=1623414422365') format('woff2'),
-       url('iconfont.woff?t=1623414422365') format('woff'),
-       url('iconfont.ttf?t=1623414422365') format('truetype');
+  src: url('iconfont.woff2?t=1623491701263') format('woff2'),
+       url('iconfont.woff?t=1623491701263') format('woff'),
+       url('iconfont.ttf?t=1623491701263') format('truetype');
 }
 
 .iconfont {
@@ -13,40 +13,208 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-mp3:before {
-  content: "\e64b";
+.icon-txt:before {
+  content: "\e667";
 }
 
-.icon-gif:before {
-  content: "\e612";
+.icon-sql:before {
+  content: "\e79a";
 }
 
-.icon-mp4:before {
-  content: "\e613";
+.icon-cpp:before {
+  content: "\e600";
 }
 
-.icon-png:before {
-  content: "\e68a";
+.icon-tiff:before {
+  content: "\e601";
 }
 
-.icon-avi:before {
+.icon-c:before {
   content: "\e604";
 }
 
-.icon-py:before {
-  content: "\e906";
+.icon-asp:before {
+  content: "\e680";
 }
 
-.icon-svn:before {
-  content: "\e618";
+.icon-flac:before {
+  content: "\e6a3";
+}
+
+.icon-rmvb:before {
+  content: "\e6da";
+}
+
+.icon-tar:before {
+  content: "\e6e8";
+}
+
+.icon-wma:before {
+  content: "\e6f9";
+}
+
+.icon-jsp:before {
+  content: "\e612";
+}
+
+.icon-js:before {
+  content: "\e638";
+}
+
+.icon-java:before {
+  content: "\e614";
+}
+
+.icon-zip:before {
+  content: "\e649";
+}
+
+.icon-sys:before {
+  content: "\e67f";
+}
+
+.icon-exe:before {
+  content: "\e6fa";
+}
+
+.icon-conf:before {
+  content: "\e615";
+}
+
+.icon-jpeg:before {
+  content: "\e628";
+}
+
+.icon-dmg:before {
+  content: "\e6dc";
+}
+
+.icon-mp4:before {
+  content: "\e6c2";
+}
+
+.icon-xml:before {
+  content: "\e63a";
+}
+
+.icon-gitattributes:before {
+  content: "\e644";
+}
+
+.icon-mdf:before {
+  content: "\e8b5";
+}
+
+.icon-rm:before {
+  content: "\e6c9";
+}
+
+.icon-asf:before {
+  content: "\e6b8";
+}
+
+.icon-mpg:before {
+  content: "\e6bb";
+}
+
+.icon-gitignore:before {
+  content: "\e7e8";
 }
 
 .icon-mov:before {
-  content: "\e84b";
+  content: "\e645";
+}
+
+.icon-wav:before {
+  content: "\e853";
+}
+
+.icon-mid:before {
+  content: "\e95b";
+}
+
+.icon-htm:before {
+  content: "\e646";
+}
+
+.icon-css:before {
+  content: "\e647";
+}
+
+.icon-7z:before {
+  content: "\e648";
 }
 
 .icon-rar:before {
-  content: "\e624";
+  content: "\e64a";
+}
+
+.icon-svn:before {
+  content: "\e64b";
+}
+
+.icon-png:before {
+  content: "\e651";
+}
+
+.icon-other:before {
+  content: "\e64c";
+}
+
+.icon-json:before {
+  content: "\f2d5";
+}
+
+.icon-gz:before {
+  content: "\e6df";
+}
+
+.icon-php:before {
+  content: "\e70c";
+}
+
+.icon-pkg:before {
+  content: "\e64d";
+}
+
+.icon-py:before {
+  content: "\e69b";
+}
+
+.icon-bmp:before {
+  content: "\e689";
+}
+
+.icon-log:before {
+  content: "\e7bd";
+}
+
+.icon-bin:before {
+  content: "\e64e";
+}
+
+.icon-ini:before {
+  content: "\e650";
+}
+
+.icon-mpeg:before {
+  content: "\e652";
+}
+
+.icon-avi:before {
+  content: "\e653";
+}
+
+.icon-mp3:before {
+  content: "\e656";
+}
+
+.icon-jpg:before {
+  content: "\f2d6";
+}
+
+.icon-html:before {
+  content: "\f2d7";
 }
 
 .icon-msi:before {
@@ -55,34 +223,6 @@
 
 .icon-sh:before {
   content: "\e6dd";
-}
-
-.icon-uicon_zip:before {
-  content: "\e632";
-}
-
-.icon-uicon_pkg:before {
-  content: "\e635";
-}
-
-.icon-mid:before {
-  content: "\e6c1";
-}
-
-.icon-js:before {
-  content: "\e64f";
-}
-
-.icon-xml:before {
-  content: "\e633";
-}
-
-.icon-conf:before {
-  content: "\e660";
-}
-
-.icon-bin:before {
-  content: "\e66c";
 }
 
 .icon-iso:before {
@@ -97,152 +237,36 @@
   content: "\e6f3";
 }
 
-.icon-tar:before {
-  content: "\e6ed";
-}
-
-.icon-gz:before {
-  content: "\e6fd";
-}
-
-.icon-mpg:before {
-  content: "\e717";
-}
-
-.icon-json:before {
-  content: "\e605";
-}
-
 .icon-project:before {
   content: "\e6ce";
-}
-
-.icon-wma:before {
-  content: "\e600";
-}
-
-.icon-log:before {
-  content: "\e601";
 }
 
 .icon-so:before {
   content: "\e634";
 }
 
-.icon-ini:before {
-  content: "\e60b";
-}
-
-.icon-sys:before {
-  content: "\e60c";
-}
-
 .icon-deb:before {
   content: "\e7ac";
-}
-
-.icon-mdf:before {
-  content: "\e7d3";
-}
-
-.icon-css:before {
-  content: "\e636";
-}
-
-.icon-mpeg:before {
-  content: "\e637";
-}
-
-.icon-7z:before {
-  content: "\e639";
 }
 
 .icon-bat:before {
   content: "\e8ea";
 }
 
-.icon-java:before {
-  content: "\e63b";
-}
-
-.icon-php:before {
-  content: "\e63c";
-}
-
-.icon-asp:before {
-  content: "\e63d";
-}
-
-.icon-rm:before {
-  content: "\e6ad";
-}
-
 .icon-a:before {
   content: "\e640";
-}
-
-.icon-jsp:before {
-  content: "\e6c3";
-}
-
-.icon-gitignore:before {
-  content: "\e641";
 }
 
 .icon-class:before {
   content: "\e915";
 }
 
-.icon-asf:before {
-  content: "\e897";
-}
-
 .icon-classpath:before {
   content: "\e798";
 }
 
-.icon-dmg:before {
-  content: "\e642";
-}
-
 .icon-rpm:before {
   content: "\e643";
-}
-
-.icon-gitattributes:before {
-  content: "\e631";
-}
-
-.icon-other:before {
-  content: "\e630";
-}
-
-.icon-htm:before {
-  content: "\e62f";
-}
-
-.icon-exe:before {
-  content: "\e62e";
-}
-
-.icon-wav:before {
-  content: "\e62d";
-}
-
-.icon-rmvb:before {
-  content: "\e62c";
-}
-
-.icon-jpg:before {
-  content: "\e616";
-}
-
-.icon-jpeg:before {
-  content: "\e62a";
-}
-
-.icon-bmp:before {
-  content: "\e629";
 }
 
 .icon-dbf:before {
@@ -255,14 +279,6 @@
 
 .icon-m4r:before {
   content: "\e60e";
-}
-
-.icon-flac:before {
-  content: "\e60f";
-}
-
-.icon-html:before {
-  content: "\e610";
 }
 
 .icon-docx:before {
@@ -289,14 +305,6 @@
   content: "\e61d";
 }
 
-.icon-sql:before {
-  content: "\e61e";
-}
-
-.icon-txt:before {
-  content: "\e61f";
-}
-
 .icon-tif:before {
   content: "\e620";
 }
@@ -311,10 +319,6 @@
 
 .icon-xls:before {
   content: "\e623";
-}
-
-.icon-tiff:before {
-  content: "\e625";
 }
 
 .icon-xlsx:before {
@@ -341,10 +345,6 @@
   content: "\e65d";
 }
 
-.icon-c:before {
-  content: "\e60d";
-}
-
 .icon-m3u:before {
   content: "\ed8a";
 }
@@ -369,16 +369,8 @@
   content: "\e63e";
 }
 
-.icon-tmp:before {
-  content: "\e662";
-}
-
 .icon-ttf:before {
   content: "\e666";
-}
-
-.icon-bak:before {
-  content: "\e693";
 }
 
 .icon-obj:before {
