@@ -1,13 +1,11 @@
 package com.hanhai.cloud.controller;
 
+import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.exception.UpdateException;
-import com.hanhai.cloud.params.CopyMoveFileParams;
-import com.hanhai.cloud.params.CreateDirectoryParam;
-import com.hanhai.cloud.params.DeletedParams;
-import com.hanhai.cloud.params.ReNameParams;
+import com.hanhai.cloud.params.*;
 import com.hanhai.cloud.service.UserFileService;
 import com.hanhai.cloud.utils.BeanUtils;
 import com.hanhai.cloud.vo.UserFileVO;
@@ -32,8 +30,14 @@ public class MainController {
 
 
     @GetMapping("/main")
-    public String mainPage(@RequestParam(value = "path",required = false,defaultValue = "/") String path
-                           ,Model model){
+    public String mainPage(){
+        return "main";
+    }
+
+    // 得到文件数据
+    @GetMapping("/main/data")
+    @ResponseBody
+    public R<List<UserFileVO>> getMainData(@RequestParam(value = "path", required = false, defaultValue = "/")String path, Model model){
         // 当前目录
         if(path.endsWith("/"))
             model.addAttribute("current",path);
@@ -54,22 +58,28 @@ public class MainController {
 
         List<UserFile> userFileList = userFileService.getFiles(path);
         List<UserFile> dirs = userFileService.getDir(path);
-
-        List<UserFileVO> files = new ArrayList<>(userFileList.size()+dirs.size());
+        Integer number = userFileList.size() + dirs.size();
+        System.out.println(number);
+        List<UserFileVO> files = new ArrayList<>(number);
         for (UserFile dir : dirs) {
-            files.add(BeanUtils.convertTo(dir,UserFileVO.class));
+            files.add(BeanUtils.convertTo(dir,UserFileVO.class).setFileNumber(number));
         }
         for (UserFile userFile : userFileList) {
-            files.add(BeanUtils.convertTo(userFile,UserFileVO.class));
+            files.add(BeanUtils.convertTo(userFile,UserFileVO.class).setFileNumber(number));
         }
-
 
 //        List<UserFileVO> files = userFileService.getFiles(path).stream().map(i -> BeanUtils.convertTo(i, UserFileVO.class)).collect(Collectors.toList());
 
-        model.addAttribute("files",files);
-        return "main";
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(files);
     }
 
+    // 模糊搜索 当前目录下的文件
+    @GetMapping("/main/query")
+    @ResponseBody
+    public R<PageResult> getFileByNameAndPath( QueryFileParams fileParams){
+        List<UserFile> userFiles = userFileService.queryByNameAndPath(fileParams);
+            return new R(ResultCode.SUCCESS_NO_SHOW).setData(new PageResult(userFiles, UserFileVO.class));
+    }
 
     @PostMapping("/file/createDirectory")
     @ResponseBody
@@ -119,19 +129,6 @@ public class MainController {
     @ResponseBody
     public R history(@NotNull(message = "ID不能为空") Long fileId){
         return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getFileHistory(fileId));
-    }
-
-    @GetMapping("/search")
-    @ResponseBody
-    public String getByName(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") String name,Model model){
-//        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getByName(name));
-        List<UserFile> searchFileList=userFileService.getByName(name);
-        List<UserFileVO>  searchFiles=new ArrayList<>(searchFileList.size());
-        for (UserFile userFile : searchFileList) {
-            searchFiles.add(BeanUtils.convertTo(userFile,UserFileVO.class));
-        }
-    model.addAttribute("searchFiles",searchFiles);
-    return "searchFiles";
     }
 
     @GetMapping("/fileInfo")

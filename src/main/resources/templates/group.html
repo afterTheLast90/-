@@ -299,6 +299,16 @@
           })
           // 修改群组
           $("#gUpdConfirm").click(function () {
+							let groupName = groupLi.children(".gName").attr("title")
+		          groupName = groupName.substring(0, groupName.indexOf('(')-1)
+              if($("#updGroupName").val().trim() == ""){
+                  layer.msg("请输入新文件名")
+                  return
+              }
+		          if(groupName == $("#updGroupName").val().trim()){
+		              layer.msg("文件名未改变，请重新输入")
+				          return
+		          }
               httpUtil.put("/group/groupUpd",
                   JSON.stringify({
                       groupId: groupLi.attr("groupId").trim(),
@@ -372,7 +382,6 @@
                   })
               $("#uAddModal").modal("hide")
           })
-
           // 删除 群组用户
           $(".uDelConfirm").click(function () {
               // 关闭模态框
@@ -395,15 +404,6 @@
           // 更新标签
           function initTag() {
               httpUtil.get("/group/groups"
-                  //     ,{
-                  //     params:{
-                  //         groupName:"44"
-                  //     }
-                  // }
-
-                  // ,JSON.stringify({
-                  //     groupName:"44"
-                  // })
               ).then(res => {
                   // 清空数据
                   $("#groups").html("")

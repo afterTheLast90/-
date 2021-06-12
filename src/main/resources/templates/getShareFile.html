@@ -130,7 +130,11 @@
                       }
                   })
                       .then(res => {
-                          $("#computerLogin div section svg use").attr("xlink:href", "#icon-"+res.data[0].fileType.toLowerCase())
+                          if(fileTypeSet.has(res.data[0].fileType)){
+                              $("#computerLogin div section svg use").attr("xlink:href", "#icon-"+res.data[0].fileType.toLowerCase())
+                          }
+                          else
+                              $("#computerLogin div section svg use").attr("xlink:href", "#icon-other")
                           $("#fileName").text(res.data[0].fileName)
                           $("#expireTime b").text(res.data[0].expireTime.replace("T", " ") == '1970-01-01 07:59:59' ? "永久" : res.data[0].expireTime.replace("T", " "))
                           // 文件大小
@@ -169,20 +173,24 @@
                           for(let data of res.data){
                               expireTime = data.expireTime.replace("T", " ")
                               expireTime = expireTime=='1970-01-01 07:59:59'?'永久':expireTime
-                              $("#fileList").append(
-                                  "<li>\n" +
+
+		                          let value = "<li>\n" +
                                   "<div class='row'>\n" +
-                                  "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n" +
-                                  "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n" +
-                                  "</svg>\n" +
-                                  "<div class='fileInfo'>\n" +
-                                  "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
-                                  "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
-                                  "</div>\n" +
-                                  "<i class='bi bi-download pDownload'></i>\n" +
-                                  "</div>\n" +
-                                  "</li>"
-                              )
+                                  "<svg fileType='"+ data.fileType +"' userFileId='"+ data.userFileId +"' currentPath='"+ data.currentPath +"' class='phoneIcon' aria-hidden='true' >\n"
+                              if(fileTypeSet.has(data.fileType))
+																	value += "<use xlink:href='#icon-"+ data.fileType.toLowerCase() +"'></use>\n"
+		                          else
+		                              value += "<use xlink:href='#icon-other'></use>\n"
+		                          value +=  "</svg>\n" +
+			                                  "<div class='fileInfo'>\n" +
+			                                  "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
+			                                  "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
+			                                  "</div>\n" +
+			                                  "<i class='bi bi-download pDownload'></i>\n" +
+			                                  "</div>\n" +
+			                                  "</li>"
+
+                              $("#fileList").append(value)
                           }
                       })
               }

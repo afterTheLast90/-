@@ -27,7 +27,8 @@
 	<link rel="stylesheet" href="/static/bootstrap-select/bootstrap-select.min.css">
 	<!-- 引入bootstrop-select.js -->
 	<script src="/static/bootstrap-select/bootstrap-select.min.js"></script>
-
+	<!--	文件大小转换函数 -->
+	<script src="/static/converFileSize.js"></script>
 
 	<style>
     /*body {*/
@@ -306,9 +307,19 @@
           });
           // 修改 确认操作
           $("#updConfirm").click(function () {
+              let tagName = updTagLi.children(".info").attr("title")
+              console.log(tagName)
+		          if($("#updateTag").val().trim() == ""){
+		              layer.msg("请输入标签名")
+				          return
+		          }
+		          if(tagName == $("#updateTag").val().trim()){
+                  layer.msg("标签名未改变，请重新输入")
+                  return
+		          }
               httpUtil.put("/tag/tagUpd", JSON.stringify({
                   tagId: updTagLi.attr("tagId"),
-                  tagName: $("#updateTag").val()
+                  tagName: $("#updateTag").val().trim()
               })).then(res => {
                   initTag()
                   $("#updateTag").val("")
@@ -478,9 +489,13 @@
                       halign: "center",
                       align: "left",
                       formatter: function fileNameFormatter(value, row, index) {
-                          return "<svg fileType='" + row.fileType + "' class='icon' aria-hidden='true'>" +
-                              "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
-                              "</svg>" + value
+                          let fName = value
+                          value = "<svg fileType='" + row.fileType + "' class='icon' aria-hidden='true'>"
+                          if(fileTypeSet.has(row.fileType))
+                              value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                          else
+                              value += "<use xlink:href='#icon-other'></use>"
+                          return value + "</svg>" + fName
                       }
                   },
                   {
@@ -488,14 +503,10 @@
                       title: "文件大小",
                       align: "center",
                       formatter: function sizeFormatter(value, row, index) {
-                          if (value > Math.pow(1024, 3))
-                              return (value / Math.pow(1024, 3)).toFixed(2) + 'G'
-                          else if (value > Math.pow(1024, 2))
-                              return (value / Math.pow(1024, 2)).toFixed(2) + 'M'
-                          else if (value > 1024)
-                              return (value / 1024).toFixed(2) + 'KB'
-                          else
-                              return value + 'B'
+                          if(row.fileType == "DIR"){
+                              return '-'
+                          }
+                          return convertFileSize(value)
                       }
                   },
                   {
@@ -532,7 +543,10 @@
                       userFileId = $(this).attr("userFileId")
                       let fileType = $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
                       let fileName = $(this).parent().siblings().eq(1).text()
-                      $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
+		                  if(fileTypeSet.has(fileType.toUpperCase()))
+                          $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
+		                  else
+                          $("#sFileType use").attr("xlink:href", "#icon-other")
                       $("#sFileName").text(fileName)
                       httpUtil.get("/tag/fileTagsGet", {
                           params: {

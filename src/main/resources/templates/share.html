@@ -184,10 +184,15 @@
                                       "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
                                       "</svg>" + value + "</a>"
 													    }
-													    else
-	                              return "<div><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
-	                                  "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
-	                                  "</svg>" + value + "</div>"
+													    else{
+                                  let fName = value
+                                  value = "<div><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>"
+                                  if(fileTypeSet.has(row.fileType))
+                                      value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                                  else
+                                      value += "<use xlink:href='#icon-other'></use>"
+                                  return value + "</svg>" + fName + "</div>"
+													    }
                           }
 			                },
 				              {
@@ -256,8 +261,11 @@
 				                      $("#sCode").attr("type", "password")
                               $("#sQR").attr("src", "")
                               // 文件类型图片
-		                          $("#sFileType use").attr("xlink:href",  '#icon-'+res.data.fileType.toLowerCase())
-				                      // 文件名
+				                      if(fileTypeSet.has(res.data.fileType)){
+                                  $("#sFileType use").attr("xlink:href",  '#icon-'+res.data.fileType.toLowerCase())
+                              }else
+                                  $("#sFileType use").attr("xlink:href",  '#icon-other')
+                              // 文件名
 		                          $("#sFileName").text(res.data.fileName)
 				                      // 分享类型
 				                      $("#sType").text(res.data.shareType)

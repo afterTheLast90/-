@@ -8,6 +8,7 @@ import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.CreateDirectoryParam;
+import com.hanhai.cloud.params.QueryFileParams;
 import com.hanhai.cloud.params.ReNameParams;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -320,4 +321,9 @@ public class UserFileService extends BaseService {
         return userFileMapper.getFileIdByUserFileId(userFileId, StpUtil.getLoginIdAsLong());
     }
 
+    // 模糊搜索 当前目录下的文件
+    public List<UserFile> queryByNameAndPath(QueryFileParams fileParams){
+        startPage(fileParams);
+        return userFileMapper.getFileByNameAndPath(fileParams.getFileParentPath(), fileParams.getFileName(), StpUtil.getLoginIdAsLong());
+    }
 }
