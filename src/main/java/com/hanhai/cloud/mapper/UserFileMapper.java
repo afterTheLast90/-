@@ -1,6 +1,7 @@
 package com.hanhai.cloud.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hanhai.cloud.entity.FileHistory;
 import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.UserFile;
 import org.apache.ibatis.annotations.Param;
@@ -75,4 +76,7 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
 
     @Update("update files set citations_count=#{file.citations} where file_id=#{file.fileId}")
     public Integer updateFiles(@Param("file") Files file);
+
+    @Select("select user_file_id from file_history where history_id=#{historyId}")
+    public FileHistory getFileHistoryById(@Param("historyId") Long historyId);
 }
