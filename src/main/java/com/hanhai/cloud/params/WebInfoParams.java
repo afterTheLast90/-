@@ -3,6 +3,7 @@ package com.hanhai.cloud.params;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
@@ -26,4 +27,8 @@ public class WebInfoParams {
     @NotNull(message = "网站备案号不能为空")
     @NotBlank(message = "网站备案号不能为空")
     private String siteIcp;
+
+    @NotNull(message = "用户默认空间大小不能为空")
+    @Min(value = 0,message = "空间大小非法")
+    private Long defaultSpaceSize;
 }

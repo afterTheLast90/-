@@ -312,7 +312,9 @@ public class SystemSettingController {
         systemInfo.setSiteUrl(webInfoParams.getSiteUrl());
         systemInfo.setSiteIcp(webInfoParams.getSiteIcp());
         systemInfo.setSiteName(webInfoParams.getSiteName());
+        systemInfo.setDefaultSpaceSize(webInfoParams.getDefaultSpaceSize());
 
+        systemSettingService.updateById("default_space_size",systemInfo.getDefaultSpaceSize());
         systemSettingService.updateById("site_name",systemInfo.getSiteName());
         systemSettingService.updateById("site_url",systemInfo.getSiteUrl());
         systemSettingService.updateById("site_icp",systemInfo.getSiteIcp());
