@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<th:block th:include="common/header :: header(~{::title})">
-		<title>分享文件</title>
+		<title>取件 </title>
 	</th:block>
 
 	<style>
@@ -37,8 +37,7 @@
 			<!-- 模态框头部 -->
 			<div class="modal-header">
 				<h5 class="modal-title">
-					<img src="/static/img/logo.png" alt="" class="rounded-circle" style="width: 10%;">
-					<span class="userName ml-1 mt-1">取件码取件</span>
+					<span class="userName ml-1 mt-1">取件</span>
 				</h5>
 			</div>
 			<!-- 模态框主体 -->
@@ -54,6 +53,6 @@
 		</div>
 	</div>
 </div>
-<footer class="shadow-lg container-fluid" style="height: 88px;position: absolute; bottom: 0">1111</footer>
+<div th:replace="common/footer :: footer"></div>
 </body>
 </html>
