@@ -87,7 +87,9 @@
             width: 100%;
         }
         table td {
+            text-overflow: ellipsis;
             overflow: hidden;
+            white-space: nowrap;
         }
 
         /*.btn-outline-primary {*/
@@ -453,8 +455,8 @@
             //图标和文件名
 
             userFileId = $(this).attr("userFileId")
-            let fileType = $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
-            let fileName = $(this).parent().siblings().eq(1).text()
+            let fileType = $(this).attr("filetype").toLowerCase()
+            let fileName = $(this).text()
             if(fileTypeSet.has(fileType.toUpperCase()))
                 $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
             else
@@ -835,7 +837,7 @@
                         value = '<i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>'
                         if(row.fileType != 'DIR')
                             value += '<i class="bi bi-download"  userFileId="'+ row.userFileId +'"' + ' title="下载"></i>' +
-                                    '<i class="bi bi-three-dots more drawer-toggle" title="更多" userFileId="'+ row.userFileId +'"' + '></i>'
+                     '<i class="bi bi-three-dots more drawer-toggle" fileType="'+row.fileType+'" fileName="'+row.fileName+'" title="更多" userFileId="'+ row.userFileId +'"' + '></i>'
                         return value
                     }
                 },
@@ -899,14 +901,14 @@
             onCheck: function(row, $element){
                 let rows = $('#mTable').bootstrapTable('getSelections')
                 // $("#reduction")[0].removeAttribute("disabled");
-                $("#download")[0].removeAttribute("disabled");
+                // $("#download")[0].removeAttribute("disabled");
                 $("#rename")[0].removeAttribute("disabled");
                 $("#deleted")[0].removeAttribute("disabled");
                 $("#copy")[0].removeAttribute("disabled");
                 $("#move")[0].removeAttribute("disabled");
                 if (rows.length > 1) {      // 不可同时 下载多个文件 & 为多个文件重命名
                     $("#rename")[0].setAttribute("disabled", "disabled");
-                    $("#download")[0].setAttribute("disabled", "disabled");
+                    // $("#download")[0].setAttribute("disabled", "disabled");
                 }
             },
             onUncheck: function(row, $element){
@@ -914,7 +916,7 @@
                 // $("#reduction")[0].removeAttribute("disabled");
                 if(rows.length == 1){
                     $("#rename")[0].removeAttribute("disabled", "disabled");
-                    $("#download")[0].removeAttribute("disabled", "disabled");
+                    // $("#download")[0].removeAttribute("disabled", "disabled");
                 }
                 else if(rows.length == 0){
                     unCheckAll()
@@ -925,7 +927,7 @@
                 $("#copy")[0].removeAttribute("disabled");
                 $("#move")[0].removeAttribute("disabled");
                 $("#rename")[0].setAttribute("disabled", "disabled");
-                $("#download")[0].setAttribute("disabled", "disabled");
+                // $("#download")[0].setAttribute("disabled", "disabled");
             },
             onUncheckAll: function (rowsAfter,rowsBefore) {
                 unCheckAll()
@@ -1057,14 +1059,14 @@
             onCheck: function(row, $element){
                 let rows = $('#mTable').bootstrapTable('getSelections')
                 // $("#reduction")[0].removeAttribute("disabled");
-                $("#download")[0].removeAttribute("disabled");
+                // $("#download")[0].removeAttribute("disabled");
                 $("#rename")[0].removeAttribute("disabled");
                 $("#deleted")[0].removeAttribute("disabled");
                 $("#copy")[0].removeAttribute("disabled");
                 $("#move")[0].removeAttribute("disabled");
                 if (rows.length > 1) {      // 不可同时 下载多个文件 & 为多个文件重命名
                     $("#rename")[0].setAttribute("disabled", "disabled");
-                    $("#download")[0].setAttribute("disabled", "disabled");
+                    // $("#download")[0].setAttribute("disabled", "disabled");
                 }
             },
             onUncheck: function(row, $element){
@@ -1072,7 +1074,7 @@
                 // $("#reduction")[0].removeAttribute("disabled");
                 if(rows.length == 1){
                     $("#rename")[0].removeAttribute("disabled", "disabled");
-                    $("#download")[0].removeAttribute("disabled", "disabled");
+                    // $("#download")[0].removeAttribute("disabled", "disabled");
                 }
                 else if(rows.length == 0){
                     unCheckAll()
@@ -1083,7 +1085,7 @@
                 $("#copy")[0].removeAttribute("disabled");
                 $("#move")[0].removeAttribute("disabled");
                 $("#rename")[0].setAttribute("disabled", "disabled");
-                $("#download")[0].setAttribute("disabled", "disabled");
+                // $("#download")[0].setAttribute("disabled", "disabled");
             },
             onUncheckAll: function (rowsAfter,rowsBefore) {
                 unCheckAll()
@@ -1093,7 +1095,7 @@
     // 取消全选，按钮全不可用
     function unCheckAll(){
         // $("#reduction")[0].setAttribute("disabled", "disabled");
-        $("#download")[0].setAttribute("disabled", "disabled");
+        // $("#download")[0].setAttribute("disabled", "disabled");
         $("#rename")[0].setAttribute("disabled", "disabled");
         $("#deleted")[0].setAttribute("disabled", "disabled");
         $("#copy")[0].setAttribute("disabled", "disabled");
