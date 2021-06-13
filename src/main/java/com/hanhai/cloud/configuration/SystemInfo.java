@@ -120,7 +120,8 @@ public class SystemInfo {
 
         this.emailEnabled= Boolean.valueOf(systemSettingService.selectById("email_enabled"));
         this.smtpServer=systemSettingService.selectById("smtp_server");
-        this.smtpPort=Integer.parseInt(systemSettingService.selectById("smtp_port"));
+        String smtp_port = systemSettingService.selectById("smtp_port");
+        this.smtpPort=StrUtil.isBlank(smtp_port)?25:Integer.valueOf(smtp_port);
         this.smtpUsername=systemSettingService.selectById("smtp_username");
         this.smtpPassword=systemSettingService.selectById("smtp_password");
         this.smtpSender=systemSettingService.selectById("smtp_sender");

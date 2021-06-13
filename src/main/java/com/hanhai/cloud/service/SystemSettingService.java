@@ -111,6 +111,9 @@ public class SystemSettingService extends BaseService {
         if (!installParams.getSiteUrl().endsWith("/"))
             installParams.setSiteUrl(installParams.getSiteUrl() + "/");
 
+        if (!installParams.getFileUploadPath().endsWith("/"))
+            installParams.setFileUploadPath(installParams.getFileUploadPath() + "/");
+
         insertSystemSetting(connection, "file_upload_dir", installParams.getFileUploadPath());
         insertSystemSetting(connection, "site_name", installParams.getSiteName());
         insertSystemSetting(connection, "site_url", installParams.getSiteUrl());

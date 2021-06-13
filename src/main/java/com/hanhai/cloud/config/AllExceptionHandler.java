@@ -1,9 +1,10 @@
 package com.hanhai.cloud.config;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
-import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -53,5 +54,18 @@ public class AllExceptionHandler {
     public R exceptionMineHandler(BaseException e) {
         return new R(e.getCode(), e.getMsg(), null);
     }
+
+    // 未登录异常
+    @ExceptionHandler(NotLoginException.class) //NotLoginException
+    public String notLoginExceptionHandler(NotLoginException e){
+        return "redirect:login";
+    }
+//
+    // 未登录异常
+    @ExceptionHandler(NotPermissionException.class) //NotLoginException
+    public String notPermissionExceptionHandler(NotPermissionException e){
+        return "redirect:main";
+    }
+
 }
 

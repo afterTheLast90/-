@@ -26,12 +26,13 @@
                             </a>
                         </li>
                         <li role="presentation">
-                            <a role="menuitem" tabindex="0" href="#" class="dropdown-item">
+                            <a role="menuitem" tabindex="0" href="/admin" class="dropdown-item"
+                               th:if="${userInfo.admin}">
                                 后台管理
                             </a>
                         </li>
                         <li role="presentation">
-                            <a role="menuitem" tabindex="1" href="#" class="dropdown-item">
+                            <a role="menuitem" tabindex="1" href="/logout" class="dropdown-item">
                                 注销退出
                             </a>
                         </li>

@@ -1,9 +1,11 @@
 package com.hanhai.cloud.service;
 
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.base.PageParam;
 import com.hanhai.cloud.entity.Files;
-import com.hanhai.cloud.mapper.FileMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 
 @Service
@@ -17,4 +19,15 @@ public class FileService extends BaseService {
         return fileMapper.getByfileId(id);
     }
 
+    public List<Files> getAllFiles(PageParam param){
+        startPage(param);
+        return  fileMapper.getAll();
+    }
+
+    public void delete(Long id){
+        fileMapper.deleteById(id);
+    }
+    public List<Files>getAllZerroCitationsCount(){
+        return fileMapper.getAllZerroCitationsCount();
+    };
 }

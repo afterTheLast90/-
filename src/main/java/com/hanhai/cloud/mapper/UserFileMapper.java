@@ -1,6 +1,7 @@
 package com.hanhai.cloud.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.hanhai.cloud.dto.RecycleSum;
 import com.hanhai.cloud.entity.FileHistory;
 import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.UserFile;
@@ -85,4 +86,8 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
             "where file_parent_path like concat(#{parentPath},'%') and file_name like concat('%',#{fileName},'%') and " +
             "user_id=#{userId} and deleted=0 order by updated_time desc")
     public List<UserFile> getFileByNameAndPath(@Param("parentPath")String parentPath, @Param("fileName")String fileName, @Param("userId")Long userId);
+
+    @Select("select file_id ,sum(file_size) as sum , user_id,count(*) as cou from user_files " +
+            "where recycle_id = #{recycleId} and file_type !='DIR' group by file_id ")
+    public List<RecycleSum> getFileIdSizeUserId(@Param("recycleId") Long recycleId);
 }

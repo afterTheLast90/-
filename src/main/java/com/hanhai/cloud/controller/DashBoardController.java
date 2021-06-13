@@ -51,7 +51,7 @@ public class DashBoardController {
             Integer count = (Integer) systemInfoRedisUtils.get( mins.toString());
             v.add(count==null?0:count);
         }
-        return new R<ChatVO>(ResultCode.SUCCESS).setData(new ChatVO().setXAxisData(x).setSeriesData(v));
+        return new R<ChatVO>(ResultCode.SUCCESS_NO_SHOW).setData(new ChatVO().setXAxisData(x).setSeriesData(v));
     }
 
 
@@ -61,10 +61,6 @@ public class DashBoardController {
         return R.getSuccess().setData(BeanUtils.convertTo(systemHardwareInfo.copyTo(), SystemVO.class));
     }
 
-    @GetMapping("/selectDIR")
-    public String selectDIR(){
-        return "selectDIR";
-    }
 
 
 }

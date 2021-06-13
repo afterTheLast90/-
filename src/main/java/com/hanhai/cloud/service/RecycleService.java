@@ -2,6 +2,7 @@ package com.hanhai.cloud.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.dto.RecycleSum;
 import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.Recycle;
 import com.hanhai.cloud.entity.User;
@@ -18,9 +19,12 @@ public class RecycleService extends BaseService {
 
     @Autowired
     UserFileService userFileService;
+    @Autowired
+    UserService userService;
     public List<Recycle> getRecycleFiles() {
         return recycleMapper.getRecycleFile(StpUtil.getLoginIdAsLong());
     }
+
 
     @Transactional
     public void deleted(Long id) {
@@ -239,6 +243,31 @@ public class RecycleService extends BaseService {
 
             recyclefile.setDeleted(true);
             recycleMapper.reductionById(recyclefile);
+        }
+    }
+
+    @Transactional
+    public  void update30DaysNotDelete(){
+
+        List<Recycle> allNotDelete = recycleMapper.getAllNotDelete();
+
+        for (Recycle recycle : allNotDelete) {
+            List<RecycleSum> fileIdSizeUserId = userFileMapper.getFileIdSizeUserId(recycle.getRecycleId());
+            long toolSize = 0L;
+            long userId = 0;
+            for (RecycleSum recycleSum : fileIdSizeUserId) {
+                userId = recycleSum.getUserId();
+                toolSize+=recycleSum.getSum();
+                Files files = fileMapper.selectById(recycleSum.getFileId());
+                files.setCitationsCount(files.getCitationsCount()-recycleSum.getCou());
+                fileMapper.updateById(files);
+            }
+            if(fileIdSizeUserId.size()!=0){
+                User user = userService.getUserById(userId);
+                user.setUsedSize(user.getUsedSize()-toolSize);
+                userService.updateById(user);
+            }
+            recycleMapper.deleteById(recycle.getRecycleId());
         }
     }
 }

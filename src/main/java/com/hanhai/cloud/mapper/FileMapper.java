@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.hanhai.cloud.entity.Files;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 /**
  * @author wmgx
  * @create 2021-04-27-16:20
@@ -15,4 +17,10 @@ public interface FileMapper extends BaseMapper<Files> {
     //
     @Select("select file_path from files where file_id=#{file_id}")
     String getByfileId(Long fielId);
+
+    @Select("select * from files where deleted = 0  order by citations_count ")
+    List<Files> getAll();
+
+    @Select("select * from files where citations_count=0 and deleted = 0 ")
+    List<Files> getAllZerroCitationsCount();
 }

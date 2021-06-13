@@ -43,6 +43,9 @@
                 transform: translate(0, -55px)
             }
         }
+        body{
+            min-width: 0px;
+        }
     </style>
 </head>
 
@@ -89,11 +92,11 @@
             <div class="row mt-4">
                 <div class="col-4">
                     <a href="#"
-                       th:if="${systemInfo.getEmailEnabled() || systemInfo.getAlySmsEnabled()}"
+                       th:if="${systemInfo.emailEnabled || systemInfo.alySmsEnabled}"
                        id="forget">忘记密码</a>
                 </div>
                 <div class="offset-4 col-4">
-                    <a href="#" th:if="${systemInfo.getOpenRegistration()}" id="register">注册账号</a>
+                    <a href="#" th:if="${systemInfo.openRegistration}" id="register">注册账号</a>
                 </div>
             </div>
 

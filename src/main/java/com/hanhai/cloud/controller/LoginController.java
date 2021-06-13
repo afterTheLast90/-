@@ -111,6 +111,13 @@ public class LoginController {
 
     }
 
+    /**
+     * 登录前验证邮箱发送邮件
+     * @param request
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws MessagingException
+     */
     @PostMapping("/verified/send/email")
     @ResponseBody
     public R verifiedSendMail(HttpServletRequest request) throws UnsupportedEncodingException,
@@ -129,6 +136,11 @@ public class LoginController {
         return new R(ResultCode.PARAMETER_ERROR).setMsg("邮箱核验已经通过，请刷新页面再试");
     }
 
+    /**
+     * 登录前验证手机号发送短信
+     * @param request
+     * @return
+     */
     @PostMapping("/verified/send/sms")
     @ResponseBody
     public R verifiedSendSms(HttpServletRequest request) {
@@ -350,6 +362,12 @@ public class LoginController {
         }
 
         throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("验证码错误");
+    }
+
+    @GetMapping("/logout")
+    public String logout(){
+        StpUtil.logout();
+        return "redirect:login";
     }
 
 }
