@@ -26,7 +26,7 @@ public class MainController {
     @Autowired
     UserFileService userFileService;
 
-    @GetMapping("/main")
+    @GetMapping(value = {"/main","/"})
     public String mainPage(@RequestParam(name = "path",required = false, defaultValue = "/")String path, Model model){
         model.addAttribute("path", path);
         return "main";

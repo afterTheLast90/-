@@ -24,7 +24,7 @@ public class GlobalData {
     @ModelAttribute
     public void addUserInfoVO(Model model) {
         model.addAttribute("isLogin",StpUtil.isLogin());
-
+        model.addAttribute("icp",systemInfo.getSiteIcp());
         model.addAttribute("emailEnabled",systemInfo.getEmailEnabled());
         model.addAttribute("alySmsEnabled",systemInfo.getAlySmsEnabled());
         if (StpUtil.isLogin())

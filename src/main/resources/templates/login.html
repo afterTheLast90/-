@@ -376,7 +376,7 @@
 
         if ($(this)[0].checkValidity() === true) {
             httpUtil.post("/login", $("#formLogin").serializeObject()).then(res => {
-                window.location.href = "/";
+                window.location.href = "/main";
             }).catch(err => {
                 $("#captcha")[0].setAttribute("src", "/captcha?a=" + Math.random());
                 $("#inputCaptcha").val("");

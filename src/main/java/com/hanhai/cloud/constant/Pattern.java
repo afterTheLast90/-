@@ -50,9 +50,30 @@ public final class Pattern {
             "/userManager",
             "/dashBoard/*",
             "/admin",
-            "/fileManager"
+            "/fileManager",
+            "settings"
     };
 
+    public final static  String [] installPattern={
+            "/install",
+            "/system/getDir",
+            "/system/createNewFolder",
+            "/system/testDB",
+            "/system/install",
+            "/system/testRedis",
+    };
+    public final static  String [] installPatternWithPublic={
+            // 静态资源
+            "/static/**",
+            // 错误页面
+            "/error",
+            "/install",
+            "/system/getDir",
+            "/system/createNewFolder",
+            "/system/testDB",
+            "/system/install",
+            "/system/testRedis",
+    };
     private Pattern(){
 
     }

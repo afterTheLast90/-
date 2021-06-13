@@ -1,7 +1,6 @@
 package com.hanhai.cloud.controller;
 
 import cn.hutool.core.util.StrUtil;
-import com.fasterxml.jackson.databind.ser.Serializers;
 import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.config.NonStaticResourceHttpRequestHandler;
@@ -19,14 +18,12 @@ import com.hanhai.cloud.vo.FileListItem;
 import lombok.extern.log4j.Log4j2;
 import org.jodconverter.office.OfficeException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -34,7 +31,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;

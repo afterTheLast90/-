@@ -397,6 +397,8 @@
 </div>
 
 <div th:include="file_upload :: fileUpload"></div>
+<!--文件预览-->
+<div th:include="common/preview::previewModel"></div>
 </body>
 </html>
 
@@ -435,6 +437,19 @@
             )
         });
     }
+
+    // 文件下载
+    $.fn.bindEventForDownload = function bindEventForDownload(){
+        $(".bi-download").click(function (){
+            window.open("/fileDownload?userFileId="+$(this).attr("userFileId"));
+        });
+    }
+    $.fn.bindEventForPreview = function bindEventForPreview(){
+        $(".preview").click(function (){
+            $.fn.preview($(this).attr("userFileId"),$(this).text() )
+        });
+    }
+
     $(function () {
         let method = 'copy'
         $("#copy").click(function () {
@@ -551,7 +566,7 @@
         $(window).resize(function () {
             $(".drawer-nav").removeClass("col-my-drawer")
             $(".drawer").drawer("close")
-});            // 调整窗口大小时，移除抽屉宽度
+        });            // 调整窗口大小时，移除抽屉宽度
 
         // 返回上级目录
         $("#parentBtn").click(function(){
@@ -632,7 +647,7 @@
                             value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                         else
                             value += "<use xlink:href='#icon-other'></use>"
-                        return value + "</svg>" + fName
+                        return   "<nobr>"+   value + "</svg>   <span class='preview'  userFileId='"+ row.userFileId +"'>"+fName+"</span></nobr>"
                     }
                 },
                 {
@@ -642,7 +657,7 @@
                     formatter: function operationFormatter(value, row, index){
                         value = '<i class="bi bi-share" title="分享" data-toggle="modal" data-target="#shareMain"></i>'
                         if(row.fileType != 'DIR')
-                            value += '<i class="bi bi-download" title="下载"></i>' +
+                            value += '<i class="bi bi-download"  userFileId="'+ row.userFileId +'"' + ' title="下载"></i>' +
                                     '<i class="bi bi-three-dots more drawer-toggle" title="更多" userFileId="'+ row.userFileId +'"' + '></i>'
                         return value
                     }
@@ -700,6 +715,9 @@
                 $.fn.bindEventForMore()
                 // 文件分享
                 $.fn.bindEventForShare()
+
+                $.fn.bindEventForDownload()
+                $.fn.bindEventForPreview();
             },
             onCheck: function(row, $element){
                 let rows = $('#mTable').bootstrapTable('getSelections')
@@ -788,7 +806,7 @@
                             value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                         else
                             value += "<use xlink:href='#icon-other'></use>"
-                        return value + "</svg>" + fName
+                        return   "<nobr>"+   value + "</svg>   <span class='preview'  userFileId='"+ row.userFileId +"'>"+fName+"</span></nobr>"
                     }
                 },
                 {
@@ -850,6 +868,9 @@
                 $.fn.bindEventForMore()
                 // 文件分享
                 $.fn.bindEventForShare()
+                $.fn.bindEventForDownload()
+
+                $.fn.bindEventForPreview();
             },
             onCheck: function(row, $element){
                 let rows = $('#mTable').bootstrapTable('getSelections')

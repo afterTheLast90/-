@@ -4,7 +4,9 @@ import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.R;
+import com.hanhai.cloud.configuration.SystemInfo;
 import com.hanhai.cloud.constant.ResultCode;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -22,6 +24,8 @@ import java.util.List;
 @ControllerAdvice
 public class AllExceptionHandler {
 
+    @Autowired
+    SystemInfo systemInfo;
     // 最高级的异常，拦截所有
     @ExceptionHandler(Exception.class)
     @ResponseBody
@@ -58,7 +62,10 @@ public class AllExceptionHandler {
     // 未登录异常
     @ExceptionHandler(NotLoginException.class) //NotLoginException
     public String notLoginExceptionHandler(NotLoginException e){
-        return "redirect:login";
+        if (systemInfo.getInstalled())
+            return "redirect:login";
+        else
+            return "redirect:install";
     }
 //
     // 未登录异常
@@ -66,6 +73,5 @@ public class AllExceptionHandler {
     public String notPermissionExceptionHandler(NotPermissionException e){
         return "redirect:main";
     }
-
 }
 
