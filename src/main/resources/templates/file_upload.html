@@ -127,9 +127,6 @@
         var fileMd5;
         var md5s=new Array();
         var r;
-        var checkIndex = layer.load(1, {
-            shade: [0.1,'#fff'] //0.1透明度的白色背景
-        });
         // lemon
         var tempSize=0;
         for(var i=0;i<files.length;i++){
@@ -139,7 +136,9 @@
             layer.msg("内存空间不够，取消上传");
             return;
         }
-
+        var checkIndex = layer.load(1, {
+            shade: [0.1,'#fff'] //0.1透明度的白色背景
+        });
         for(var i=0;i<files.length;i++) {
             file = files[i];
             names.push(file.name);
