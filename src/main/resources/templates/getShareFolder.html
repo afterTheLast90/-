@@ -21,7 +21,7 @@
 	<style>
     .main {
       display: flex;
-      height: calc(100vh - 176px);
+      height: calc(100vh - 22vh);
       width: 100%;
       overflow-y: hidden;
       margin-top: 10px;
@@ -509,7 +509,7 @@
 	<ul id="fileList">
 	</ul>
 </div>
-<footer class="shadow-lg container-fluid" style="height: 10vh;position: absolute; bottom: 0">1111</footer>
+<div th:replace="common/footer :: footer"></div>
 <!-- 密码检测模态框 -->
 <div  th:if="${not pwdPass}" class="modal fade" id="pwdCheck" style="margin-top: 14%" data-backdrop="static">
 	<div class="modal-dialog modal-md">

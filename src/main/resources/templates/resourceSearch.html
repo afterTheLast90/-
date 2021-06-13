@@ -27,7 +27,7 @@
 
     .main {
       display: flex;
-      height: calc(100vh - 176px);
+      height: calc(100vh - 21vh);
       width: 100%;
       overflow-y: hidden;
       margin-top: 10px;
@@ -197,7 +197,6 @@
                       title: '转存/下载',
                       align: 'center',
                       formatter: function operationFormatter(value, row, index) {
-                          console.log(row.userFileId)
 		                      let isLogin = [[${isLogin}]]
 		                      value = ""
 		                      if(isLogin) {
@@ -325,7 +324,7 @@
 	</div>
 </div>
 </div>
-<footer class="shadow-lg container-fluid" style="height: 88px">1111</footer>
+<div th:replace="common/footer :: footer"></div>
 
 <!--选择目录模态框-->
 <div th:replace="common/selectDir :: selectDir"></div>
