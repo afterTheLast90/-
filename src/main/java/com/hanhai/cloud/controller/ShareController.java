@@ -147,7 +147,7 @@ public class ShareController {
             return new R(ResultCode.SUCCESS_NO_SHOW).setData(shareService.getUserByName(userName));
     }
 
-    // 私有分享
+    // 添加私有分享
     @PostMapping("/share/addInnerShare")
     @ResponseBody
     public R<CreateShareVO> addInnerShare(@RequestBody AddInnerShare innerShare){
@@ -169,7 +169,7 @@ public class ShareController {
         return new R(ResultCode.SUCCESS).setData(shareVO);
     }
 
-    // 取件码分享
+    // 添加取件码分享
     @PostMapping("/share/codeShare")
     @ResponseBody
     public R<CreateShareVO> addCodeShare(@RequestBody CreateShareParams shareParams){

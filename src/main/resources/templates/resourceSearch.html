@@ -80,6 +80,19 @@
     }
 	</style>
 
+	<script>
+      //td宽度以及内容超过宽度隐藏
+      function formatTableUnit(value, row, index){
+          return{
+              css:{
+                  "white-space": "nowrap",
+                  "text-overflow": "ellipsis",
+                  "overflow": "hidden",
+                  "max-width": "10vw"
+              }
+          }
+      }
+	</script>
 	<script type="module">
       import httpUtil from "../static/httpUtil.js";
 
@@ -153,7 +166,8 @@
                       title: '文件名',
                       align: 'left',
                       halign: "center",
-		                  formatter: function fileNameFormatter(value, row, index) {
+                      cellStyle: formatTableUnit,
+                      formatter: function fileNameFormatter(value, row, index) {
                           let fName = value
                           value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' shareId='"+ row.shareId +"' " +
                               "currentPath='"+ row.currentPath +"' class='icon ml-4' aria-hidden='true'>"
@@ -202,20 +216,20 @@
 		                      if(isLogin) {
 		                          if(layerIndex >= 1)     // 文件夹中，所有文件都下载/转存，无次数限制
 		                              if(row.fileType != "DIR")
-		                                  return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+		                                  return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"'  target='_blank' class=\"bi bi bi-download rDownload\"></a>"
 				                          else
 				                              return "<i class='bi bi-box-arrow-in-right rUpload'>"
 		                          if(row.fileDumpAllow) {
 		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
 		                          }
 		                          if(row.downloadAllow && row.fileType!="DIR") {
-		                              value += "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+		                              value += "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' target='_blank' class=\"bi bi bi-download rDownload\"></a>"
 		                          }
 				                      return value
 		                      }
 		                      else {
 		                          if(row.fileType != "DIR")
-		                              return "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+		                              return "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' target='_blank' class=\"bi bi bi-download rDownload\"></a>"
 				                      else
 				                          return ""
 		                      }
@@ -303,7 +317,7 @@
 							       class="form-control" placeholder="文件名"/>
 						</div>
 						<div class="col-sm-1 pl-0">
-							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+							<button type="button" class="btn btn-primary btn-w-m mb-1" id="queryBtn">
 								<i class="bi bi-search"></i>
 							</button>
 						</div>
