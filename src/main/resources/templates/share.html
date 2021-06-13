@@ -120,10 +120,20 @@
 	</style>
 
 	<script type="module">
-
       import httpUtil from "../static/httpUtil.js";
       let failConfirm = false   // 是否 确认链接失效
       let closeShareSwitch      // 关闭哪个分享
+      //td宽度以及内容超过宽度隐藏
+      function formatTableUnit(value, row, index) {
+          return {
+              css: {
+                  "white-space": "nowrap",
+                  "text-overflow": "ellipsis",
+                  "overflow": "hidden",
+                  "max-width": "13vw"
+              }
+          }
+      }
 
       $(function() {
 
@@ -178,6 +188,7 @@
 						              title: '文件名',
                           halign: "center",
 						              align: 'left',
+                          cellStyle: formatTableUnit,
                           formatter: function fileNameFormatter(value, row, index) {
 													    if(row.fileType == "DIR") {
 													        return "<a title='打开子目录' href='/main?path="+ row.fileParentPath + row.userFileId  +"/" +"'><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
@@ -458,8 +469,8 @@
 							<!-- 自定义搜索框 -->
 							<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
 						</div>
-						<div class="col-sm-1 pl-0">
-							<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+						<div class="col-sm-1 pl-0 ">
+							<button type="button" class="btn btn-primary btn-w-m mb-1" id="queryBtn">
 								<i class="bi bi-search"></i>
 							</button>
 						</div>

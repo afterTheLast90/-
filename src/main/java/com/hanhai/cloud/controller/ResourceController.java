@@ -9,20 +9,15 @@ import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.params.DumpResourceParams;
 import com.hanhai.cloud.params.ResourceSearchParams;
 import com.hanhai.cloud.service.ResourceService;
-import com.hanhai.cloud.service.ShareService;
 import com.hanhai.cloud.service.UserFileService;
 import com.hanhai.cloud.vo.GetShareVO;
 import com.hanhai.cloud.vo.ResourceVO;
-import com.hanhai.cloud.vo.UserShareVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.crypto.spec.RC2ParameterSpec;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -107,7 +102,6 @@ public class ResourceController {
                            @RequestParam(required = false) String pwd) {
         // 得到用户文件分享详情
         GetShareVO getShareVO = resourceService.getShare(shareId);
-//        System.out.println(getShareVO.toString());
         String errorInfo = "";          // 错误信息
         model.addAttribute("pwdPass", true);        // 默认检测，(默认不检测，只在shareType=3时才设置)
 
@@ -126,8 +120,11 @@ public class ResourceController {
         if (isLogin) {
             isOwner = getShareVO.getUserId().equals(StpUtil.getLoginIdAsLong());
         }
+        model.addAttribute("fileType", fileType);
         model.addAttribute("isOwner", isOwner);
         model.addAttribute("isLogin", isLogin);
+        model.addAttribute("haveDown", getShareVO.getHaveDown());
+        model.addAttribute("haveDump", getShareVO.getHaveDump());
 
         // 链接已失效
         if (!getShareVO.getStatus()) {
@@ -143,7 +140,7 @@ public class ResourceController {
                 model.addAttribute("errorInfo", errorInfo);
                 return "getShareFail";
             }
-            return getShareTypePath(fileType);
+            return "getShareFile";
         }
         if (shareType == 3) {
             // 未登录 且 链接无下载次数啦
@@ -154,7 +151,7 @@ public class ResourceController {
             }
             // 属主不用验证
             if (isLogin && isOwner) {
-                return getShareTypePath(fileType);
+                return "getShareFile";
             }
             User user = resourceService.getUserByShareId(shareId);
             user.setUserName(user.getUserName().substring(0,1) + "**");
@@ -164,7 +161,7 @@ public class ResourceController {
                 model.addAttribute("pwdPass", false);        // 密码检测
                 model.addAttribute("shareId", shareId);
                 model.addAttribute("msg", "输入密码获取文件");
-                return getShareTypePath(fileType);
+                return "getShareFile";
             }
             // 检验密码
             String password = resourceService.getPwdByShareId(shareId);
@@ -175,7 +172,7 @@ public class ResourceController {
                 model.addAttribute("pwdPass", false);        // 密码未通过
                 model.addAttribute("msg", "密码输入错误");
             }
-            return getShareTypePath(fileType);
+            return "getShareFile";
 
         }
         if (shareType == 4) {
@@ -191,14 +188,14 @@ public class ResourceController {
             return "getShareFail";
         }
         if (shareType == 1) {
-            return getShareTypePath(fileType);
+            return "getShareFile";
         }
         if (shareType == 2) {
             // 是否有访问权限
             Set<Long> userIds = resourceService.getAllUserId(shareId);
-            // 有访问权限
+            // 有访问权限(或属主)
             if (userIds.contains(StpUtil.getLoginIdAsLong()) || isOwner) {
-                return getShareTypePath(fileType);
+                return "getShareFile";
             }
             // 无访问权限
             errorInfo = "人家没有分享给你看啦,死心吧";
@@ -278,25 +275,23 @@ public class ResourceController {
         model.addAttribute("shareId", takeCode);
         model.addAttribute("pwdPass", true);        // 不检测密码
         boolean isLogin = StpUtil.isLogin();
-        boolean isOwer = false;
+        boolean isOwner = false;
         if(isLogin)
-            isOwer = userShare.getUserId().equals(StpUtil.getLoginIdAsLong());
+            isOwner = userShare.getUserId().equals(StpUtil.getLoginIdAsLong());
         model.addAttribute("isLogin", isLogin);
-        model.addAttribute("isOwner", isOwer);
+        model.addAttribute("isOwner", isOwner);
         // 取件码正确
-        if(resourceService.getFileTypeByShareId(takeCode).equals("DIR"))
-            return "getShareFolder";
         return "getShareFile";
     }
 
 
     // 根据文件类型，返回不同页面
-    private String getShareTypePath(String type) {
-        if (type.equals("dir")) {
-            return "getShareFolder";
-        } else
-            return "getShareFile";
-    }
+//    private String getShareTypePath(String type) {
+//        if (type.equals("dir")) {
+//            return "getShareFolder";
+//        } else
+//            return "getShareFile";
+//    }
 
     @PostMapping("/resource/dump")
     @ResponseBody

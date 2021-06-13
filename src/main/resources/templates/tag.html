@@ -274,7 +274,7 @@
           $('.drawer').drawer();
 
           // 标签操作
-          // 新增
+          // 添加
           $("#addTagConfirm").click(function () {
               // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
               let data = new URLSearchParams()
@@ -284,11 +284,7 @@
               ).then(res => {
                   // if (res.code)
                   // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
-                  $(".tTags ul").append('<li tagId="' + res.data.data + '">' +
-                      '<i class="bi bi-tags tTag"></i><span class="info" title="' + $("#newTag").val() + '">' + $("#newTag").val() + '</span>' +
-                      '<i class="bi bi-pencil-square updTag" data-toggle="modal" data-target="#updTagModal"></i>' +
-                      '<i class="bi bi-x-square delTag" data-toggle="modal" data-target="#delTagModal"></i>' +
-                      '</li>')
+                  initTag()
                   $("#newTag").val("")
               }).catch(e => {
               })
@@ -375,7 +371,7 @@
                   initTable()
           })
 
-		      // 添加标签
+		      // 文件添加标签
 		      setTimeout(function (){
               // 搜索文件未使用的标签
               $('#addTag').next().next().find("input").on("input", function () {        // 输入框，输入信息则搜索（内容为空则不显示任何标签）
@@ -488,6 +484,7 @@
                       title: "文件名",
                       halign: "center",
                       align: "left",
+                      cellStyle: formatTableUnit,
                       formatter: function fileNameFormatter(value, row, index) {
                           let fName = value
                           value = "<svg fileType='" + row.fileType + "' class='icon' aria-hidden='true'>"
@@ -623,6 +620,17 @@
                   }
               })
       }
+      //td宽度以及内容超过宽度隐藏
+      function formatTableUnit(value, row, index) {
+          return {
+              css: {
+                  "white-space": "nowrap",
+                  "text-overflow": "ellipsis",
+                  "overflow": "hidden",
+                  "max-width": "10vw"
+              }
+          }
+      }
 	</script>
 
 </head>
@@ -665,7 +673,7 @@
 								<input type="text" id="searchFile" class="form-control" placeholder="文件名"/>
 							</div>
 							<div class="col-sm-1 pl-0">
-								<button type="button" class="btn btn-primary btn-w-m" id="queryBtn">
+								<button type="button" class="btn btn-primary btn-w-m mb-1" id="queryBtn">
 									<i class="bi bi-search"></i>
 								</button>
 							</div>
@@ -673,7 +681,7 @@
 					</div>
 				</div>
 				<!--		删除按钮		-->
-				<input type="button" class="btn btn-danger col-1 mt-2" style="height: 30%;" id="delAllFile" value="删除"/>
+				<input type="button" class="btn btn-danger col-1 mt-2 ml-5" style="height: 30%;" id="delAllFile" value="删除"/>
 			</div>
 
 			<!--  文件列表	-->
