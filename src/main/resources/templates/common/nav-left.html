@@ -168,8 +168,8 @@
             changeSize();
         })
         function changeSize(){
-            $("#usedsize").text(convertFileSize([[${userInfo.usedSize}]]));
-            $("#spacesize").text(convertFileSize([[${userInfo.spaceSize}]]));
+            $("#usedsize").text(convertFileSize(usedSize));
+            $("#spacesize").text(convertFileSize(spaceSize));
             $("#progressBar")[0].style.width=(usedSize/spaceSize*100)+"%";
         }
     </script>

@@ -8,6 +8,7 @@ import com.hanhai.cloud.base.BaseService;
 import com.hanhai.cloud.configuration.SystemInfo;
 import com.hanhai.cloud.entity.FileHistory;
 import com.hanhai.cloud.entity.Files;
+import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.params.FastUploadParam;
 import com.hanhai.cloud.params.MultipartFileParam;
@@ -32,6 +33,8 @@ public class UploadFileService extends BaseService {
     private FileUploadRedisUtils fileUploadRedisUtils;
     @Autowired
     private SystemInfo systemInfo;
+    @Autowired
+    private UserService userService;
     private FileUploadVO fileUploadVO=null;
 
     /**
@@ -137,11 +140,11 @@ public class UploadFileService extends BaseService {
         String year=String.valueOf(DateUtil.year(date));
         String month=String.valueOf(DateUtil.month(date)+1);
         String day=String.valueOf(DateUtil.dayOfMonth(date));
-        String fileSaveDirectory = systemInfo.getUpLoadPath()+"Uploads" + "\\" + year + "\\"
-                + month + "\\" + day ; //上传文件的文件夹
-        String tempSaveDirectory = fileSaveDirectory + "\\" + fileId+"_temp"; //上传文件的分片temp文件夹
-        String filePath = tempSaveDirectory + "\\" + filenameNoEx + "." + suffix;
-        String savePath = year+"\\"+month+"\\"+day+"\\"+filenameNoEx+"."+suffix;
+        String fileSaveDirectory = systemInfo.getUpLoadPath()+"Uploads" + "/" + year + "/"
+                + month + "/" + day ; //上传文件的文件夹
+        String tempSaveDirectory = fileSaveDirectory + "/" + fileId+"_temp"; //上传文件的分片temp文件夹
+//        String filePath = tempSaveDirectory + "/" + filenameNoEx + "." + suffix;
+        String savePath = year+"/"+month+"/"+day+"/"+fileId+"."+suffix;
         //验证路径是否存在，不存在则创建目录
         File path = new File(tempSaveDirectory);
         if (!path.exists()) {
@@ -225,6 +228,16 @@ public class UploadFileService extends BaseService {
                             userFile.setUserId(Long.parseLong(param.getUserId()));
                         userFileMapper.insert(userFile);
 
+                        //更新内存空间大小
+                        Long userId=null;
+                        if(param.getUserId()==null)
+                            userId=StpUtil.getLoginIdAsLong(); //获取当前登陆的用户ID
+                        else
+                            userId=Long.parseLong(param.getUserId());
+                        User user=userService.getUserById(userId);
+                        user.setUsedSize(user.getUsedSize()+Long.parseLong(size));
+                        userService.updateById(user);
+
                     }else{  //覆盖同名文件，修改用户文件表记录
                         //历史版本表插入记录
                         FileHistory fileHistory=new FileHistory();
@@ -241,6 +254,16 @@ public class UploadFileService extends BaseService {
                         userFile.setFileId(Long.parseLong(fileId));
                         userFile.setFileSize(Long.parseLong(size));
                         userFileMapper.updateById(userFile);
+
+                        //更新内存空间大小
+                        Long userId=null;
+                        if(param.getUserId()==null)
+                            userId=StpUtil.getLoginIdAsLong(); //获取当前登陆的用户ID
+                        else
+                            userId=Long.parseLong(param.getUserId());
+                        User user=userService.getUserById(userId);
+                        user.setUsedSize(user.getUsedSize()+Long.parseLong(param.getSize())-userFile1.getFileSize());
+                        userService.updateById(user);
                     }
                     fileUploadVO.setUserFileId(userFile.getUserFileId()); //获取用户文件ID
                     fileUploadVO.setChunk(null);
@@ -266,6 +289,7 @@ public class UploadFileService extends BaseService {
         System.out.println("===============================");
         System.out.println("秒传逻辑");
         System.out.println("===============================");
+
         Long fileId = Long.parseLong(param.getFileId());
         //秒传文件表引用次数+1
         Files files=new Files();
@@ -294,6 +318,16 @@ public class UploadFileService extends BaseService {
             else
                 userFile.setUserId(Long.parseLong(param.getUserId()));
             userFileMapper.insert(userFile);
+
+            //更新内存空间大小
+            Long userId=null;
+            if(param.getUserId()==null)
+                userId=StpUtil.getLoginIdAsLong(); //获取当前登陆的用户ID
+            else
+                userId=Long.parseLong(param.getUserId());
+            User user=userService.getUserById(userId);
+            user.setUsedSize(user.getUsedSize()+Long.parseLong(param.getSize()));
+            userService.updateById(user);
         }else{  //覆盖同名文件，修改用户文件表记录
             //历史版本表插入记录
             FileHistory fileHistory=new FileHistory();
@@ -310,8 +344,30 @@ public class UploadFileService extends BaseService {
             userFile.setFileId(fileId);
             userFile.setFileSize(size);
             userFileMapper.updateById(userFile);
+
+            //更新内存空间大小
+            Long userId=null;
+            if(param.getUserId()==null)
+                userId=StpUtil.getLoginIdAsLong(); //获取当前登陆的用户ID
+            else
+                userId=Long.parseLong(param.getUserId());
+            User user=userService.getUserById(userId);
+            user.setUsedSize(user.getUsedSize()+Long.parseLong(param.getSize())-userFile1.getFileSize());
+            userService.updateById(user);
         }
         return userFile.getUserFileId();
+    }
+
+    public Long getOriSize(FastUploadParam param){
+        System.out.println("=========getOriSize===========");
+        System.out.println("userFileId="+param.getUserFileId());
+        Long fileSize=null;
+        UserFile userFile=userFileMapper.selectById(Long.parseLong(param.getUserFileId()));
+        if(userFile!=null)
+            fileSize=userFile.getFileSize();
+        System.out.println("fileSize="+fileSize);
+        System.out.println("==============================");
+        return fileSize;
     }
 
 }

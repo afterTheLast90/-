@@ -63,4 +63,11 @@ public class UploadController {
         return fileUploadVO;
     }
 
+    //覆盖文件获取原文件大小
+    @PostMapping("/getOriSize")
+    @ResponseBody
+    public Long getOriSize(FastUploadParam param){
+        return uploadFileService.getOriSize(param);
+    }
+
 }

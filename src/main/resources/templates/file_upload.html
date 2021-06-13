@@ -105,11 +105,11 @@
             CheckIsUpload(files);
         }else{
             files=$("#files")[0].files;
-            for(var i=0;i<files.length;i++){
-                var path=files[i].webkitRelativePath;
-                var regex=new RegExp("/",'g');
-                var result=path.match(regex);
-                var count=!result ? 0 : result.length;
+            for(let i=0;i<files.length;i++){
+                let path=files[i].webkitRelativePath;
+                let regex=new RegExp("/",'g');
+                let result=path.match(regex);
+                let count=!result ? 0 : result.length;
                 if(count==1)
                     tempfiles.push(files[i]);
             }
@@ -130,6 +130,16 @@
         var checkIndex = layer.load(1, {
             shade: [0.1,'#fff'] //0.1透明度的白色背景
         });
+        // lemon
+        var tempSize=0;
+        for(var i=0;i<files.length;i++){
+            tempSize=tempSize+files[i].size;
+        }
+        if(usedSize+tempSize>spaceSize){
+            layer.msg("内存空间不够，取消上传");
+            return;
+        }
+
         for(var i=0;i<files.length;i++) {
             file = files[i];
             names.push(file.name);
@@ -150,7 +160,7 @@
 
     function checkIsCover(files,md5s,names){
         var form = new FormData();
-        form.append("path",currentPath);
+        form.append("path",path);
         form.append("names",names);
         $.ajax({
             url: "/isCover",
@@ -262,6 +272,7 @@
                 form.append("file",file);
                 form.append("userFileId",userFileId);
                 form.append("fileState","0");
+                form.append("isCover","1");
                 map.set(fileMd5,form);  //加入上传队列中
                 $("#ul").append('<li id="li-'+uuid+'">' +'<div class="upload-fileName">'+file.name+'</div>'+
                     '<div id="progress-parent">'+
@@ -291,6 +302,7 @@
                 form.append("file",file);
                 form.append("userFileId",userFileId);
                 form.append("fileState","0");
+                form.append("isCover","1");
                 map.set(fileMd5,form);  //加入上传队列中
                 $("#ul").append('<li id="li-'+uuid+'">' +'<div class="upload-fileName">'+file.name+'</div>'+
                     '<div id="progress-parent">'+
@@ -327,6 +339,7 @@
         form.append("userFileId",userFileId);
         form.append("file",file);
         form.append("fileState","0");
+        form.append("isCover","0");
         map.set(fileMd5,form);  //加入上传队列中
         $("#ul").append('<li id="li-'+uuid+'">' +'<div class="upload-fileName">'+file.name+'</div>'+
             '<div id="progress-parent">'+
@@ -424,6 +437,10 @@
             //秒传逻辑
             handleFastUpload(file,id,userFileId);
             layer.msg("文件已秒传");
+            handleUsedSize(fileMd5,userFileId,file.size);
+            $('#mTable').bootstrapTable('refresh');
+            // lemon
+            // initTable();
             var uuid=map.get(fileMd5).get("uuid");
             $("#progress"+ uuid +" .progress-bar").css("width","100%");
             $("#progress"+ uuid +" .progress-bar").text("100%");
@@ -437,13 +454,41 @@
         }
     }
 
+    //处理用户内存空间大小
+    function handleUsedSize(fileMd5,userFileId,fileSize){
+        if(map.get(fileMd5).get("isCover")==="1"){
+            var form=new FormData();
+            form.append("userFileId",userFileId);
+            $.ajax({
+                url: "/getOriSize",
+                type: "POST",
+                data:form,
+                async: true,
+                processData: false,  //很重要，告诉jquery不要对form进行处理
+                contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+                success: function (oriSize) {
+                    console.log("===============覆盖文件===============");
+                    usedSize=usedSize-oriSize+fileSize;
+                    changeSize();
+                },error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert("服务器出错!@@@/upload");
+                }
+            })
+        }else{
+            usedSize+=fileSize;
+            changeSize();
+        }
+    }
+
     function handleFastUpload(file,id,userFileId){
         var form=new FormData();
         form.append("fileId",id);
         form.append("name",file.name);
         form.append("size",file.size);
         form.append("userFileId",userFileId);
-        form.append("uploadPath",currentPath);
+        console.log("====================fastUpload=================")
+        console.log("path="+path);
+        form.append("uploadPath",path);
         $.ajax({
             url: "/fastUpload",
             type: "POST",
@@ -497,7 +542,7 @@
         form.append("total", shardCount);  //总片数
         form.append("index", chunk+1);     //当前是第几片(从1开始)
         form.append("userFileId",userFileId);
-        form.append("uploadPath",currentPath);
+        form.append("uploadPath",path);
         var index = chunk+1;
         //按大小切割文件段
         var data = file.slice(start, end);
@@ -546,6 +591,9 @@
             $("#remove"+uuid).prop("hidden", "hidden");
             $("#finish"+uuid).removeAttr("hidden");
             layer.msg("上传成功！");
+            handleUsedSize(fileMd5,userFileId,file.size);
+            $('#mTable').bootstrapTable('refresh');
+            // lemon
             // chunk=-1;
             // succeed=0;
             state=0;
@@ -565,7 +613,6 @@
                 $("#progress"+ uuid +" .progress-bar").css("width",succeed/shardCount*100+"%");
                 $("#progress"+ uuid +" .progress-bar").text(num+"%");
             }
-            // lemon
         }
         // console.log("fileId="+id);
         upload(file, id, fileMd5,userFileId);
