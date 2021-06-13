@@ -130,6 +130,7 @@
     let userFileId
     let goUp = false      // 确认向上/向下操作，true返回上级目录
 		let method = false    // false为转存单个文件，true为多个
+		let shareId = "[[${shareId}]]"
 
 		$(function() {
 		    // 密码未匹配
@@ -205,10 +206,10 @@
                             "<div class='fileInfo'>\n" +
                             "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
                             "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
-                            "</div>\n" +
-                            "<i class='bi bi-download pDownload'></i>\n" +
-                            "</div>\n" +
-                            "</li>"
+                            "</div>\n"
+		                    if(data.fileType != "DIR")
+                            value += "<a href='/shareDownload?userFileId="+ data.userFileId +"&shareId="+ shareId +"' class='bi bi-download pDownload'></a>\n"
+                        value += "</div></li>"
 
                         $("#fileList").append(value)
                     }
@@ -315,15 +316,22 @@
                         formatter: function operationFormatter(value, row, index) {
                             let isLogin = [[${isLogin}]]
 		                        let isOwner = [[${isOwner}]]
+		                        value = ""
                             if(isLogin){
-                                value = "<i class='bi bi bi-download rDownload'></i>"
+                                if(row.fileType != "DIR")
+                                    value = "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ shareId +"' class=\"bi bi bi-download rDownload\"></a>"
 		                            if(!isOwner){
-		                                value = "<i class='bi bi-box-arrow-in-right rUpload'></i><i class='bi bi bi-download rDownload'></i>"
+		                                if(row.fileType != "DIR")
+		                                    value = "<i class='bi bi-box-arrow-in-right rUpload'><a href='/shareDownload?userFileId="+ shareId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+				                            else
+				                                value = "<i class='bi bi-box-arrow-in-right rUpload'>"
 		                            }
 		                            return value
                             }
                             else
-                                return "<i class='bi bi-download rDownload'></i>"
+                                if(row.fileType != "DIR")
+                                    value = "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+		                        return value
                         }
                     }
                 ],

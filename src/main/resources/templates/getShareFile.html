@@ -141,6 +141,7 @@
                           $("#fileSize").text(convertFileSize(res.data[0].fileSize))
                           $("#dumpBtn").attr("userFileId", res.data[0].userFileId)
                           $("#dumpBtn").attr("shareId", res.data[0].shareId)
+                          $("#downBtn").attr("href", '/shareDownload?userFileId='+ res.data[0].userFileId +'&shareId='+ res.data[0].shareId)
                           // 是否还有 下载/转存 次数
                           if (!res.data[0].haveDown) {
                               $("#downBtn").prop("disabled", "disabled")
@@ -186,7 +187,7 @@
 			                                  "<span id='pFileName' class='row'>"+ data.fileName +"</span>\n" +
 			                                  "<div id='pExpireTime' class='row'>"+ expireTime +"</div>\n" +
 			                                  "</div>\n" +
-			                                  "<i class='bi bi-download pDownload'></i>\n" +
+			                                  "<a href='/shareDownload?userFileId="+ data.userFileId +"&shareId="+ data.shareId +"' class='bi bi-download pDownload'></a>\n" +
 			                                  "</div>\n" +
 			                                  "</li>"
 
@@ -277,10 +278,10 @@
 				<button class="btn btn-primary mr-3" id="cancelShareBtn" th:if="${isOwner}"><i class="bi bi-cloud-slash pr-2" ></i>取消分享</button>
 				<!--		不是所有者 且 登录才能保存文件		-->
 				<button  class="btn btn-primary mr-3" id="dumpBtn" th:if="${(not isOwner) and isLogin}"><i class="bi bi-box-arrow-in-right pr-2"></i>保存到网盘</button>
-				<button class="btn btn-primary" id="downBtn">
+				<a class="btn btn-primary" id="downBtn">
 					<i class="bi bi-box-arrow-in-down"></i>
 					下载(<span id="fileSize"></span>)
-				</button>
+				</a>
 			</div>
 		</section>
 		<!--	文件预览	-->

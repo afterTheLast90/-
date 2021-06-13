@@ -120,4 +120,25 @@ public interface UserShareMapper extends BaseMapper<UserShare> {
     // 分享信息的 转存次数+1
     @Update("update user_share set file_dump_time=file_dump_time+1 where share_id=#{shareId}")
     public void addDumpTime(@Param("shareId")String shareId);
+
+//    // 根据userFileId 和 shareId 得到文件（用于下载分享文件 检验）
+//    @Select("select f.* from user_files f, user_share s\n" +
+//            "where f.user_file_id=s.user_file_id and\n" +
+//            "      f.user_file_id=#{userFileId} and share_id=#{shareId} and\n" +
+//            "      f.deleted=0 and s.deleted=0")
+//    public List<UserFile> getFileByFileIdAndShareId(@Param("userFileId") Long userFileId, @Param("shareId") String shareId);
+
+    // 分享信息的 下载次数+1
+    @Update("update user_share set download_times=download_times+1 where share_id=#{shareId}")
+    public void addDownTime(@Param("shareId")String shareId);
+
+//    // 根据userFileId 得到其父级目录
+//    @Select("select file_parent_path from user_files where user_file_id=#{userFileId} and deleted=0")
+//    public String getPathByUserFileId(@Param("userFileId")Long userFileId);
+//
+//    // 根据shareId 得到分享文件所在目录
+//    @Select("select file_parent_path from user_files f, user_share s\n" +
+//            "where f.user_file_id=s.user_file_id and file_type='DIR' and\n" +
+//            "      share_id=#{shareId} and f.deleted=0 and s.deleted=0")
+//    public String getPathByShareId(@Param("shareId")String shareId);
 }

@@ -1,6 +1,7 @@
 package com.hanhai.cloud.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.fasterxml.jackson.databind.ser.Serializers;
 import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.config.NonStaticResourceHttpRequestHandler;
@@ -8,7 +9,9 @@ import com.hanhai.cloud.configuration.SystemInfo;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.UserFile;
+import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.service.FileService;
+import com.hanhai.cloud.service.ShareService;
 import com.hanhai.cloud.service.UserFileService;
 import com.hanhai.cloud.utils.To_pdf;
 import com.hanhai.cloud.utils.UnzipFile;
@@ -52,7 +55,9 @@ public class PreviewController {
     @Autowired
     private FileService fileService;
 
-
+    @Autowired
+    private ShareService shareService;
+    @Autowired
     SystemInfo systemInfo;
     private Set<String> openOfficeTypeSet = new HashSet<>();
     private Set<String> mediaTypeSet=new HashSet<>();
@@ -63,7 +68,7 @@ public class PreviewController {
     private String pdfPath;
     public PreviewController(@Autowired SystemInfo systemInfo) {
         this.systemInfo = systemInfo;
-        uploadPath = systemInfo.getUpLoadPath() + "files/";
+        uploadPath = systemInfo.getUpLoadPath() + "Uploads/";
         unzipPath = systemInfo.getUpLoadPath() + "unzip/";
         pdfPath = systemInfo.getUpLoadPath() + "topdf/";
         openOfficeTypeSet.addAll(Arrays.asList(openOfficeTypeArray));
@@ -322,6 +327,50 @@ public class PreviewController {
         response.setHeader("Content-Disposition", "attachment;fileName=" + java.net.URLEncoder.encode(userFile.getFileName(), "UTF-8"));
         output(uploadPath + file.getFilePath(), request, response);
     }
+
+
+    /**
+     * 分享文件下载
+     *
+     * @param userFileId
+     * @Param shareId
+     * @param request
+     * @param response
+     * @throws IOException
+     * @throws ServletException
+     * */
+    @GetMapping("/shareDownload")
+    public void fileDownload(@RequestParam("userFileId") Long userFileId,
+                             @RequestParam("shareId") String shareId, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        Files downFile = null;
+
+        UserFile file = userFileService.getFileById(userFileId);    // 下载的文件
+        UserShare share = shareService.getShareById(shareId);
+        if(share==null || file==null){
+            throw new BaseException(ResultCode.PARAMETER_ERROR);
+        }
+        UserFile shareFile = userFileService.getFileById(share.getUserFileId());    // 分享的文件
+        // 分享的是文件夹的话，判断下载的文件是否是其子文件
+        if ("DIR".equals(shareFile.getFileType())){
+            // 不是其子文件
+            if(!file.getFileParentPath().contains(shareFile.getFileParentPath() + shareFile.getUserFileId()))
+                throw new BaseException(ResultCode.PARAMETER_ERROR);
+            else {
+                downFile = fileService.getById(file.getFileId());
+            }
+        }
+        else {
+            downFile = fileService.getById(shareFile.getFileId());
+        }
+
+        // 进行下载
+        response.setHeader("Content-Disposition", "attachment;fileName=" + java.net.URLEncoder.encode(file.getFileName(), "UTF-8"));
+        output(uploadPath + downFile.getFilePath(), request, response);
+
+        // 更新文件下载次数
+        userFileService.addDownTime(shareId);
+    }
+
 
     /**
      * 文件输出流
