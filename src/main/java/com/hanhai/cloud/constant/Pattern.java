@@ -5,7 +5,7 @@ package com.hanhai.cloud.constant;
  * @create 2021-06-13-0:56
  **/
 
-public final   class Pattern {
+public final class Pattern {
 
     public final static String [] publicPattern={
             // 静态资源
@@ -31,7 +31,17 @@ public final   class Pattern {
             // 主页
             "/",
             // 错误页面
-            "/error"
+            "/error",
+            // 资源页面
+            "/resource",
+            // 获取资源内容
+            "/resource/resourceGet",
+            // 下载文件
+            "/shareDownload",
+            // 得到分享资源
+            "/s/*",
+            // 取件码链接
+            "/s/takeCode"
 
     };
 

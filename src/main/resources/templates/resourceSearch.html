@@ -197,21 +197,28 @@
                       title: '转存/下载',
                       align: 'center',
                       formatter: function operationFormatter(value, row, index) {
+                          console.log(row.userFileId)
 		                      let isLogin = [[${isLogin}]]
 		                      value = ""
 		                      if(isLogin) {
 		                          if(layerIndex >= 1)     // 文件夹中，所有文件都下载/转存，无次数限制
-		                              return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><i class=\"bi bi bi-download rDownload\"></i>"
+		                              if(row.fileType != "DIR")
+		                                  return "<i class=\"bi bi-box-arrow-in-right rUpload\"></i><a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+				                          else
+				                              return "<i class='bi bi-box-arrow-in-right rUpload'>"
 		                          if(row.fileDumpAllow) {
 		                              value += "<i class=\"bi bi-box-arrow-in-right rUpload\"></i>"
 		                          }
-		                          if(row.downloadAllow) {
-		                              value += "<i class=\"bi bi bi-download rDownload\"></i>"
+		                          if(row.downloadAllow && row.fileType!="DIR") {
+		                              value += "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
 		                          }
 				                      return value
 		                      }
 		                      else {
-		                          return "<i class=\"bi bi bi-download rDownload\"></i>"
+		                          if(row.fileType != "DIR")
+		                              return "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ row.shareId +"' class=\"bi bi bi-download rDownload\"></a>"
+				                      else
+				                          return ""
 		                      }
                       }
                   },

@@ -10,6 +10,9 @@ import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.CreateDirectoryParam;
 import com.hanhai.cloud.params.QueryFileParams;
 import com.hanhai.cloud.params.ReNameParams;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +40,33 @@ public class UserFileService extends BaseService {
     public List<UserFile> getById(Long userFileId){
         return userFileMapper.getFileById(userFileId,StpUtil.getLoginIdAsLong());
     }
+
+    // 根据userFildId, 得到文件数据
+    public UserFile getFileById(Long userFileId){
+        return userFileMapper.selectById(userFileId);
+    }
+
+//    // 根据userFileId 和 shareId 得到文件（用于下载分享文件 检验）
+//    public List<UserFile> getFileByFileIdAndShareId(Long userFileId, String shareId){
+//        return userShareMapper.getFileByFileIdAndShareId(userFileId, shareId);
+//    }
+
+    // 分享信息的 下载次数+1
+    public void addDownTime(@Param("shareId")String shareId){
+        userShareMapper.addDownTime(shareId);
+    }
+
+//    // 判断文件 是否是分享文件夹的子文件
+//    public Boolean isChildFile(Long userFileId, String shareId){
+//        String parentPath = userShareMapper.getPathByShareId(shareId);
+//        String childPath = userShareMapper.getPathByUserFileId(userFileId);
+//        if(childPath==null || parentPath==null)
+//            return false;
+//        if(childPath.indexOf(parentPath) != -1){
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Transactional
     public void copy(Long [] ids, String target) {
