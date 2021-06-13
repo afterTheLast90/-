@@ -86,6 +86,9 @@
             margin-top: 5px;
             width: 100%;
         }
+        table td {
+            overflow: hidden;
+        }
 
         /*.btn-outline-primary {*/
         /*    color: #000000;*/
@@ -208,9 +211,9 @@
                     data-target="#addfolderModel">
                 <span class="bi bi-folder-plus"></span>&nbsp;新建文件夹
             </button>
-            <button type="button" class="btn btn-outline-primary btn-md" id="download" disabled="disabled">
-                <span class="bi bi-cloud-download"></span>下载
-            </button>
+<!--            <button type="button" class="btn btn-outline-primary btn-md" id="download" disabled="disabled">-->
+<!--                <span class="bi bi-cloud-download"></span>下载-->
+<!--            </button>-->
             <button type="button" class="btn btn-outline-primary btn-md" id="deleted" disabled="disabled">
                 <span class="bi bi-trash"></span>删除
             </button>
@@ -807,16 +810,21 @@
                     title: '文件名',
                     align: 'left',
                     halign: "center",
+                    width:500,
                     formatter: function fileNameFormatter(value, row, index) {
                         let fName = value
                         value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' parentPath='"+ row.fileParentPath +"' shareId='"+ row.shareId +"' " +
-                            "currentPath='"+ row.currentPath +"' class='icon mr-2' style='margin-left: 30%;' aria-hidden='true'>"
+                            "currentPath='"+ row.currentPath +"' class='icon mr-2' style='margin-left: 10%;' aria-hidden='true'>"
 
-                        if(fileTypeSet.has(row.fileType))
-                            value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
+                        if (fileTypeSet.has(row.fileType))
+                            value += "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>"
                         else
                             value += "<use xlink:href='#icon-other'></use>"
-                        return   "<nobr>"+   value + "</svg>   <span class='preview'  userFileId='"+ row.userFileId +"'>"+fName+"</span></nobr>"
+                        value = "<nobr>"+   value +  "</svg>   <span "
+                        if (row.fileType!=="DIR") value +="class='preview'"
+                        value  +="  userFileId='"+ row.userFileId  +"'  title='"+fName+"'>"+fName+"</span></nobr>"
+
+                        return value;
                     }
                 },
                 {
@@ -966,16 +974,21 @@
                     title: '文件名',
                     align: 'left',
                     halign: "center",
+                    width:500,
                     formatter: function fileNameFormatter(value, row, index) {
                         let fName = value
-                        value = "<svg fileType="+ row.fileType +" userFileId='"+ row.userFileId +"' parentPath='"+ row.fileParentPath +"' shareId='"+ row.shareId +"' " +
-                            "currentPath='"+ row.currentPath +"' class='icon mr-2' style='margin-left: 30%;' aria-hidden='true'>"
+                        value = "<svg fileType=" + row.fileType + " userFileId='" + row.userFileId + "' parentPath='" + row.fileParentPath + "' shareId='" + row.shareId + "' " +
+                            "currentPath='" + row.currentPath + "' class='icon mr-2' style='margin-left: 10%;' aria-hidden='true'>"
 
                         if(fileTypeSet.has(row.fileType))
                             value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                         else
                             value += "<use xlink:href='#icon-other'></use>"
-                        return   "<nobr>"+   value + "</svg>   <span class='preview'  userFileId='"+ row.userFileId +"'>"+fName+"</span></nobr>"
+                        value = "<nobr>" + value + "</svg>   <span "
+                        if (row.fileType !== "DIR") value += "class='preview'"
+                        value += "  userFileId='" + row.userFileId + "'  title='" + fName + "'>" + fName + "</span></nobr>"
+
+                        return value;
                     }
                 },
                 {
