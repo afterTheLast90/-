@@ -11,8 +11,7 @@ import com.hanhai.cloud.params.CreateDirectoryParam;
 import com.hanhai.cloud.params.QueryFileParams;
 import com.hanhai.cloud.params.ReNameParams;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +21,8 @@ import java.util.*;
 @Service
 public class UserFileService extends BaseService {
 
+    @Autowired
+    UserService userService;
     public List<UserFile> getDir(String path) {
         return userFileMapper.getDir(path, StpUtil.getLoginIdAsLong());
     }
@@ -93,7 +94,7 @@ public class UserFileService extends BaseService {
                 s.setFileParentPath(target).setUserFileId(null).setShareCount(0);
                 userFileMapper.insert(s);
                 user.setUsedSize(user.getUsedSize()+s.getFileSize());
-                userMapper.updateById(user);
+                userService.updateById(user);
                 targetPath.add(target+ s.getUserFileId() + "/");
                 while (!sourcePath.isEmpty()) {
                     List<UserFile> files = userFileMapper.getFilesByParent(sourcePath.element(), StpUtil.getLoginIdAsLong());
@@ -110,7 +111,7 @@ public class UserFileService extends BaseService {
                             userFileMapper.insert(file);
 
                             user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                            userMapper.updateById(user);
+                            userService.updateById(user);
 
                             targetPath.add(targetPath.element()+file.getUserFileId()+"/");
                         }else{
@@ -118,7 +119,7 @@ public class UserFileService extends BaseService {
                             userFileMapper.insert(file);
 
                             user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                            userMapper.updateById(user);
+                            userService.updateById(user);
                         }
 
                     }
@@ -150,7 +151,7 @@ public class UserFileService extends BaseService {
                 userFileMapper.insert(s);
 
                 user.setUsedSize(user.getUsedSize()+s.getFileSize());
-                userMapper.updateById(user);
+                userService.updateById(user);
             }
         }
     }
@@ -229,23 +230,25 @@ public class UserFileService extends BaseService {
     public void restoringFiles(Long id){
         FileHistory fileHistory=userFileMapper.getFileHistoryById(id);
         UserFile userFile = userFileMapper.selectById(fileHistory.getUserFileId());
-        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+        User user=userService.getUserById(StpUtil.getLoginIdAsLong());
+
         FileHistory newHistory = new FileHistory();
         newHistory.setFileId(userFile.getFileId())
                 .setFileName(userFile.getFileName())
-                .setFileSize(userFile.getFileSize());
+                .setFileSize(userFile.getFileSize())
+                .setUserFileId(userFile.getUserFileId())
+                .setUpdatePerson(StpUtil.getLoginIdAsLong());
         fileHistoryMapper.insert(newHistory);
-        fileHistoryMapper.deleteById(fileHistory);
-        userFile.setFileId(fileHistory.getFileId()).setFileSize(userFile.getFileSize());
+//        fileHistoryMapper.deleteById(id);
+        userFile.setFileId(fileHistory.getFileId()).setFileSize(fileHistory.getFileSize());
         userFileMapper.updateById(userFile);
         user.setUsedSize(user.getUsedSize()+fileHistory.getFileSize()-userFile.getFileSize());
-        userMapper.updateById(user);
+        userService.updateById(user);
     }
 
     @Transactional
         public void deleted(Long [] ids){
         List<UserFile> sourceFiles = userFileMapper.getByIds(ids, StpUtil.getLoginIdAsLong());
-        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
         for (UserFile s : sourceFiles) {
             if ("DIR".equals(s.getFileType())) {
                 Queue<String> sourcePath = new LinkedList<>();
@@ -257,7 +260,7 @@ public class UserFileService extends BaseService {
                 recycle.setRecycleId(null)
                         .setFileName(s.getFileName())
                         .setFileType(s.getFileType())
-                        .setCreatedTime(s.getCreatedTime())
+                        .setCreatedTime(LocalDateTime.now())
                         .setDeleted(false)
                         .setUpdatedTime(LocalDateTime.now());
                 recycleMapper.insert(recycle);
@@ -266,8 +269,6 @@ public class UserFileService extends BaseService {
                 userFileMapper.updateById(s);
 
                 userFileMapper.deleteById(s);
-                user.setUsedSize(user.getUsedSize()-s.getFileSize());
-                userMapper.updateById(user);
                 targetPath.add(s.getFileParentPath()+ s.getUserFileId() + "/");
                 while (!sourcePath.isEmpty()) {
                     List<UserFile> files = userFileMapper.getFilesByParent(sourcePath.element(), StpUtil.getLoginIdAsLong());
@@ -285,17 +286,12 @@ public class UserFileService extends BaseService {
                             userFileMapper.updateById(file);
                             userFileMapper.deleteById(file);
 
-                            user.setUsedSize(user.getUsedSize()-file.getFileSize());
-                            userMapper.updateById(user);
-
                             targetPath.add(targetPath.element()+file.getUserFileId()+"/");
                         }else{
                             file.setRecycleId(recycle.getRecycleId());
                             userFileMapper.updateById(file);
                             userFileMapper.deleteById(file);
 
-                            user.setUsedSize(user.getUsedSize()-file.getFileSize());
-                            userMapper.updateById(user);
                         }
                     }
                     sourcePath.poll();
@@ -310,8 +306,6 @@ public class UserFileService extends BaseService {
                 userFileMapper.updateById(s);
                 userFileMapper.deleteById(s);
 
-                user.setUsedSize(user.getUsedSize()-s.getFileSize());
-                userMapper.updateById(user);
             }
         }
     }

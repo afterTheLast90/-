@@ -1,5 +1,6 @@
 package com.hanhai.cloud.controller;
 
+import com.hanhai.cloud.base.BaseException;
 import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
@@ -7,7 +8,9 @@ import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.exception.UpdateException;
 import com.hanhai.cloud.params.*;
 import com.hanhai.cloud.service.UserFileService;
+import com.hanhai.cloud.service.UserService;
 import com.hanhai.cloud.utils.BeanUtils;
+import com.hanhai.cloud.vo.HistoryVO;
 import com.hanhai.cloud.vo.UserFileVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,19 +18,21 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @Validated
 public class MainController {
     @Autowired
     UserFileService userFileService;
+    @Autowired
+    UserService userService;
 
     @GetMapping(value = {"/main","/"})
-    public String mainPage(@RequestParam(name = "path",required = false, defaultValue = "/")String path, Model model){
+    public String mainPage(@RequestParam(name = "path",required = false, defaultValue = "/")String path, Model model) {
         model.addAttribute("path", path);
         return "main";
     }
@@ -69,6 +74,7 @@ public class MainController {
 //        List<UserFileVO> files = userFileService.getFiles(path).stream().map(i -> BeanUtils.convertTo(i, UserFileVO.class)).collect(Collectors.toList());
 
         return new R(ResultCode.SUCCESS_NO_SHOW).setData(files);
+
     }
 
     // 模糊搜索 当前目录下的文件
@@ -113,25 +119,36 @@ public class MainController {
         userFileService.deleted(deletedParams.getIds());
         return R.getSuccess();
     }
-//    @GetMapping("/getFileHistory")
-//    public String fileHistory( @RequestParam("fileId") String fileId,Model model){
-//        List <FileHistory> fileHistoryList= userFileService.getFileHistory(fileId);
-//        List <FileHistoryVO>history =new ArrayList<>(fileHistoryList.size());
-//        for(FileHistory fileHistory:fileHistoryList){
-//            history.add(BeanUtils.convertTo(fileHistory,FileHistoryVO.class));
-//        }
-//        model.addAttribute("history",history);
-//        return "main";
-//    }
+
+    @PostMapping("/search/restoreFiles")
+    @ResponseBody
+    public R restoreFiles(@NotNull(message="ID不能为空") Long id){
+        userFileService.restoringFiles(id);
+        return R.getSuccess();
+    }
+
     @GetMapping("/getFileHistory")
     @ResponseBody
     public R history(@NotNull(message = "ID不能为空") Long fileId){
-        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getFileHistory(fileId));
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getFileHistory(fileId).stream().map(i->{
+            return BeanUtils.convertTo(i,HistoryVO.class).setUpdatePersonName(i.getUpdatePerson()==-1?"匿名用户":userService.getUserById(i.getUpdatePerson()).getUserName());
+        }));
     }
 
     @GetMapping("/fileInfo")
     @ResponseBody
-    public R getFileId(@NotBlank(message = "文件名不能为空") @NotNull(message = "文件名不能为空") Long id){
+    public R getFileId(@NotNull(message = "文件名不能为空") Long id){
         return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFileService.getById(id));
+    }
+
+    @PostMapping("/file/reduction")
+    @ResponseBody
+    public R fileReduction(@RequestBody Map map){
+        Object id = map.get("id");
+        if (id==null)
+            throw new BaseException(ResultCode.PARAMETER_ERROR).setMsg("id不能为空");
+        Long reductionId = Long.parseLong(id.toString());
+        userFileService.restoringFiles(reductionId);
+        return new R(ResultCode.SUCCESS).setMsg("还原成功");
     }
 }

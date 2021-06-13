@@ -134,13 +134,52 @@
         }
 
         .col-my-drawer {
-            width: 400px;
+            width: 420px;
         }
 
         .pointer {
             cursor: pointer;
         }
+        #selectTags {
+            display: inline-block;
+            margin-left: 1rem;
+            min-height: 45px;
+            min-width: 50%;
+            vertical-align: top;
+            overflow-y: auto;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            border-radius: 5px;
+            background-color: rgb(241, 243, 245);
+        }
 
+        #selectTags li {
+            display: inline-block;
+            padding: .5rem 0 .5rem 1rem;
+            margin: .3rem 0 .3rem .1rem;
+            line-height: 100%;
+            max-width: 100%;
+            background-color: rgba(0, 123, 255, .15);
+            border-radius: 5px;
+            list-style: none;
+            white-space: nowrap;
+        }
+
+        #selectTags li span {
+            display: inline-block;
+            margin-right: 2.5rem;
+            max-width: 75%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        #selectTags li .cancelSelect {
+            font-size: 20px;
+            color: red;
+            padding-right: 0.5rem;
+            cursor: pointer;
+        }
     </style>
     <script>
         const currentPath = "[[${current}]]";
@@ -172,8 +211,7 @@
             <button type="button" class="btn btn-outline-primary btn-md" id="download" disabled="disabled">
                 <span class="bi bi-cloud-download"></span>下载
             </button>
-            <button type="button" class="btn btn-outline-primary btn-md" id="deleted" disabled="disabled" data-toggle="modal"
-                    data-target="#deleteConfirmation">
+            <button type="button" class="btn btn-outline-primary btn-md" id="deleted" disabled="disabled">
                 <span class="bi bi-trash"></span>删除
             </button>
             <button type="button" class="btn btn-outline-primary btn-md" id="rename" disabled="disabled"
@@ -247,7 +285,7 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-inline">
-                    <label class="col-form-label text-right">文件夹名:</label>
+                    <label class="col-form-label text-right" style="margin-left: 12px">文件夹名:</label>
                     <input type="text" name="newTag" class="form-control " id="newfolder" required
                            placeholder="在此输入文件夹名">
                 </div>
@@ -275,7 +313,7 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-inline">
-                    <label class="col-form-label text-right">新文件名:</label>
+                    <label class="col-form-label text-right"  style="margin-left: 12px">新文件名:</label>
                     <input type="text" name="newname" class="form-control " id="newname" required
                            placeholder="在此新文件名">
                 </div>
@@ -290,83 +328,78 @@
     </div>
 </div>
 <!-- 删除标签模态框 -->
-<div class="modal" id="delTagModal">
+<div class="modal fade" id="delTagModal2">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
-
             <!-- 模态框头部 -->
             <div class="modal-header">
                 <h5 class="modal-title">确认操作</h5>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-
             <!-- 模态框主体 -->
             <div class="modal-body mt-3 mb-3 ml-2 mr-2">
                 您确定删除该标签么？<br/>
             </div>
-
             <!-- 模态框底部 -->
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger delConfirm">确定</button>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-            </div>
-
-        </div>
-    </div>
-</div>
-<!-- 确认删除模态框 -->
-<div class="modal" id="deleteConfirmation">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-
-            <!-- 模态框头部 -->
-            <div class="modal-header">
-                <h5 class="modal-title">确认删除</h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-
-            <!-- 模态框主体 -->
-            <div class="modal-body">
-                <div class="row form-inline">
-                    <label class="col-form-label" Style="text-align: center;">确认要把所选文件放入回收站吗?</label>
-                </div>
-            </div>
-
-            <!-- 模态框底部 -->
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary addConfirm" id="confirmDeletion">确定</button>
+                <button type="button" class="btn btn-danger delConfirm2">确定</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
             </div>
         </div>
     </div>
 </div>
+<!--&lt;!&ndash; 确认删除模态框 &ndash;&gt;-->
+<!--<div class="modal" id="deleteConfirmation">-->
+<!--    <div class="modal-dialog modal-sm">-->
+<!--        <div class="modal-content">-->
+
+<!--            &lt;!&ndash; 模态框头部 &ndash;&gt;-->
+<!--            <div class="modal-header">-->
+<!--                <h5 class="modal-title">确认删除</h5>-->
+<!--                <button type="button" class="close" data-dismiss="modal">&times;</button>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; 模态框主体 &ndash;&gt;-->
+<!--            <div class="modal-body">-->
+<!--                <div class="row form-inline">-->
+<!--                    <label class="col-form-label" Style="text-align: center;margin-left: 10px">确认要把所选文件放入回收站吗?</label>-->
+<!--                </div>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; 模态框底部 &ndash;&gt;-->
+<!--            <div class="modal-footer">-->
+<!--                <button type="button" class="btn btn-primary addConfirm" id="confirmDeletion">确定</button>-->
+<!--                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
+
 <!--右侧抽屉-->
 <nav class="drawer-nav" role="navigation" style="z-index: 20">
     <ul class="pl-0">
         <li class="text-center" style="width: 100%">
-<!--                        <svg class="icon" aria-hidden="true">-->
-<!--                            <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>-->
-<!--                        </svg>-->
+            <svg id="sFileType" class="icon_detail" aria-hidden="true">
+                <use xlink:href="#icon-mp3"></use>
+            </svg>
         </li>
         <li class="row">
-<!--                        <span class="offset-2"></span>-->
-<!--                        <span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName"></span>-->
+            <span class="offset-2"></span>
+            <span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName">文件名</span>
         </li>
         <hr>
-        <fieldset>
+        <fieldset class="mb-3">
             <legend>标签管理</legend>
-            <div class="row" style="margin-top: 10px">
-                <!--	搜索/选择标签	-->
-                <div style="margin-left: 25px">
-                    <select class="selectpicker" multiple data-live-search="true" data-max-options="1">
-                        <option>大三</option>
-                        <option>考研</option>
-                        <option>学习</option>
-                        <option>复习</option>
-                    </select>
-                    <!--	添加标签按钮 	-->
-                </div>
-                <i class="bi bi-plus-square addbutton" data-toggle="modal" data-target="#addTagModal"></i>
+            <div class="row" style="margin-top: 5px;">
+                <!--	添加标签	-->
+                <label class="col-form-label col-4 text-right">添加标签:</label>
+                <select id="addTag" class="selectpicker col-11" title="搜索并选择标签" data-live-search="true">
+                </select>
+            </div>
+            <div class="row" style="margin-top: 5px;">
+                <label class="col-form-label col-4 text-right">已有标签:</label>
+                <ul class="mb-0 col-11" id="selectTags">
+                </ul>
             </div>
         </fieldset>
         <fieldset>
@@ -384,13 +417,12 @@
                 <tr></tr>
                 <tr>
                     <td class="action" style="color: #007bff">
-                        <i class="bi bi bi-arrow-repeat" title="还原"></i>
+                        <i class="bi bi bi-arrow-repeat reduction" title="还原"></i>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </fieldset>
-
     </ul>
 </nav>
 
@@ -404,36 +436,83 @@
 
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
+    // 关系id的li
+    let relationIdLi
+    // 获取标签id
+    let tagFileId
+    let userFileId
     // 文件详情
     $.fn.bindEventForMore = function bindEventMore(){
         $(".more").click(function (e) {
             $(".drawer").drawer("open")
             $(".drawer-nav").addClass("col-my-drawer")
-            // httpUtil.get("/getFileHistory", {
-            //     params: {
-            //         fileId: e.target.getAttribute("userFileId")
-            //     }
-            // })
-            //     .then(res => {
-            //     $("#history tr").remove()
-            //     for (let i = 0; i < res.data.length; i++) {
-            //         $("#history").append('<tr><td>' + res.data[i].updatedTime + '</td><td>' + res.data[i].updatePerson +
-            //             '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat" title="还原"></i></td></tr>')
-            //     }
-            // })
-            // httpUtil.get("/fileInfo",JSON.stringify({
-            //     id:e.target.getAttribute("userFileId")
-            // })).then(res=>{
-            //     // console.log(res)
-            // })
+            //设置数据
+            //图标和文件名
+
+            userFileId = $(this).attr("userFileId")
+            let fileType = $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
+            let fileName = $(this).parent().siblings().eq(1).text()
+            if(fileTypeSet.has(fileType.toUpperCase()))
+                $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
+            else
+                $("#sFileType use").attr("xlink:href", "#icon-other")
+            $("#sFileName").text(fileName)
+            //标签管理
+            httpUtil.get("/tag/fileTagsGet", {
+                params: {
+                    userFileId: userFileId
+                }
+            }).then(res => {
+                $("#selectTags").html("")
+                for (let data of res.data)   // 文件使用的标签
+                    $("#selectTags").append('<li tagRelationshipId="' + data.tagRelationshipId + '">' +
+                        '<span>' + data.tagName + '</span><i class="bi cancelSelect bi-x"></i>' +
+                    '</li>')
+                // 为标签上的删除图标绑定事件
+                $(".cancelSelect").click(function () {
+                    relationIdLi = $(this).parent()
+                    $("#delTagModal2").modal("show")
+                })
+            })
+            //文件历史管理
+            httpUtil.get("/getFileHistory", {
+                params: {
+                    fileId: e.target.getAttribute("userFileId")
+                }
+            }).then(res => {
+                $("#history tr").remove()
+
+                for (let i = 0; i < res.data.length; i++) {
+                    $("#history").append('<tr><td>' + res.data[i].updatedTime.replace("T"," ") + '</td><td>' + res.data[i].updatePersonName +
+                        '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat reduction" title="还原" historyId="'+res.data[i].historyId+'"></i></td></tr>')
+                }
+                $(".reduction").click(function(){
+                    let t = this;
+                    layer.confirm('是否确认还原？', {
+                        btn: ['确认','取消'] //按钮
+                    }, function(){
+                        httpUtil.post("/file/reduction",JSON.stringify({
+                            id:$(t).attr("historyId")
+                        })).then(res =>{
+                            $(".drawer-nav").removeClass("col-my-drawer")
+                            $(".drawer").drawer("close")
+                            $('#mTable').bootstrapTable('refresh');
+                        })
+                    }, function(){
+                        layer.closeAll();
+                    });
+
+                })
         })
+        })
+
     }
     // 文件分享
     $.fn.bindEventForShare = function bindEventShare(){
         $(".bi-share").click(function (){
-            $.fn.shareManage($(this).parent().siblings().eq(1).children("svg").attr("userfileid"),
-                $(this).parent().siblings().eq(1).text(),
-                $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
+            $.fn.shareManage($(this).parent().siblings().eq(1).children("nobr").children("svg").attr("userfileid"),
+                $(this).parent().siblings().eq(1).children("nobr").children("span").text(),
+                $(this).parent().siblings().eq(1).children("nobr").children("svg").attr("filetype").toLowerCase()
             )
         });
     }
@@ -467,6 +546,10 @@
                 layer.msg("请选择要操作的文件");
                 return;
             }
+            if((fileId===currentPath)||(fileId.indexOf(currentPath)!=-1)){
+                layer.msg("请重新选择目录！")
+                return;
+            }
             let ids = [];
             for (let row of rows) {
                 ids.push(row.userFileId)
@@ -492,27 +575,56 @@
                 $("#newfolder").val("");
             })
         })
-        $("#confirmDeletion").click(function () {
-            let rows = $('#mTable').bootstrapTable('getSelections')
-            $("#deleteConfirmation").modal("hide")
-            console.log(rows.length)
-            if (rows.length == 0) {
-                layer.msg("请选择要操作的文件");
-                return;
-            }
-            let ids = [];
-            for (let row of rows) {
-                ids.push(row.userFileId)
-            }
-            httpUtil.post("/file/deleted", JSON.stringify({
-                ids: ids
-            })).then(res => {
-                unCheckAll()
-                initTable()
-            }).catch(e => {
-                layer.msg("请求失败");
-            })
+        // $("#confirmDeletion").click(function () {
+        //     let rows = $('#mTable').bootstrapTable('getSelections')
+        //     $("#deleteConfirmation").modal("hide")
+        //     console.log(rows.length)
+        //     if (rows.length == 0) {
+        //         layer.msg("请选择要操作的文件");
+        //         return;
+        //     }
+        //     let ids = [];
+        //     for (let row of rows) {
+        //         ids.push(row.userFileId)
+        //     }
+        //     httpUtil.post("/file/deleted", JSON.stringify({
+        //         ids: ids
+        //     })).then(res => {
+        //         unCheckAll()
+        //         initTable()
+        //     }).catch(e => {
+        //         layer.msg("请求失败");
+        //     })
+        // })
+
+        $("#deleted").click(function(){
+            layer.confirm("是否确认删除？",{
+                btn:['确认','取消']//按钮
+            },function(){
+                let rows = $('#mTable').bootstrapTable('getSelections')
+                // $("#deleteConfirmation").modal("hide")
+                // console.log(rows.length)
+                if (rows.length == 0) {
+                    layer.msg("请选择要操作的文件");
+                    return;
+                }
+                let ids = [];
+                for (let row of rows) {
+                    ids.push(row.userFileId)
+                }
+                httpUtil.post("/file/deleted", JSON.stringify({
+                    ids: ids
+                })).then(res => {
+                    unCheckAll()
+                    initTable()
+                }).catch(e => {
+                    layer.msg("删除失败，请稍后再试");
+                })
+            },function(){
+                layer.closeAll();
+            });
         })
+
         $("#renameconfirm").click(function () {
             let rows = $('#mTable').bootstrapTable('getSelections')
             if (rows.length == 0) {
@@ -541,6 +653,63 @@
                 $("#newname").val("");
             })
         })
+
+
+
+        // 详情 删除标签确认
+        $(".delConfirm2").click(function () {
+            httpUtil.delete("/tag/relationDel", {
+                params: {
+                    relationId: relationIdLi.attr("tagRelationshipId"),
+                    tagId: tagFileId
+                }
+            }).then(res => {
+                $("#delTagModal2").modal("hide")
+                location.reload()
+            })
+        })
+
+        // 添加标签
+        setTimeout(function (){
+            // 搜索文件未使用的标签
+            $('#addTag').next().next().find("input").on("input", function () {        // 输入框，输入信息则搜索（内容为空则不显示任何标签）
+                console.log(userFileId)
+                $(this).attr('id', "deviceInput");                   // 为input增加id属性
+                if ($('#deviceInput').val() != "") {
+                    httpUtil.get("/tag/getUnUseTags", {     // 获得模糊搜索的10个标签（除已有的标签）
+                        params: {
+                            tagName: $('#deviceInput').val(),
+                            userFileId: userFileId
+                        }
+                    })
+                        .then(res => {
+                            $("#addTag").html("")
+                            for (let data of res.data) {
+                                $("#addTag").append("<option value='" + data.tagId + "'>" + data.tagName + "</option>")
+                            }
+                            $("#addTag").selectpicker("refresh")
+                        })
+                }
+            })
+            // 选择搜索到的标签后，为文件添加标签
+            $('#addTag').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+                if ($(this).val() != "") {
+                    httpUtil.post("tag/addFileTag", JSON.stringify({
+                        tagId: $(this).val(),
+                        userFileId: userFileId
+                    }))
+                        .then(res => {
+                            $("#selectTags").append('<li tagRelationshipId="' + res.data.tagRelationshipId + '">' +
+                                '<span>' + $(this).children("option").eq(clickedIndex).text() + '</span><i class="bi new cancelSelect bi-x"></i>' +
+                                '</li>')
+                            $(".new").click(function () {
+                                relationIdLi = $(this).parent()
+                                $("#delTagModal2").modal("show")
+                            })
+                        })
+                }
+            })
+        },500)
 
         // 上传文件(夹)
         $("#uploadFileMenuItem").click(function(){

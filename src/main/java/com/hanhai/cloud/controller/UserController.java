@@ -255,14 +255,14 @@ public class UserController {
                 continue;
             }
 
-            user.setEmailChecked("是".equals(map.get("邮箱是否不需要验证")));
+            //user.setEmailChecked("是".equals(map.get("邮箱是否不需要验证")));
             if (StrUtil.isBlank(String.valueOf(map.get("手机号是否不需要验证"))) || !"是否".contains(String.valueOf(map.get("手机号是否不需要验证")))) {
                 map.put("错误原因", "手机号是否不需要验证为空或者非法");
                 unSuccess.add(map);
                 continue;
             }
 
-            user.setPhoneChecked("是".equals(map.get("手机号是否不需要验证")));
+            //user.setPhoneChecked("是".equals(map.get("手机号是否不需要验证")));
             if (StrUtil.isBlank(String.valueOf(map.get("是否是管理员"))) || !"是否".contains(String.valueOf(map.get("是否是管理员")))) {
                 map.put("错误原因", "是否是管理员为空或者非法");
                 unSuccess.add(map);

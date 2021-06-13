@@ -28,26 +28,53 @@ public class RecycleService extends BaseService {
 
     @Transactional
     public void deleted(Long id) {
-        Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(id, StpUtil.getLoginIdAsLong());
-        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
-        getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
-        userFileMapper.updateFiles(getFilesByRecycleId);
-        recycleMapper.deleteById(id);
-        user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
-        userMapper.updateById(user);
-    }
-    public void deletedAll(){
-        List<Recycle> sourceFiles= recycleMapper.getRecycleAllFiles();
-        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
-        for(Recycle s:sourceFiles){
-            Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(s.getRecycleId(), StpUtil.getLoginIdAsLong());
-            getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
-            userFileMapper.updateFiles(getFilesByRecycleId);
-
-            recycleMapper.deleteById(s);
-            user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
-            userMapper.updateById(user);
+        User userById = userService.getUserById(StpUtil.getLoginIdAsLong());
+        List<RecycleSum> fileIdSizeUserId = userFileMapper.getFileIdSizeUserId(id);
+        for (RecycleSum recycleSum : fileIdSizeUserId) {
+            userById.setUsedSize(userById.getUsedSize()-recycleSum.getSum());
+            Files files = fileMapper.selectById(recycleSum.getFileId());
+            files.setCitationsCount(files.getCitationsCount()-recycleSum.getCou());
+            fileMapper.updateById(files);
         }
+        recycleMapper.deleteById(id);
+        userService.updateById(userById);
+//        Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(id, StpUtil.getLoginIdAsLong());
+//        getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
+//        userFileMapper.updateFiles(getFilesByRecycleId);
+//        recycleMapper.deleteById(id);
+//        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+//        user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
+//        userMapper.updateById(user);
+    }
+
+    @Transactional
+    public void deletedAll(){
+
+        List<Recycle> recycleFile = recycleMapper.getRecycleFile(StpUtil.getLoginIdAsLong());
+
+        User userById = userService.getUserById(StpUtil.getLoginIdAsLong());
+        for (Recycle recycle : recycleFile) {
+            List<RecycleSum> fileIdSizeUserId = userFileMapper.getFileIdSizeUserId(recycle.getRecycleId());
+            for (RecycleSum recycleSum : fileIdSizeUserId) {
+                userById.setUsedSize(userById.getUsedSize()-recycleSum.getSum());
+                Files files = fileMapper.selectById(recycleSum.getFileId());
+                files.setCitationsCount(files.getCitationsCount()-recycleSum.getCou());
+                fileMapper.updateById(files);
+            }
+            recycleMapper.deleteById(recycle);
+        }
+        userService.updateById(userById);
+//        List<Recycle> sourceFiles= recycleMapper.getRecycleAllFiles();
+////        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+//        for(Recycle s:sourceFiles){
+//
+//            Files getFilesByRecycleId = userFileMapper.getFilesByRecycleId(s.getRecycleId(), StpUtil.getLoginIdAsLong());
+//            getFilesByRecycleId.setCitationsCount(getFilesByRecycleId.getCitationsCount()-1);
+//            userFileMapper.updateFiles(getFilesByRecycleId);
+//            recycleMapper.deleteById(s);
+////            user.setUsedSize(user.getUsedSize()-getFilesByRecycleId.getFileSize());
+////            userMapper.updateById(user);
+//        }
     }
     @Transactional
     public void reduction(Long[] ids, String target) {
@@ -78,7 +105,7 @@ public class RecycleService extends BaseService {
                     userFileService.reductionById(byRecycleIdTopOne);
 
                     user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
-                    userMapper.updateById(user);
+                    userService.updateById(user);
 
                     recyclefile.setDeleted(true);
                     recycleMapper.reductionById(recyclefile);
@@ -101,7 +128,7 @@ public class RecycleService extends BaseService {
                                 userFileService.reductionById(file);
 
                                 user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                                userMapper.updateById(user);
+                                userService.updateById(user);
 
                                 targetPath.add(targetPath.element()+file.getUserFileId()+'/');
                             }else{
@@ -111,7 +138,7 @@ public class RecycleService extends BaseService {
                                 userFileService.reductionById(file);
 
                                 user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                                userMapper.updateById(user);
+                                userService.updateById(user);
                             }
                         }
                         sourcePath.poll();
@@ -141,7 +168,7 @@ public class RecycleService extends BaseService {
                 userFileService.reductionById(byRecycleIdTopOne);
 
                 user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
-                userMapper.updateById(user);
+                userService.updateById(user);
 
                 recyclefile.setDeleted(true);
                 recycleMapper.reductionById(recyclefile);
@@ -176,7 +203,7 @@ public class RecycleService extends BaseService {
                 userFileService.reductionById(byRecycleIdTopOne);
 
                 user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
-                userMapper.updateById(user);
+                userService.updateById(user);
 
                 recyclefile.setDeleted(true);
                 recycleMapper.reductionById(recyclefile);
@@ -199,7 +226,7 @@ public class RecycleService extends BaseService {
                             userFileService.reductionById(file);
 
                             user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                            userMapper.updateById(user);
+                            userService.updateById(user);
 
                             targetPath.add(targetPath.element()+file.getUserFileId()+'/');
                         }else{
@@ -209,7 +236,7 @@ public class RecycleService extends BaseService {
                             userFileService.reductionById(file);
 
                             user.setUsedSize(user.getUsedSize()+file.getFileSize());
-                            userMapper.updateById(user);
+                            userService.updateById(user);
                         }
                     }
                     sourcePath.poll();
@@ -239,7 +266,7 @@ public class RecycleService extends BaseService {
             userFileService.reductionById(byRecycleIdTopOne);
 
             user.setUsedSize(user.getUsedSize()+byRecycleIdTopOne.getFileSize());
-            userMapper.updateById(user);
+            userService.updateById(user);
 
             recyclefile.setDeleted(true);
             recycleMapper.reductionById(recyclefile);

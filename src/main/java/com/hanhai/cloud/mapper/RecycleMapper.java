@@ -24,7 +24,7 @@ public interface RecycleMapper extends BaseMapper<Recycle> {
     @Select("select * from recycle where recycle_id=#{recycleId}")
     public Recycle getById(@Param("recycleId") Long id);
 
-    @Select("select * from recycle where deleted=0")
+    @Select("select * from recycle where deleted=0 and ")
     public List<Recycle> getRecycleAllFiles();
 
     @Update("update recycle set deleted=#{recycleFile.deleted} where recycle_id=#{recycleFile.recycleId}")

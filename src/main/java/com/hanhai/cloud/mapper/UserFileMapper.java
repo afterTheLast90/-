@@ -75,10 +75,10 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     @Select("select * from files where file_id=(select file_id from user_files where recycle_id =#{recycleId} and user_id=#{userId} order by created_time limit 1)")
     public Files getFilesByRecycleId(@Param("recycleId")Long recycleId,@Param("userId")Long userId);
 
-    @Update("update files set citations_count=#{file.citations} where file_id=#{file.fileId}")
+    @Update("update files set citations_count=#{file.citationsCount} where file_id=#{file.fileId}")
     public Integer updateFiles(@Param("file") Files file);
 
-    @Select("select user_file_id from file_history where history_id=#{historyId}")
+    @Select("select * from file_history where history_id=#{historyId}")
     public FileHistory getFileHistoryById(@Param("historyId") Long historyId);
 
     // 根据文件名，搜索当前目录下所有文件
