@@ -39,7 +39,7 @@
 <div class="main">
     <div th:replace="common/nav-left :: nav-left"></div>
     <div class="content" style="overflow: hidden;margin-right: 1%;overflow-y: scroll;">
-        <button type="button" id="btn_new" name="btn_new" class="btn btn-primary" style="margin-top: 5px;margin-bottom: 10px">发起收件申请</button>
+        <button type="button" id="btn_new" name="btn_new" class="btn btn-success" style="margin-top: 5px;margin-bottom: 10px">+ 发起收件申请</button>
         <table id="s_table" data-pagination="true" data-align="center">
             <thead>
             <tr>
@@ -85,8 +85,12 @@
 
                 <div class="form-group">
                     <label for="savePath">保存路径：</label>
-                    <input type="text" class="form-control" id="savePath" disabled="disabled"/>
-                    <button type="button" id="btnPath" class="btn btn-primary" style="margin-top: 5px">选择路径</button>
+                    <div class="form-group row">
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="text" class="form-control col-8 mr-1" id="savePath" disabled="disabled"/>
+                        &nbsp;&nbsp;
+                        <button type="button" id="btnPath" class="btn btn-primary col-3">选择路径</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -296,12 +300,6 @@
                     <img src="" style="height: 100%;" alt="二维码" id="sQR">
                     <span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>对方扫描二维码即可访问提取文件链接</span>
                 </div>
-                <!-- 提示失效时间 -->
-                <div class="form-group row">
-                    <span class="offset-md-2 offset-md-3 offset-sm-3">
-                      链接 <b class="font-weight-normal overdueTime" style="color: #06a7ff;"></b> 失效
-                    </span>
-                </div>
                 <input type="button" id="copyLink" class="btn btn-primary offset-3 col-3" style="font-size: 10px;" value="复制链接"/>
             </div>
             <div class="modal-footer ">
@@ -433,14 +431,14 @@
                         formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
                             var isEnd = row.isEnd; //判断是否过了截止时间
                             if (!isEnd) {
-                                return '<button type="button" inboxId="' + row.inboxId + '"  class="btn btn-primary end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
+                                return '<button type="button" inboxId="' + row.inboxId + '"  class="btn btn-danger end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
                                     '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">收集链接</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-info commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-light share_link">收集链接</button>';
                             } else {
                                 return '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">收集链接</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-info commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-light share_link">收集链接</button>';
                             }
 
                             // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;

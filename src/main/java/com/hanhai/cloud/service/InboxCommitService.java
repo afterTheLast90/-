@@ -64,5 +64,12 @@ public class InboxCommitService extends BaseService{
             System.err.println("收件记录插入失败！");
             System.out.println("****************************");
         }
+
+        //收件箱人数+1
+        FileInbox fileInbox=new FileInbox();
+        fileInbox.setInboxId(params.getInboxId());
+        fileInboxMapper.selectById(fileInbox);
+        fileInbox.setCommitCount(fileInbox.getCommitCount()+1);
+        fileInboxMapper.updateById(fileInbox);
     }
 }
