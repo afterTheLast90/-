@@ -36,4 +36,6 @@ public class MultipartFileParam {
     private String userId;
     /** 获取用户文件表路径 */
     private String uploadPath;
+    /** 输入名 */
+    private String inputName;
 }

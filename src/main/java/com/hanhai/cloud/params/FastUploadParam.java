@@ -19,4 +19,6 @@ public class FastUploadParam {
     private String userId;
     /** 获取上传路径 */
     private String uploadPath;
+    /** 获取输入名 */
+    private String inputName;
 }

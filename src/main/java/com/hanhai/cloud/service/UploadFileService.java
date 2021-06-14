@@ -219,6 +219,8 @@ public class UploadFileService extends BaseService {
                         //新建用户文件表记录
                         userFile.setFileId(Long.parseLong(fileId));
                         userFile.setFileName(filenameNoEx+"."+suffix);
+                        if(param.getInputName()!=null)
+                            userFile.setFileName(param.getInputName()+"."+suffix);
                         userFile.setFileSize(Long.parseLong(size));
                         userFile.setFileParentPath(param.getUploadPath());
                         userFile.setFileType(suffix.toUpperCase());
@@ -310,6 +312,8 @@ public class UploadFileService extends BaseService {
             //新建用户文件表记录
             userFile.setFileId(fileId);
             userFile.setFileName(filenameNoEx+"."+suffix);
+            if(param.getInputName()!=null)
+                userFile.setFileName(param.getInputName()+"."+suffix);
             userFile.setFileSize(size);
             userFile.setFileParentPath(param.getUploadPath());
             userFile.setFileType(suffix.toUpperCase());

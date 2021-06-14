@@ -55,7 +55,7 @@ public class InboxCommitService extends BaseService{
         else
             userId=-1L;
         receivingRecord.setUserId(userId);
-        receivingRecord.setInputName(params.getInputName()+FileNameUtil.getExtensionName(params.getCommitFileName()));
+        receivingRecord.setInputName(params.getInputName()+"."+FileNameUtil.getExtensionName(params.getCommitFileName()));
         receivingRecord.setCommitFileName(params.getCommitFileName());
         try{
             receivingRecordMapper.insert(receivingRecord);
@@ -65,5 +65,4 @@ public class InboxCommitService extends BaseService{
             System.out.println("****************************");
         }
     }
-
 }
