@@ -25,6 +25,11 @@ public class InboxCommitController {
         return "inbox_commit_error";
     }
 
+    @GetMapping("/inboxSuccess")
+    public String inbox_commit_success(){
+        return "inbox_commit_success";
+    }
+
     @GetMapping("/inboxCommit/{inboxId}")
     public String inbox_commit(@PathVariable("inboxId") String path, Model model){
         List<FileInbox> fileInboxList=new ArrayList<>();

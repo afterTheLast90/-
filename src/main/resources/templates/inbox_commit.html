@@ -30,11 +30,7 @@
             height: 40px;
             border-radius: 50% !important;
         }
-        #commit{
-            position:absolute;
-            right: 500px;
-            bottom: 200px;
-        }
+
     </style>
 </head>
 
@@ -80,7 +76,11 @@
                         <input type="file" id="commitFile" hidden="hidden"/>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" id="commit">提交</button>
+                <div class="row mt-5">
+                    <button type="button" class="btn btn-lg btn-primary mr-auto offset-10"
+                            id="commit">提交
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -153,7 +153,7 @@
             "commitFileName":fileOriName,
             "isCover":isCover,
         })).then(res=>{
-
+            location.href="/inboxSuccess"
         }).catch(err=>{
 
         })
@@ -429,7 +429,7 @@
             $("#progress"+ fileMd5 +" .progress-bar").text("100%");
             //服务器返回分片是否上传成功
             // if (succeed  >= shardCount) {
-            layer.msg("上传成功！");
+            layer.msg("上传成功123123123！");
             // chunk=-1;
             // succeed=0;
             state=0;
