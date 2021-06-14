@@ -3,6 +3,7 @@ package com.hanhai.cloud.controller;
 import com.hanhai.cloud.base.PageParam;
 import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
+import com.hanhai.cloud.configuration.SystemInfo;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.params.FileInboxEndCommitParams;
 import com.hanhai.cloud.params.FileInboxNewParams;
@@ -15,6 +16,7 @@ import com.hanhai.cloud.vo.FileInboxListVO;
 import com.hanhai.cloud.vo.ReceivingRecordListVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,8 +32,11 @@ public class InboxController {
     @Autowired
     private ReceivingRecordService recordService;
 
+    @Autowired
+    private SystemInfo systemInfo;
     @GetMapping("/fileInbox")
-    public String fileInbox() {
+    public String fileInbox(Model model) {
+        model.addAttribute("siteUrl",systemInfo.getSiteUrl());
         return "inbox";
     }
 
