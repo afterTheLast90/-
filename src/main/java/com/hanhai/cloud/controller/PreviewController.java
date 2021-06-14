@@ -267,7 +267,7 @@ public class PreviewController {
      */
     @GetMapping(value = "/preview/zip/file")
     public void previewZipFile(HttpServletResponse httpServletResponse, HttpServletRequest request,HttpServletResponse response, @RequestParam("path") String path) throws OfficeException, IOException, ServletException {
-
+        System.out.println(path);
         String[] split = path.split("/");
 
         Long fileId = userFileService.getFileIdByUserFileId(Long.valueOf(split[0]));

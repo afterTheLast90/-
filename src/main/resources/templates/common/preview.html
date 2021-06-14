@@ -162,7 +162,6 @@
                }
                if(audioTypeSet.has(type)){
                    // function display() {
-
                    layer.open({
                        title: filename,
                        type: 1, skin: 'demo-class',
@@ -319,7 +318,7 @@
                                    layer.msg("暂不支持该类型文件的预览")
                                }
                                let zipFileUrl="/preview/zip/file?path="+userFileId+modernPath+"/"+$(this).text().trim()
-                               console.log(zipFileUrl)
+                               zipFileUrl=zipFileUrl.replace(/ /g,"%20")
                                previewFile(zipFileType,zipFileUrl,$(this).text().trim())
                            })
                        })
