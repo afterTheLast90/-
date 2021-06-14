@@ -128,6 +128,13 @@ public interface UserShareMapper extends BaseMapper<UserShare> {
 //            "      f.deleted=0 and s.deleted=0")
 //    public List<UserFile> getFileByFileIdAndShareId(@Param("userFileId") Long userFileId, @Param("shareId") String shareId);
 
+    // 根据userFileId，得到其文件大小
+    public Long getSizeByUserFileIds(@Param("userFileIds")Long[] userFileIds);
+
+    // 根据文件子目录,得到其子目录大小
+    @Select("select sum(file_size) from user_files where file_parent_path like concat(#{childPath},'%')")
+    public Long getChildSizeById(@Param("childPath") String childPath);
+
     // 分享信息的 下载次数+1
     @Update("update user_share set download_times=download_times+1 where share_id=#{shareId}")
     public void addDownTime(@Param("shareId")String shareId);

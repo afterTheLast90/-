@@ -313,8 +313,11 @@ public class ResourceController {
     @PostMapping("/resource/dump")
     @ResponseBody
     public R resourceDump(@RequestBody DumpResourceParams resourceParams){
-        resourceService.resourceDump(resourceParams.getUserFileIds(), resourceParams.getTargetPath(), resourceParams.getShareIds());
-        return new R(ResultCode.SUCCESS).setData("保存成功");
+        if(resourceService.checkSpace(resourceParams.getUserFileIds())) {
+            resourceService.resourceDump(resourceParams.getUserFileIds(), resourceParams.getTargetPath(), resourceParams.getShareIds());
+            return new R(ResultCode.SUCCESS).setData("保存成功");
+        }
+        return new R(ResultCode.SUCCESS).setData("保存失败，用户空间不足");
     }
 
 //    // 链接失效界面测试
