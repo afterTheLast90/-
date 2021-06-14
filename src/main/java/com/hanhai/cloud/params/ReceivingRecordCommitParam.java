@@ -19,7 +19,7 @@ public class ReceivingRecordCommitParam {
     private Long fileId ;
 
     /** 用户文件id */
-//    @NotNull(message = "用户文件ID不能为空！")
+    @NotNull(message = "用户文件ID不能为空！")
     private Long userFileId ;
 
     /** 收集id */

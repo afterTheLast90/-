@@ -267,7 +267,7 @@
     </div>
 </div>
 
-<!-- shareLink模态框  lemon-->
+<!-- shareLink模态框-->
 <div class="modal fade" id="shareLink">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -313,6 +313,24 @@
 
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
+    var savePathId;
+
+    // 单击复制链接按钮，把链接和密码拷贝到剪贴板
+    $("#copyLink").click(function () {
+        $("#sLink").select()
+        try {
+            if(document.execCommand("copy", "false", null)) {
+                layer.msg("复制成功")         // layUI 自带的提示框
+            }
+            else {
+                layer.msg("复制失败，请尝试手动复制")
+            }
+        }
+        catch (err) {
+            layer.msg("复制失败，请尝试手动复制")
+        }
+        window.getSelection().empty()       // 取消选中状态
+    })
 
     $(function () {
         initTable();
@@ -359,8 +377,8 @@
                     })
                     //点击分享链接按钮  lemon
                     $(".share_link").click(function(e){
-                        $("#sLink").val("[[${siteUrl}]]"+e.target.getAttribute("inboxId"));
-                        $("#sQR").attr("src", "/share/QRCode?url="+"[[${siteUrl}]]"+"&width=200&height=200")
+                        $("#sLink").val("[[${siteUrl}]]"+"inboxCommit/"+e.target.getAttribute("inboxId"));
+                        $("#sQR").attr("src", "/share/QRCode?url="+"[[${siteUrl}]]"+"inboxCommit/"+e.target.getAttribute("inboxId")+"&width=200&height=200")
                         $("#shareLink").modal("show");
                     })
                 },
@@ -418,11 +436,11 @@
                                 return '<button type="button" inboxId="' + row.inboxId + '"  class="btn btn-primary end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
                                     '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
                                     '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">分享链接</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">收集链接</button>';
                             } else {
                                 return '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
                                     '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">分享链接</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">收集链接</button>';
                             }
 
                             // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
@@ -541,6 +559,7 @@
             console.log("ok.function()");
             console.log(a);
             console.log(b);
+            savePathId=a;
             $("#savePath").val(b);
             $("#inbox_newModal").modal();
         })
@@ -587,11 +606,15 @@
                 "title": title,
                 "inputTips": inputTips,
                 "commitType": commitType,
+                "savePathId": savePathId,
                 "savePath": savePath,
                 "endTime": endTime,
                 "content": content,
             })).then(res => {
                 initTable();
+                $("#sLink").val("[[${siteUrl}]]"+"inboxCommit/"+res.data);
+                $("#sQR").attr("src", "/share/QRCode?url="+"[[${siteUrl}]]"+"inboxCommit/"+res.data+"&width=200&height=200")
+                $("#shareLink").modal("show");
             }).catch(err => {
 
             })

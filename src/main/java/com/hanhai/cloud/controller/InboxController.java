@@ -71,9 +71,10 @@ public class InboxController {
     @PostMapping("/newInboxTask")
     @ResponseBody
     public R newInboxTask(@RequestBody @Validated FileInboxNewParams params){
-        inboxService.newInboxTask(params);
+        Long fileInboxId=null;
+        fileInboxId=inboxService.newInboxTask(params);
 //        return new R(ResultCode.SUCCESS_NO_SHOW);
-        return R.getSuccess().setMsg("新建收件任务成功");
+        return R.getSuccess().setMsg("新建收件任务成功").setData(fileInboxId);
     }
 
     //发送截止提交请求

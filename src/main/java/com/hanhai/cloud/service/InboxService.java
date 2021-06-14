@@ -24,11 +24,12 @@ public class InboxService extends BaseService {
     }
 
     //新建收件任务，插入收件数据
-    public void newInboxTask(FileInboxNewParams params){
+    public Long newInboxTask(FileInboxNewParams params){
         FileInbox fileInbox=new FileInbox();
         fileInbox.setTitle(params.getTitle());
         fileInbox.setInputTips(params.getInputTips());
         fileInbox.setCommitType(params.getCommitType());
+        fileInbox.setSavePathId(params.getSavePathId());
         fileInbox.setSavePath(params.getSavePath());
         DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         fileInbox.setEndTime(LocalDateTime.parse(params.getEndTime(),df));
@@ -44,6 +45,7 @@ public class InboxService extends BaseService {
             System.out.println("****************************");
             e.printStackTrace();
         }
+        return fileInbox.getInboxId();
     }
 
     //截止提交

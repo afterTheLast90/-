@@ -30,6 +30,8 @@ public class FileInbox extends BaseEntity implements Serializable,Cloneable {
     private String inputTips ;
     /** 提交人数 */
     private Integer commitCount ;
+    /** 保存路径ID */
+    private String savePathId ;
     /** 保存路径 */
     private String savePath ;
     /** 截至时间 */
