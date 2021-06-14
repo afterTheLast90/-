@@ -67,7 +67,7 @@
 
     #sTable tbody .rUpload {
       font-size: 1.7rem;
-      margin-right: 1rem;
+      margin-right: 2rem;
     }
 
     #sTable tbody .rDownload {
@@ -249,7 +249,6 @@
 				}
         // 初始化表格
         function initTable() {
-            console.log(11111111111111)
             // 先销毁表格
             $('#sTable').bootstrapTable('destroy');
             $('#sTable').bootstrapTable({
@@ -350,7 +349,7 @@
                                 }
                                 else{     // 登录后，不是属主（可转存 & 下载）
                                     if(haveDump)
-                                        value += "<i class='bi bi-box-arrow-in-right rUpload'>"
+                                        value += "<i class='bi bi-box-arrow-in-right rUpload'></i>"
 		                                if(haveDown)
 		                                    if(row.fileType != "DIR"){
 		                                        value += "<a href='/shareDownload?userFileId="+ row.userFileId +"&shareId="+ shareId +"'  target='_blank' class=\"bi bi bi-download rDownload\"></a>"

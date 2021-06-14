@@ -552,7 +552,6 @@
                                   $("#delTagModal2").modal("show")
                               })
                           })
-		                  // 文件历史管理
                       //文件历史管理
                       httpUtil.get("/getFileHistory", {
                           params: {
@@ -574,7 +573,7 @@
                                   httpUtil.post("/file/reduction",JSON.stringify({
                                       id:$(t).attr("historyId")
                                   })).then(res =>{
-                                      $(".drawer-nav").removeClass("col-my-drawer")
+                                      $(".drawer-nav").removeClass("width400")
                                       $(".drawer").drawer("close")
                                       $('#mTable').bootstrapTable('refresh');
                                   })

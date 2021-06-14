@@ -104,15 +104,18 @@ public class ResourceService extends BaseService {
     // 转存前，检测用户空间是否足够
     public Boolean checkSpace(Long[] userFileIds){
         Long fileSpace = userShareMapper.getSizeByUserFileIds(userFileIds);
-        System.out.println(fileSpace);
+//        System.out.println(fileSpace);
         for(Long userFileId : userFileIds){
             UserFile userFile = userFileMapper.getUserFileById(userFileId);
-            fileSpace += userShareMapper.getChildSizeById(userFile.getFileParentPath() + userFileId + "/");
-            System.out.println(fileSpace);
+            Long size = userShareMapper.getChildSizeById(userFile.getFileParentPath() + userFileId + "/");
+            // 如果有下级目录，则加上size
+            if(size != null)
+                fileSpace += size;
+//            System.out.println(fileSpace);
         }
         Long userRemainSpace = userMapper.getRemainSpace(StpUtil.getLoginIdAsLong());
-        System.out.println("userRemainSpace "  + userRemainSpace);
-        return userRemainSpace > fileSpace;
+//        System.out.println("userRemainSpace "  + userRemainSpace);
+        return userRemainSpace >= fileSpace;
     }
 
     // 转存文件
