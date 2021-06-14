@@ -37,7 +37,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
                 System.out.println(request.getRequestPath());
                 systemInfoRedisUtils.incr(LocalDate.now().toString());
                 // 登录验证 -- 排除多个路径
-                SaRouterUtil.match(Arrays.asList("/**"), Arrays.asList(Pattern.publicPattern), () -> StpUtil.checkLogin());
+                SaRouterUtil.match(Arrays.asList("/**"), Arrays.asList(Pattern.publicPattern),
+                        () -> StpUtil.checkLogin());
 
                 SaRouterUtil.match(Arrays.asList(Pattern.adminPattern),
                         () -> StpUtil.checkPermission("admin"));

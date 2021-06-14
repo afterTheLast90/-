@@ -51,7 +51,7 @@ public final class Pattern {
             "/dashBoard/*",
             "/admin",
             "/fileManager",
-            "settings"
+            "/settings"
     };
 
     public final static  String [] installPattern={

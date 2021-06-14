@@ -55,9 +55,11 @@ public class LoginController {
     @Autowired
     SmsUtils smsUtils;
 
-    @GetMapping("/login")
+    @GetMapping(value = {"/login","/"})
     public String login(Model model) {
         model.addAttribute("systemInfo", systemInfo);
+        if (StpUtil.isLogin())
+            return "redirect:/main";
         return "login";
     }
 

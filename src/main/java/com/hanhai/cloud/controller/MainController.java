@@ -31,7 +31,7 @@ public class MainController {
     @Autowired
     UserService userService;
 
-    @GetMapping(value = {"/main","/"})
+    @GetMapping(value = {"/main"})
     public String mainPage(@RequestParam(name = "path",required = false, defaultValue = "/")String path, Model model) {
         model.addAttribute("path", path);
         return "main";
