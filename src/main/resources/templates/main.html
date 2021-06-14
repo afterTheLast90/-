@@ -456,7 +456,7 @@
 
             userFileId = $(this).attr("userFileId")
             let fileType = $(this).attr("filetype").toLowerCase()
-            let fileName = $(this).text()
+            let fileName = $(this).parent().siblings().eq(1).text()
             if(fileTypeSet.has(fileType.toUpperCase()))
                 $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
             else
@@ -551,7 +551,7 @@
                 layer.msg("请选择要操作的文件");
                 return;
             }
-            if((fileId===currentPath)||(fileId.indexOf(currentPath)!=-1)){
+            if((rows[0].fileType==='DIR')&&(fileId.indexOf(currentPath)!=-1)){
                 layer.msg("请重新选择目录！")
                 return;
             }
