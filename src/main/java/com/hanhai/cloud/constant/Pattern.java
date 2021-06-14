@@ -46,7 +46,8 @@ public final class Pattern {
             "/inboxCommit/**",
             "/isUpload",
             "/upload",
-            "/receiveRecordCommit"
+            "/receiveRecordCommit",
+            "/inboxCommitIsCover"
 
     };
 
