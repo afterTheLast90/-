@@ -257,6 +257,7 @@
                         <th data-field="comm_person" data-align="center">提交人</th>
                         <th data-field="ori_fileName" data-align="center">原文件名</th>
                         <th data-field="comm_date" data-align="center">提交时间</th>
+                        <th data-field="isCover" data-align="center">是否覆盖</th>
                     </tr>
                     </thead>
                 </table>
@@ -373,7 +374,7 @@
                         $("#inbox_detailModal").modal();
                         initDetailTable(inboxId3);
                     })
-                    //点击分享链接按钮  lemon
+                    //点击分享链接按钮
                     $(".share_link").click(function(e){
                         $("#sLink").val("[[${siteUrl}]]"+"inboxCommit/"+e.target.getAttribute("inboxId"));
                         $("#sQR").attr("src", "/share/QRCode?url="+"[[${siteUrl}]]"+"inboxCommit/"+e.target.getAttribute("inboxId")+"&width=200&height=200")
@@ -493,7 +494,8 @@
                 dataField: 'list',
                 totalField: "total",
                 responseHandler: function (res) {
-                    console.log(res);
+                    console.log("res");
+                    console.log(res.data);
                     return res.data;
                 },
                 columns: [
@@ -502,8 +504,7 @@
                         align: 'center',
                         title: '收件ID',
                         visible: false
-                    },
-                    {
+                    }, {
                         field: 'inputName',
                         align: 'center',
                         title: '文件名(输入名)',
@@ -524,6 +525,17 @@
                             // console.log(row)
                             // console.log(index)
                             return value.replace("T", " ");
+                        }
+                    }, {
+                        field: 'over',
+                        align: 'center',
+                        title: '是否覆盖',
+                        formatter: function indexFormatter(value, row, index) {//格式化获取的数据，这里判断下获取的是不是总计的这条数据，如果不是正常显示，如果是显示总计数据
+                            if(value=="1"){
+                                return value.replace("1","是");
+                            }else{
+                                return value.replace("0","否");
+                            }
                         }
                     },
                 ],
