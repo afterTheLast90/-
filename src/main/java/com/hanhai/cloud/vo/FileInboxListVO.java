@@ -13,6 +13,8 @@ public class FileInboxListVO {
     private String title ;
     /** 提交人数 */
     private Integer commitCount ;
+    /** 保存路径 */
+    private String savePath ;
     /** 创建时间 */
     private LocalDateTime createdTime ;
     /** 截止时间 */

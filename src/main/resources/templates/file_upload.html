@@ -439,11 +439,7 @@
         }else if(flag==="2"){
             //秒传逻辑
             handleFastUpload(file,id,userFileId);
-            layer.msg("文件已秒传");
             handleUsedSize(fileMd5,userFileId,file.size);
-            $('#mTable').bootstrapTable('refresh');
-            // lemon
-            // initTable();
             var uuid=map.get(fileMd5).get("uuid");
             $("#progress"+ uuid +" .progress-bar").css("width","100%");
             $("#progress"+ uuid +" .progress-bar").text("100%");
@@ -455,6 +451,32 @@
             map.delete(fileMd5);
             filesUpload();
         }
+    }
+
+    function handleFastUpload(file,id,userFileId){
+        var form=new FormData();
+        form.append("fileId",id);
+        form.append("name",file.name);
+        form.append("size",file.size);
+        form.append("userFileId",userFileId);
+        console.log("====================fastUpload=================")
+        console.log("path="+path);
+        form.append("uploadPath",path);
+        $.ajax({
+            url: "/fastUpload",
+            type: "POST",
+            data: form,
+            async: true,
+            processData: false,//很重要，告诉jquery不要对form进行处理
+            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
+            success: function () {
+                layer.msg("文件已秒传");
+                $('#mTable').bootstrapTable('refresh');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert("服务器出错!@@@/isUpload");
+            }
+        })
     }
 
     //处理用户内存空间大小
@@ -481,31 +503,6 @@
             usedSize+=fileSize;
             changeSize();
         }
-    }
-
-    function handleFastUpload(file,id,userFileId){
-        var form=new FormData();
-        form.append("fileId",id);
-        form.append("name",file.name);
-        form.append("size",file.size);
-        form.append("userFileId",userFileId);
-        console.log("====================fastUpload=================")
-        console.log("path="+path);
-        form.append("uploadPath",path);
-        $.ajax({
-            url: "/fastUpload",
-            type: "POST",
-            data: form,
-            async: true,
-            processData: false,//很重要，告诉jquery不要对form进行处理
-            contentType: false,  //很重要，指定为false才能形成正确的Content-Type
-            success: function () {
-
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert("服务器出错!@@@/isUpload");
-            }
-        })
     }
 
     /**
