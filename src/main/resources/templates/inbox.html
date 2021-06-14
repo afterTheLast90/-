@@ -267,6 +267,50 @@
     </div>
 </div>
 
+<!-- shareLink模态框  lemon-->
+<div class="modal fade" id="shareLink">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="s_title">生成链接和二维码</span>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- 创建成功提示 -->
+                <div class="row mt-4" style="color: #06a7ff;font-size: 15px">
+                    <i class="bi bi-check-circle-fill offset-md-3 offset-sm-2 mt-1"></i>
+                    <span class="ml-2 pb-2">成功创建收件箱链接</span>
+                </div>
+                <!-- 分享链接 -->
+                <div class="form-group row mt-1">
+                    <label class="col-form-label col-md-2 offset-md-1 col-sm-3 mr-1 text-right">链接:</label>
+                    <!--      生成链接      -->
+                    <input type="text" readonly class="form-control col-md-5 col-sm-5 mt-1" style="font-size: 16px;"
+                           name="sLink" value="" id="sLink">
+                </div>
+                <!-- 分享二维码 -->
+                <div class="form-group row" style="height: 150px;">
+                    <label class="col-form-label col-md-2 offset-md-1 col-sm-3 text-right mr-1 pt-5">二维码:</label>
+                    <!--      生成二维码图片      -->
+                    <img src="" style="height: 100%;" alt="二维码" id="sQR">
+                    <span class="pt-5 ml-2" style="font-size: 12px;">将二维码分享给好友<br/>对方扫描二维码即可访问提取文件链接</span>
+                </div>
+                <!-- 提示失效时间 -->
+                <div class="form-group row">
+                    <span class="offset-md-2 offset-md-3 offset-sm-3">
+                      链接 <b class="font-weight-normal overdueTime" style="color: #06a7ff;"></b> 失效
+                    </span>
+                </div>
+                <input type="button" id="copyLink" class="btn btn-primary offset-3 col-3" style="font-size: 10px;" value="复制链接"/>
+            </div>
+            <div class="modal-footer ">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
 
@@ -313,6 +357,12 @@
                         $("#inbox_detailModal").modal();
                         initDetailTable(inboxId3);
                     })
+                    //点击分享链接按钮  lemon
+                    $(".share_link").click(function(e){
+                        $("#sLink").val("[[${siteUrl}]]"+e.target.getAttribute("inboxId"));
+                        $("#sQR").attr("src", "/share/QRCode?url="+"[[${siteUrl}]]"+"&width=200&height=200")
+                        $("#shareLink").modal("show");
+                    })
                 },
                 url: "/inboxList",
                 dataType: "json",//数据类型
@@ -331,8 +381,7 @@
                         align: 'center',
                         title: 'id',
                         visible: false
-                    },
-                    {
+                    }, {
                         field: 'title',
                         align: 'center',
                         title: '标题',
@@ -340,6 +389,10 @@
                         field: 'commitCount',
                         align: 'center',
                         title: '提交人数',
+                    }, {
+                        field: 'savePath',
+                        align: 'center',
+                        title: '保存路径',
                     }, {
                         field: 'createdTime',
                         align: 'center',
@@ -364,10 +417,12 @@
                             if (!isEnd) {
                                 return '<button type="button" inboxId="' + row.inboxId + '"  class="btn btn-primary end_commit">截止提交</button>&nbsp;&nbsp;&nbsp;' +
                                     '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">分享链接</button>';
                             } else {
                                 return '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary update_data">修改</button>&nbsp;&nbsp;&nbsp;' +
-                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>';
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary commit_detail">提交详情</button>&nbsp;&nbsp;&nbsp;'+
+                                    '<button type="button" inboxId="' + row.inboxId + '" class="btn btn-primary share_link">分享链接</button>';
                             }
 
                             // return row.date == '总计' ? '<span style="color: red;">' + value + '</span>' : value;
