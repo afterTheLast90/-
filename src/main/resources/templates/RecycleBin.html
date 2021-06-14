@@ -210,9 +210,56 @@
 <!--</div>-->
 </body>
 </html>
-<script type="module">
+<script type="text/javascript">
 
-    import httpUtil from "/static/httpUtil.js";
+    let httpUtil = axios.create({
+        headers: {
+            'content-type': 'application/json'
+        }
+    })
+    httpUtil.interceptors.request.use(
+        config => {
+            layer.load(2);
+            return config;
+        }
+    )
+
+    httpUtil.interceptors.response.use(
+        response => {
+            //拦截响应，做统一处理
+            console.log("============拦截器拦截输出==================")
+            console.log(response.data)
+            console.log("==========================================")
+            layer.closeAll('loading');
+            if (response.data.code !== 201)
+                layer.msg(response.data.msg
+                    //     , {
+                    //     offset: 't',
+                    // }
+                );
+            if (response.data.code) {
+                if (response.data.code !== 200 && response.data.code !== 201)
+                    return Promise.reject(response.data)
+            }
+
+            return response.data
+        },
+        //接口错误状态处理，也就是说无响应时的处理
+        error => {
+            layer.closeAll('loading');
+            console.log("============拦截器拦截输出==================")
+            console.log(error)
+            console.log("==========================================")
+
+            layer.msg("网络错误，请稍后再试"
+                //     , {
+                //     offset: 't',
+                // }
+            );
+            // layer.msg("网络错误，请稍后再试")
+            return Promise.reject(error) // 返回接口返回的错误信息
+        })
+
     let currentId=undefined;
     let sign='reduction'
 
@@ -289,39 +336,42 @@
             $.fn.selectDirForUser.show()
         })
 
-        $.fn.selectDirForUser.ok(function(a,b){
-            if (sign=="reduction"){
-                let checkedBox =$("input[name='num']:checked");
-                if(checkedBox.length===0){
-                    layer.msg("请选择要操作的文件");
-                    return;
-                }
-                let ids = [];
-                for(let i =0 ;i<checkedBox.length;i++){
-                    if( checkedBox[i].getAttribute("recycleFileId"))
-                        ids.push(checkedBox[i].getAttribute("recycleFileId"))
-                }
-                httpUtil.post("/recycle/reduction",JSON.stringify({
-                    ids:ids,
-                    target:a
-                })).then(res=>{
-                    // location.reload()
-                    // $('#filesTable').bootstrapTable('refresh');
-                })
-            }else{
-                httpUtil.post("/recycle/reducing",JSON.stringify({
-                    id:currentId,
-                    target:a
-                })).then(res=>{
-                    // location.reload();
-                    // $('#filesTable').bootstrapTable('refresh');
-                })
-            }
-            location.reload()
-            $('#filesTable').bootstrapTable('refresh');
-        })
+        $.fn.selectDirForUser.ok(red)
     }
 
+    function reduction(ids,a){
+        httpUtil.post("/recycle/reduction",JSON.stringify({
+            ids:ids,
+            target:a
+        })).then(res=>location.reload());
+    }
+    function red(a,b){
+        if(sign!=="reduction"){
+            reducing(a);
+            return;
+        }
+
+        let checkedBox =$("input[name='num']:checked");
+        if(checkedBox.length===0){
+            layer.msg("请选择要操作的文件");
+            return;
+        }
+        let ids = [];
+        for(let i =0 ;i<checkedBox.length;i++)
+            if( checkedBox[i].getAttribute("recycleFileId"))
+                ids.push(checkedBox[i].getAttribute("recycleFileId"))
+
+        reduction(ids,a);
+
+    }
+    function reducing(a){
+        httpUtil.post("/recycle/reducing",JSON.stringify( {
+            id:currentId,
+            target:a
+        } )).then(function(res){
+            location.reload()
+        })
+    }
 
     $(function(){
         allDom.onclick = function () {   //定义一个全选框的点击函数
