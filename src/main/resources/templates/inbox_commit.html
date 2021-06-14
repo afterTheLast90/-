@@ -30,11 +30,7 @@
             height: 40px;
             border-radius: 50% !important;
         }
-        #commit{
-            position:absolute;
-            right: 500px;
-            bottom: 200px;
-        }
+
     </style>
 </head>
 
@@ -80,7 +76,11 @@
                         <input type="file" id="commitFile" hidden="hidden"/>
                     </div>
                 </div>
-                <button type="button" class="btn btn-primary" id="commit">提交</button>
+                <div class="row mt-5">
+                    <button type="button" class="btn btn-lg btn-primary mr-auto offset-10"
+                            id="commit">提交
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -92,6 +92,7 @@
     var recordUserFileId;  //用户文件ID
     var inputName;  //输入名
     var fileOriName;  //文件原名
+    var isCover=0;
 
     var conIndex;
     var filesId=-1;  //上传序号
@@ -150,8 +151,9 @@
             "inboxId":[[${fileInbox.inboxId}]],
             "inputName":inputName,
             "commitFileName":fileOriName,
+            "isCover":isCover,
         })).then(res=>{
-
+            location.href="/inboxSuccess"
         }).catch(err=>{
 
         })
@@ -191,7 +193,7 @@
             var fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
             console.log("fileMd5=" + fileMd5);
             var form = new FormData();
-            form.append("path","[[${fileInbox.savePath}]]");
+            form.append("path","[[${fileInbox.savePathId}]]");
             form.append("name",file.name);
             form.append("inputName",inputName);
             form.append("userId",[[${fileInbox.publisher}]]);
@@ -205,7 +207,15 @@
                 success: function (userFileId) {
                     console.log("================== isCover ===================");
                     console.log("userFileId="+userFileId);
+                    if(typeof(userFileId)=="string"){
+                        console.log("新建逻辑")
+                        isCover=0;
+                    }else{
+                        console.log("覆盖逻辑")
+                        isCover=1;
+                    }
                     checkIsCover(userFileId,fileMd5,file);
+                    // lemon
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert("服务器出错!@@@/isCover");
@@ -419,7 +429,7 @@
             $("#progress"+ fileMd5 +" .progress-bar").text("100%");
             //服务器返回分片是否上传成功
             // if (succeed  >= shardCount) {
-            layer.msg("上传成功！");
+            layer.msg("上传成功123123123！");
             // chunk=-1;
             // succeed=0;
             state=0;

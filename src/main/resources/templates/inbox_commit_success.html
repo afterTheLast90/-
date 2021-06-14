@@ -2,7 +2,7 @@
 <html lang="zh-CN" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <th:block th:include="common/header :: header(~{::title})">
-        <title>链接失效</title>
+        <title>提交成功</title>
     </th:block>
 
     <style>
@@ -36,11 +36,11 @@
 
 <body style="overflow: hidden;">
 <div th:replace="common/nav-header :: nav-header"></div>
-<div class="main my-2" style="overflow-x:hidden ">
-    <section class="rMain shadow" >
+<div class="main my-2" style="overflow-x:hidden " >
+    <section class="rMain shadow">
         <div class="info" >
-            <i class="bi bi-emoji-neutral" style="font-size: 7rem;color: #007bff;"></i><br/>
-            <div style="color: #666666;font-size: 1.3rem">[[${errmsg}]]</div>
+            <i class="bi bi-emoji-laughing" style="font-size: 7rem;color: #007bff;"></i><br/>
+            <div style="color: #666666;font-size: 1.3rem">提交成功</div>
         </div>
     </section>
 </div>
