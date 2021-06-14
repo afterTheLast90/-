@@ -41,7 +41,9 @@ public final class Pattern {
             // 得到分享资源
             "/s/*",
             // 取件码链接
-            "/s/takeCode"
+            "/s/takeCode",
+            // 提交文件
+            "/inboxCommit/**"
 
     };
 
