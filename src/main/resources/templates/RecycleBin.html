@@ -17,13 +17,6 @@
             overflow: hidden;
         }
 
-        /*body {*/
-        /*    !*background-color: #efefef;*!*/
-        /*    min-width: 1440px;*/
-        /*    margin: 0px auto;*/
-        /*    padding: 0px 0px;*/
-        /*}*/
-
         .actions {
             padding-top: 10px;
             justify-content: left;
@@ -66,7 +59,11 @@
             margin-right: 30px;
             /*display: flex;*/
         }
-
+        td{
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
         tbody tr:hover {
             background-color: rgb(244, 251, 255);
         }
@@ -145,7 +142,7 @@
                         <svg class="icon" aria-hidden="true">
                             <use th:href="${'#icon-'+#strings.toLowerCase(file.getFileType())}"></use>
                         </svg>
-                        <span th:text="${file.getFileName()}"></span></td>
+                        <span th:title="${file.getFileName()}" th:text="${file.getFileName()}"></span></td>
                     <td class="action" style="color: #007bff">
                         <i class="bi bi-trash delete-action" title="删除"  th:recycleFileId="${file.getRecycleId()}"></i>
                         <i class="bi bi bi-arrow-repeat reducing-action" title="还原" id="reducing" th:recycleFileId="${file.getRecycleId()}"></i>
