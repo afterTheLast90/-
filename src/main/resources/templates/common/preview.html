@@ -125,6 +125,7 @@
                if(!filename){
                    filename="文件预览"
                }
+               //图片
                if(imageTypeSet.has(type)){
                    let image = new ImagePreview();
                    if (url){
@@ -132,10 +133,11 @@
                    }
                    else{
                        // console.log(url)
-                       image.show('/preview/media?userFileId='+userFileId);
+                       image.show('/preview/media?userFileId='+userFileId+'&a='+Math.random());
                    }
                    return;
                }
+               //office
                if(openOfficeTypeSet.has(type)){
                    if(url){
                        layer.open({
@@ -155,11 +157,12 @@
                            shade: 0.8,
                            area: ['80%', '90%'],
                            // content: "http://localhost:63342/shixun/ImagePreview/src/竹林幽径-0.0.0.1.jpg" //iframe的url
-                           content: '/preview/document?userFileId='+userFileId//iframe的url
+                           content: '/preview/document?userFileId='+userFileId+'&a='+Math.random()//iframe的url
                        })
                    }
                    return;
                }
+               //音频
                if(audioTypeSet.has(type)){
                    // function display() {
                    layer.open({
@@ -177,7 +180,7 @@
                                $("#audio-action").html("<audio src="+url+" preload='auto'></audio>")
                            }else {
                                $("#audio-action").prop("hidden",false);
-                               $("#audio-action").html("<audio src='/preview/media?userFileId="+userFileId+"' preload='none'></audio>")
+                               $("#audio-action").html("<audio src='/preview/media?userFileId="+userFileId+'&a='+Math.random()+"' preload='none'></audio>")
                            }
 
                            audiojs.events.ready(function () {
@@ -192,6 +195,7 @@
                    });
                    return;
                }
+               //视频
                if(videoTypeSet.has(type)){
 
 
@@ -200,8 +204,7 @@
                    if(url){
                        $(".videoShadow").css({'display':'block'});
                        $("#audio-action").prop("hidden",false);
-                       $('.videos').html("<video id=\"videoPlay\" style='height: 100%' src="+url
-                           + " preload=\"auto\" controls=\"controls\" autoplay=\"autoplay\">" +
+                       $('.videos').html("<video id=\"videoPlay\" style='height: 100%'  type=\"video/mp4\"  controls=\"controls\" autoplay=\"autoplay\">" +
                            "</video><img id='closeVideo' class=\"vclose\" src=\"/static/video/gb.png\" width=\"25\" height=\"25\"/>");
 
                        src = url;
@@ -216,7 +219,7 @@
                        //     -parseInt($('.videos').css('width').substring($('.videos').css('width'),$('.videos').css('width').length-2)))
 
                        //
-                       src = "/preview/media?userFileId="+userFileId;
+                       src = "/preview/media?userFileId="+userFileId+'&a='+Math.random();
 
                        // console.log(left)
                        // $('.videos').css({'left':left+'px'})
@@ -256,6 +259,7 @@
                    $('.videos').show();
                    return;
                }
+               //压缩
                if(type==="ZIP"){
                    if(!url){
                        layer.open({
@@ -284,7 +288,8 @@
                        }
                        httpUtil.get("/preview/zip",{
                            params:{
-                               path:path
+                               path:path,
+                               a:Math.random()
                            }
                        }).then(res => {
                            $("#LastFloor").empty()
@@ -317,7 +322,7 @@
                                if (zipFileType==="ZIP"){
                                    layer.msg("暂不支持该类型文件的预览")
                                }
-                               let zipFileUrl="/preview/zip/file?path="+userFileId+modernPath+"/"+$(this).text().trim()
+                               let zipFileUrl="/preview/zip/file?path="+userFileId+modernPath+"/"+$(this).text().trim()+'&a='+Math.random()
                                zipFileUrl=zipFileUrl.replace(/ /g,"%20")
                                previewFile(zipFileType,zipFileUrl,$(this).text().trim())
                            })
