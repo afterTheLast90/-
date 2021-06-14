@@ -175,7 +175,7 @@
                               value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                           else
                               value += "<use xlink:href='#icon-other'></use>"
-                          return value + "</svg>" + fName
+                          return value + "</svg>" + "<span title='"+ fName +"'>" +fName +"</span>"
                       }
                   },
                   {
@@ -255,7 +255,17 @@
                       $(".rUpload").click(function(){
                           userFileId = $(this).parent().siblings(":first").children("svg").attr("userfileid")
 		                      shareId = $(this).parent().siblings(":first").children("svg").attr("shareid")
-                          $.fn.selectDirForUser.show()
+													httpUtil.get("/resource/checkOwner",{
+													    params: {
+													        userFileId: userFileId
+													    }
+													})
+		                      .then(res => {
+                              if(res.data)
+                                  layer.msg("这是您的文件哦，别转存多份啦")
+                              else
+                                  $.fn.selectDirForUser.show()
+		                      })
                       })
                       $("#parentBtn").removeAttr("disabled")
 		              }

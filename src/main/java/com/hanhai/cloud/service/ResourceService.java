@@ -2,6 +2,7 @@ package com.hanhai.cloud.service;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.BaseService;
+import com.hanhai.cloud.entity.Files;
 import com.hanhai.cloud.entity.User;
 import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.entity.UserShare;
@@ -12,6 +13,7 @@ import com.hanhai.cloud.vo.ResourceVO;
 import com.hanhai.cloud.vo.ShareMumbersVO;
 import com.hanhai.cloud.vo.UserShareVO;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,11 @@ import java.util.*;
 
 @Service
 public class ResourceService extends BaseService {
+    @Autowired
+    UserService userService;
+    @Autowired
+    FileService fileService;
+
     // 得到公共资源分享（未登录）
     public List<ResourceVO> getPublicShare(ResourceSearchParams resourceSearchParams) {
         startPage(resourceSearchParams);
@@ -98,6 +105,8 @@ public class ResourceService extends BaseService {
     public void resourceDump(Long[] userFileIds, String targetPath, String[] shareIds) throws UpdateException {
         List<UserFile> sourceFiles =  userShareMapper.getFileByUFIds(userFileIds);              // 需要转存的文件
         List<UserFile> targetFiles = userShareMapper.getFileByParentPathAndUser(StpUtil.getLoginIdAsLong(), targetPath);   // 目标目录下的所有文件
+        User user = userService.getUserById(StpUtil.getLoginIdAsLong());
+
         // 检测文件重名
         Set<String> targetFileName = new HashSet<String>(targetFiles.size());
         for(UserFile userFile : targetFiles){
@@ -150,7 +159,15 @@ public class ResourceService extends BaseService {
                         else {
                             s.setUserFileId(null);
                             userFileMapper.insert(s);
+                            // 更新文件引用次数
+                            Files file = fileService.getById(s.getFileId());
+                            System.out.println(file.toString());
+                            file.setCitationsCount(new Long(file.getCitationsCount() + 1));
+                            fileMapper.updateById(file);
                         }
+                        // 更新用户使用空间
+                        user.setUsedSize(user.getUsedSize() + s.getFileSize());
+                        userService.updateById(user);
                     }
                     sourcePathQ.poll();
                     targetPathQ.poll();
@@ -178,7 +195,14 @@ public class ResourceService extends BaseService {
                     sourceFile.setFileName(fileName +"("+i+")" + fileType);
                 }
                 userFileMapper.insert(sourceFile);
+                // 更新文件引用次数
+                Files file = fileService.getById(sourceFile.getFileId());
+                file.setCitationsCount(new Long(file.getCitationsCount() + 1));
+                fileMapper.updateById(file);
             }
+            // 更新用户使用空间
+            user.setUsedSize(user.getUsedSize()+sourceFile.getFileSize());
+            userService.updateById(user);
         }
         // 更新分享文件的 转存次数
         for(String shareId : shareIds){

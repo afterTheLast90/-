@@ -5,6 +5,7 @@ import com.hanhai.cloud.base.PageResult;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.constant.ResultCode;
 import com.hanhai.cloud.entity.User;
+import com.hanhai.cloud.entity.UserFile;
 import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.params.DumpResourceParams;
 import com.hanhai.cloud.params.ResourceSearchParams;
@@ -94,6 +95,16 @@ public class ResourceController {
         }
         return new R<PageResult>(ResultCode.SUCCESS_NO_SHOW)
                 .setData(new PageResult(resourceVO));
+    }
+
+    // 根据userFileId,判断当前用户是该文件的属主(true，则是属主)
+    @GetMapping("/resource/checkOwner")
+    @ResponseBody
+    public R<Boolean> checkOwner(@RequestParam("userFileId")Long userFileId){
+        UserFile userFile = userFileService.getFileById(userFileId);
+        System.out.println(userFile.getUserId());
+        System.out.println(StpUtil.getLoginIdAsLong());
+        return new R(ResultCode.SUCCESS_NO_SHOW).setData(userFile.getUserId().equals(StpUtil.getLoginIdAsLong()));
     }
 
     // 访问文件分享页
@@ -220,7 +231,7 @@ public class ResourceController {
         if (isLogin) {
             isOwner = shareVO.getUserId().equals(StpUtil.getLoginIdAsLong());
         }
-        model.addAttribute(isOwner);
+        model.addAttribute("isOwner", isOwner);
 
         // 进入子文件
         if(searchParams.getGoUp()==null || !searchParams.getGoUp()) {
@@ -272,6 +283,7 @@ public class ResourceController {
             model.addAttribute("msg", "找不到对应的文件,请重新输入");
             return "takeCode";
         }
+        // 得到对应文件
         model.addAttribute("shareId", takeCode);
         model.addAttribute("pwdPass", true);        // 不检测密码
         boolean isLogin = StpUtil.isLogin();
@@ -280,6 +292,11 @@ public class ResourceController {
             isOwner = userShare.getUserId().equals(StpUtil.getLoginIdAsLong());
         model.addAttribute("isLogin", isLogin);
         model.addAttribute("isOwner", isOwner);
+        GetShareVO getShareVO = resourceService.getShare(takeCode);
+        model.addAttribute("haveDown", getShareVO.getHaveDown());
+        model.addAttribute("haveDump", getShareVO.getHaveDump());
+        String fileType = getShareVO.getFileType().toLowerCase();
+        model.addAttribute("fileType", fileType);
         // 取件码正确
         return "getShareFile";
     }
