@@ -32,8 +32,8 @@
         }
         #commit{
             position:absolute;
-            right: 450px;
-            bottom: 100px;
+            right: 500px;
+            bottom: 200px;
         }
     </style>
 </head>
@@ -105,7 +105,9 @@
     const shardSize=1*1024*1024;   //以1M为一个分片
 
     $(function (){
-
+        if(!"[[${isFind}]]"){
+            console.log("链接不存在或已失效！");
+        }
     })
 
     $("#selectFile").click(function(){
@@ -310,10 +312,11 @@
         var form=new FormData();
         form.append("fileId",id);
         form.append("name",file.name);
+        form.append("inputName",inputName);
         form.append("size",file.size);
         form.append("userFileId",userFileId);
         form.append("userId",[[${fileInbox.publisher}]]);
-        form.append("uploadPath","[[${fileInbox.savePath}]]");
+        form.append("uploadPath","[[${fileInbox.savePathId}]]");
         $.ajax({
             url: "/fastUpload",
             type: "POST",
@@ -363,12 +366,13 @@
         form.append("id", id);
         form.append("md5", fileMd5);
         form.append("name", name);
+        form.append("inputName",inputName);
         form.append("size", size);
         form.append("total", shardCount);  //总片数
         form.append("index", chunk+1);     //当前是第几片(从1开始)
         form.append("userFileId",userFileId);
         form.append("userId",[[${fileInbox.publisher}]]);
-        form.append("uploadPath","[[${fileInbox.savePath}]]");
+        form.append("uploadPath","[[${fileInbox.savePathId}]]");
 
         var index = chunk+1;
         //按大小切割文件段

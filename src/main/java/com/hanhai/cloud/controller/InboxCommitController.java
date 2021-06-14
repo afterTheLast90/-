@@ -11,6 +11,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +21,11 @@ public class InboxCommitController {
     @Autowired
     private InboxCommitService inboxCommitService;
 
+    @GetMapping("/inboxError")
+    public String inbox_commit_error(){
+        return "inbox_commit_error";
+    }
+
     @GetMapping("/inboxCommit/{inboxId}")
     public String inbox_commit(@PathVariable("inboxId") String path, Model model){
         List<FileInbox> fileInboxList=new ArrayList<>();
@@ -26,7 +33,12 @@ public class InboxCommitController {
         if(fileInboxList.size()==0){
             System.out.println("查询无效");
             model.addAttribute("isFind",false);
-            return "inbox_commit";
+            return "inbox_commit_error";
+        }
+        if(LocalDateTime.now().isAfter(fileInboxList.get(0).getEndTime())){
+            System.out.println("链接已经失效！");
+            model.addAttribute("isFind",false);
+            return "inbox_commit_error";
         }
         model.addAttribute("fileInbox",fileInboxList.get(0));
         String publisherName=inboxCommitService.getPublisherName(fileInboxList.get(0).getPublisher()); //通过发布者ID获取发布者姓名
