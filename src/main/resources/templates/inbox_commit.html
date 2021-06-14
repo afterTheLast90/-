@@ -92,6 +92,7 @@
     var recordUserFileId;  //用户文件ID
     var inputName;  //输入名
     var fileOriName;  //文件原名
+    var isCover=0;
 
     var conIndex;
     var filesId=-1;  //上传序号
@@ -150,6 +151,7 @@
             "inboxId":[[${fileInbox.inboxId}]],
             "inputName":inputName,
             "commitFileName":fileOriName,
+            "isCover":isCover,
         })).then(res=>{
 
         }).catch(err=>{
@@ -191,7 +193,7 @@
             var fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
             console.log("fileMd5=" + fileMd5);
             var form = new FormData();
-            form.append("path","[[${fileInbox.savePath}]]");
+            form.append("path","[[${fileInbox.savePathId}]]");
             form.append("name",file.name);
             form.append("inputName",inputName);
             form.append("userId",[[${fileInbox.publisher}]]);
@@ -205,7 +207,15 @@
                 success: function (userFileId) {
                     console.log("================== isCover ===================");
                     console.log("userFileId="+userFileId);
+                    if(typeof(userFileId)=="string"){
+                        console.log("新建逻辑")
+                        isCover=0;
+                    }else{
+                        console.log("覆盖逻辑")
+                        isCover=1;
+                    }
                     checkIsCover(userFileId,fileMd5,file);
+                    // lemon
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert("服务器出错!@@@/isCover");
