@@ -53,39 +53,40 @@ public class InboxCommitService extends BaseService{
     public void receivingRecordCommit(ReceivingRecordCommitParam params){
         if(params.getIsCover()==1){  //覆盖逻辑
             System.out.println("===================覆盖逻辑================");
-            List<ReceivingRecord> lists=new ArrayList<ReceivingRecord>();
-            lists=receivingRecordMapper.getByName(params.getInboxId(),params.getInputName()+"."+FileNameUtil.getExtensionName(params.getCommitFileName()));
-            ReceivingRecord receivingRecord=lists.get(0);
-            receivingRecord.setOver("1");
-            receivingRecordMapper.updateById(receivingRecord);
-        }else{  //新建逻辑
-            System.out.println("===================新建逻辑================");
-            ReceivingRecord receivingRecord=new ReceivingRecord();
-            receivingRecord.setInboxId(params.getInboxId());
-            receivingRecord.setFileId(params.getFileId());
-            receivingRecord.setUserFileId(params.getUserFileId());
-            Long userId= null;
-            if(StpUtil.isLogin())
-                userId=StpUtil.getLoginIdAsLong();
-            else
-                userId=-1L;
-            receivingRecord.setUserId(userId);
-            receivingRecord.setInputName(params.getInputName()+"."+FileNameUtil.getExtensionName(params.getCommitFileName()));
-            receivingRecord.setCommitFileName(params.getCommitFileName());
-            try{
-                receivingRecordMapper.insert(receivingRecord);
-            }catch(Exception e){
-                System.out.println("****************************");
-                System.err.println("收件记录插入失败！");
-                System.out.println("****************************");
+            ReceivingRecord receivingRecord=null;
+            receivingRecord=receivingRecordMapper.getByName(params.getInboxId(),params.getInputName()+"."+FileNameUtil.getExtensionName(params.getCommitFileName()));
+            if(receivingRecord!=null){
+                receivingRecord.setOver("1");
+                receivingRecordMapper.updateById(receivingRecord);
             }
-            //收件箱人数+1
-            FileInbox fileInbox=new FileInbox();
-            FileInbox fileInbox1=new FileInbox();
-            fileInbox.setInboxId(params.getInboxId());
-            fileInbox1=fileInboxMapper.selectById(fileInbox);
-            fileInbox1.setCommitCount(fileInbox1.getCommitCount()+1);
-            fileInboxMapper.updateById(fileInbox1);
         }
+        //新建逻辑
+        System.out.println("===================新建逻辑================");
+        ReceivingRecord receivingRecord=new ReceivingRecord();
+        receivingRecord.setInboxId(params.getInboxId());
+        receivingRecord.setFileId(params.getFileId());
+        receivingRecord.setUserFileId(params.getUserFileId());
+        Long userId= null;
+        if(StpUtil.isLogin())
+            userId=StpUtil.getLoginIdAsLong();
+        else
+            userId=-1L;
+        receivingRecord.setUserId(userId);
+        receivingRecord.setInputName(params.getInputName()+"."+FileNameUtil.getExtensionName(params.getCommitFileName()));
+        receivingRecord.setCommitFileName(params.getCommitFileName());
+        try{
+            receivingRecordMapper.insert(receivingRecord);
+        }catch(Exception e){
+            System.out.println("****************************");
+            System.err.println("收件记录插入失败！");
+            System.out.println("****************************");
+        }
+        //收件箱人数+1
+        FileInbox fileInbox=new FileInbox();
+        FileInbox fileInbox1=new FileInbox();
+        fileInbox.setInboxId(params.getInboxId());
+        fileInbox1=fileInboxMapper.selectById(fileInbox);
+        fileInbox1.setCommitCount(fileInbox1.getCommitCount()+1);
+        fileInboxMapper.updateById(fileInbox1);
     }
 }

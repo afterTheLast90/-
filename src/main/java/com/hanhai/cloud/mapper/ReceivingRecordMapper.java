@@ -16,6 +16,6 @@ public interface ReceivingRecordMapper extends BaseMapper<ReceivingRecord> {
     @Select("select * from receiving_record where inbox_id =#{inboxId} and deleted =0 ")
     public List<ReceivingRecord> getByUserId(@Param("inboxId") Long inboxId);
 
-    @Select("select * from receiving_record where inbox_id =#{inboxId} and input_name =#{inputName} and deleted =0 ")
-    public List<ReceivingRecord> getByName(@Param("inboxId") Long inboxId,@Param("inputName") String inputName);
+    @Select("select * from receiving_record where inbox_id =#{inboxId} and input_name =#{inputName}and over=0 and deleted =0 ")
+    public ReceivingRecord getByName(@Param("inboxId") Long inboxId,@Param("inputName") String inputName);
 }
