@@ -43,7 +43,10 @@ public final class Pattern {
             // 取件码链接
             "/s/takeCode",
             // 提交文件
-            "/inboxCommit/**"
+            "/inboxCommit/**",
+            "/isUpload",
+            "/upload",
+            "/receiveRecordCommit"
 
     };
 
