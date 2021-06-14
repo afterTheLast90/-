@@ -12,6 +12,8 @@ public class UserFileParam {
     /** 文件名 */
     private String name;
     private String[] names;
+    /** 输入名 */
+    private String inputName;
     /** 用户ID */
     private String userId;
 }

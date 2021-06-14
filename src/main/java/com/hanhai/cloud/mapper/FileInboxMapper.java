@@ -13,7 +13,7 @@ import java.util.List;
  **/
 public interface FileInboxMapper extends BaseMapper<FileInbox> {
 
-    @Select("select * from file_inbox where publisher =#{userId} and deleted =0 ")
+    @Select("select * from file_inbox where publisher =#{userId} and deleted =0 order by created_time desc")
     public List<FileInbox> getByUserId(@Param("userId") Long userId);
 
     @Select("select * from file_inbox where inbox_id=#{inboxId} and deleted=0")

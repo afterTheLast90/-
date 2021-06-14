@@ -24,6 +24,11 @@ public class FileInboxNewParams {
     @NotNull(message = "用户权限不能为空！")
     private int commitType;
 
+    /** 保存路径ID */
+    @NotNull(message = "保存路径不能为空！")
+    @NotBlank(message = "保存路径不能为空！")
+    private String savePathId ;
+
     /** 保存路径 */
     @NotNull(message = "保存路径不能为空！")
     @NotBlank(message = "保存路径不能为空！")

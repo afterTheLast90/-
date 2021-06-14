@@ -4,6 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.hanhai.cloud.base.R;
 import com.hanhai.cloud.entity.FileInbox;
 import com.hanhai.cloud.params.ReceivingRecordCommitParam;
+import com.hanhai.cloud.params.UserFileParam;
 import com.hanhai.cloud.service.InboxCommitService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -45,5 +46,11 @@ public class InboxCommitController {
     public R inbox_commit(@RequestBody @Validated ReceivingRecordCommitParam params){
         inboxCommitService.receivingRecordCommit(params);
         return R.getSuccess().setMsg("上传成功！");
+    }
+
+    @PostMapping("/inboxCommitIsCover")
+    @ResponseBody
+    public Long noCover(UserFileParam param){
+        return inboxCommitService.findByName(param.getPath(),param.getName(),param.getInputName(),param.getUserId());
     }
 }

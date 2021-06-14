@@ -94,7 +94,6 @@
     var fileOriName;  //文件原名
 
     var conIndex;
-    var selectedType=0;  //表示选择的类型  0：初始化(文件)  1：文件夹
     var filesId=-1;  //上传序号
     var filesNum=0;  //上传文件数
     let map = new Map();  //上传队列
@@ -131,8 +130,10 @@
         }
         inputName=$("#input_name").val().trim();  //文件输入名
         fileOriName=file.name;  //文件原名
-        if(inputName=="") //如果没有输入文件名，则输入名就变更为 文件原始名字
-            inputName=file.name;
+        if(inputName==""){ //如果没有输入文件名，则输入名就变更为 文件原始名字
+            layer.msg("请根据提示输入内容！");
+            return;
+        }
         //文件上传
         if(filesNum==0 && filesId==-1)
             filesNum=$("#commitFile")[0].files.length;
@@ -141,7 +142,6 @@
 
     //收件记录表插入表
     function recordCommit(){
-        console.log("============== recordCommit =================");
         httpUtil.post("/receiveRecordCommit",JSON.stringify({
             "fileId":recordFileId,
             "userFileId":recordUserFileId,
@@ -159,8 +159,6 @@
     //===========================================================================
     /**
      *  检查等待队列中的每个文件，判断是否存在同名文件
-     *      存在则询问是否覆盖 - 覆盖则加入上传队列 - 不覆盖则不加入上传队列
-     *      不存在则直接加入上传队列
      */
     function filesCheck(){
         var file; //文件对象
@@ -169,17 +167,13 @@
         console.log("filesNum="+filesNum);
         if(filesId>=filesNum){
             console.log("=======开始上传=======");
-            selectedType=0;
             filesId=-1;
             filesNum=0;
             $("#commitFile").val(null);
             $("#selectName").text("");
             filesUpload();
         }else{
-            if(selectedType==0)
-                file=$("#commitFile")[0].files[filesId];
-            else
-                file=$("#commitFile")[0].files[filesId];
+            file=$("#commitFile")[0].files[filesId];
             CheckIsUpload(file);
         }
     }
@@ -194,16 +188,13 @@
             var blob = e.target.result;
             var fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
             console.log("fileMd5=" + fileMd5);
-            if(map.get(fileMd5)!=null){
-                layer.msg("上传队列中已经存在该文件！");
-                return;
-            }
             var form = new FormData();
             form.append("path","[[${fileInbox.savePath}]]");
             form.append("name",file.name);
+            form.append("inputName",inputName);
             form.append("userId",[[${fileInbox.publisher}]]);
             $.ajax({
-                url: "/noCover",
+                url: "/inboxCommitIsCover",
                 type: "POST",
                 data: form,
                 async: true,
@@ -212,10 +203,7 @@
                 success: function (userFileId) {
                     console.log("================== isCover ===================");
                     console.log("userFileId="+userFileId);
-                    if(userFileId!="")  //存在同名文件
-                        checkCover(userFileId,fileMd5,file);
-                    else  //不存在同名文件
-                        checkUnCover(userFileId,fileMd5,file);
+                    checkIsCover(userFileId,fileMd5,file);
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert("服务器出错!@@@/isCover");
@@ -224,48 +212,7 @@
         })
     }
 
-    /**
-     *  询问同名文件是否覆盖
-     *  覆盖加入上传队列，不覆盖不加入上传队列；
-     *  全部覆盖则不需要询问，直接加入上传队列；全不覆盖则不再继续上传
-     */
-    function checkCover(userFileId,fileMd5,file){
-        var form = new FormData();
-        layer.open({
-            content: '存在与'+ inputName +'同名文件，是否覆盖？'
-            ,btn: ['是', '否']
-            ,yes: function(index, layero){
-                // 覆盖
-                form.append("file",file);
-                form.append("userFileId",userFileId);
-                map.set(fileMd5,form);  //加入上传队列中
-                layer.open({
-                    title: '上传进度'
-                    ,move:false
-                    ,content:file.name+
-                        '<div id="progress' + fileMd5 +'" class="progress">\n' +
-                        '    <div id="bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">0%</div>\n' +
-                        '</div>'
-                    ,closeBtn: 0
-                    ,resize:false
-                    ,area:['500px','200px']
-                    ,btn: []
-                });
-                filesCheck();
-            }
-            ,btn2: function(index, layero){
-                // 不覆盖
-                filesCheck();
-            }
-            ,closeBtn:0
-        });
-    }
-
-    /**
-     *  不存在同名文件，不需要询问是否覆盖
-     *  加入上传队列中
-     */
-    function checkUnCover(userFileId,fileMd5,file){
+    function checkIsCover(userFileId,fileMd5,file){
         var form = new FormData();
         form.append("file",file);
         form.append("userFileId",userFileId);
@@ -282,7 +229,6 @@
             ,area:['500px','200px']
             ,btn: []
         });
-
         filesCheck();
     }
 
@@ -476,7 +422,8 @@
             map.delete(fileMd5);
             //====================================
             recordFileId=id;
-            recordUserFileId=userFileId;
+            console.log("userFileId="+data.userFileId);
+            recordUserFileId=data.userFileId;
             recordCommit();
             //====================================
             filesUpload();
