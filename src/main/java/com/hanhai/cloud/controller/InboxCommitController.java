@@ -31,12 +31,12 @@ public class InboxCommitController {
         fileInboxList=inboxCommitService.getInboxList(Long.parseLong(path));
         if(fileInboxList.size()==0){
             System.out.println("查询无效");
-            model.addAttribute("isFind",false);
+            model.addAttribute("errmsg","哎哟，链接不存在或已经失效！");
             return "inbox_commit_error";
         }
         if(LocalDateTime.now().isAfter(fileInboxList.get(0).getEndTime())){
             System.out.println("链接已经失效！");
-            model.addAttribute("isFind",false);
+            model.addAttribute("errmsg","哎哟，链接不存在或已经失效！");
             return "inbox_commit_error";
         }
         model.addAttribute("fileInbox",fileInboxList.get(0));
@@ -45,10 +45,14 @@ public class InboxCommitController {
         int commitType=fileInboxList.get(0).getCommitType(); //提交权限 0：全部用户；1：登陆用户.
         boolean isLogin=StpUtil.isLogin(); //获取当前用户是否登陆
         model.addAttribute("isLogin",isLogin);
-        if(commitType==1 && !isLogin) //只有权限为1 并且 当前用户登陆时 才能够提交
+        if(commitType==1 && !isLogin){  //只有权限为1 并且 当前用户登陆时 才能够提交
             model.addAttribute("isCommit",false);
-        else
+            System.out.println("权限不够，需要登陆！");
+            model.addAttribute("errmsg","权限不够，请登陆后再提交！");
+            return "inbox_commit_error";
+        } else{
             model.addAttribute("isCommit",true);
+        }
         return "inbox_commit";
     }
 
