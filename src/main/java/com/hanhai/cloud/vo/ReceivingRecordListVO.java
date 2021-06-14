@@ -17,7 +17,8 @@ public class ReceivingRecordListVO {
     private String commitFileName ;
     /** 提交时间 */
     private LocalDateTime createdTime ;
-
     /** 用户姓名 */
     private String userName;
+    /** 是否覆盖 */
+    private String over;
 }
