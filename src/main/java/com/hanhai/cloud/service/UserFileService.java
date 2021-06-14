@@ -73,7 +73,7 @@ public class UserFileService extends BaseService {
     public void copy(Long [] ids, String target) {
         List<UserFile> sourceFiles = userFileMapper.getByIds(ids, StpUtil.getLoginIdAsLong());
         List<UserFile> targetFiles = userFileMapper.getFilesByParent(target, StpUtil.getLoginIdAsLong());
-        User user=userMapper.selectById(StpUtil.getLoginIdAsLong());
+        User user=userService.getUserById(StpUtil.getLoginIdAsLong());
         Set<String> targetFilesSet = new HashSet<String>();
         for (UserFile targetFile : targetFiles) {
             targetFilesSet.add((targetFile.getFileName() + " " + targetFile.getFileType()).toLowerCase());
