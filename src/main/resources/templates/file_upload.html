@@ -285,6 +285,7 @@
                     '</li>');
                 progressShow=true;
                 progressControl(fileMd5,uuid);
+                layerInit();
                 coverMap.delete(fileMd5);
                 coverCheck();
             }
@@ -315,6 +316,7 @@
                     '</li>');
                 progressShow=true;
                 progressControl(fileMd5,uuid);
+                layerInit();
                 coverMap.delete(fileMd5);
                 coverCheck();
             }
@@ -365,9 +367,11 @@
         var len=map.size;
         if(len<=0){
             // layer.msg("全部上传完毕！");
+            $(".layui-layer-setwin").css("display","block");
             return;
         }
         if(len>0 && state==0){
+            $(".layui-layer-setwin").css("display","none");
             var fileMd5;
             var fileState;
             var userFileId;
