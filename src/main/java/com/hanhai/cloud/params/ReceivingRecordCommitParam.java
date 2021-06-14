@@ -10,10 +10,6 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class ReceivingRecordCommitParam {
-//    /** 用户id */
-//    @NotNull(message = "用户ID不能为空！")
-//    private Long userId ;
-
     /** 文件id */
     @NotNull(message = "文件ID不能为空！")
     private Long fileId ;
@@ -35,4 +31,7 @@ public class ReceivingRecordCommitParam {
     @NotNull(message = "原文件名不能为空！")
     @NotBlank(message = "原文件名不能为空！")
     private String commitFileName ;
+
+    /** 是否覆盖收件记录表 */
+    private Long isCover;
 }
