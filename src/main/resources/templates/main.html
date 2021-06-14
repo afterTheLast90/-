@@ -551,12 +551,17 @@
                 layer.msg("请选择要操作的文件");
                 return;
             }
-            if((rows[0].fileType==='DIR')&&(fileId.indexOf(currentPath)!=-1)){
-                layer.msg("请重新选择目录！")
-                return;
-            }
+            console.log(path+rows[0].fileId)
+            // if((rows[0].fileType==='DIR')&&(fileId.indexOf(path+rows[0].userFileId)!=-1)){
+            //     layer.msg("请重新选择目录！")
+            //     return;
+            // }
             let ids = [];
             for (let row of rows) {
+                if((row.fileType==='DIR')&&(fileId.indexOf(path+row.userFileId)!=-1)){
+                    layer.msg(row.fileName+'文件夹不能复制或移动到其子目录下！！！')
+                    continue
+                }
                 ids.push(row.userFileId)
             }
             httpUtil.post("/file/"+method, JSON.stringify({

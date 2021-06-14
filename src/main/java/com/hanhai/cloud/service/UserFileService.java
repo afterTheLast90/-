@@ -82,6 +82,9 @@ public class UserFileService extends BaseService {
             if ("DIR".equals(s.getFileType())) {
                 Queue<String> sourcePath = new LinkedList<>();
                 Queue<String> targetPath = new LinkedList<>();
+                if(target.indexOf(s.getFileParentPath()+s.getUserFileId())!=-1){
+                    continue;
+                }
                 if (targetFilesSet.contains((s.getFileName() + " " + s.getFileType()).toLowerCase())) {
                     int i = 1;
                     while (targetFilesSet.contains((s.getFileName() + "(" + i + ") " + s.getFileType()).toLowerCase())) {
@@ -167,6 +170,9 @@ public class UserFileService extends BaseService {
             if ("DIR".equals(s.getFileType())) {
                 Queue<String> sourcePath = new LinkedList<>();
                 Queue<String> targetPath = new LinkedList<>();
+                if(target.indexOf(s.getFileParentPath()+s.getUserFileId())!=-1){
+                    continue;
+                }
                 if ((targetFilesSet.contains((s.getFileName() + " " + s.getFileType()).toLowerCase()))) {
                     int i = 1;
                     while (targetFilesSet.contains((s.getFileName() + "(" + i + ")" + s.getFileType()).toLowerCase())) {
