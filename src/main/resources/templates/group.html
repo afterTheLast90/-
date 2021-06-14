@@ -274,7 +274,6 @@
           // 添加确认
           $("#addGroupConfirm").click(function () {
               let userIds = getAllUserId2()
-              console.log($("#addGroup-addUser").val())
               httpUtil.post("/group/groupAdd", JSON.stringify({
                   groupName: $("#nGName").val(),
                   userList: userIds
@@ -411,7 +410,7 @@
                   // 添加数据
                   if (res.data.length == 0) {   // 设置 没有群组 标签显示情况
                       $("#groups").append("<li data-toggle=\"modal\" data-target=\"#gAddModal\">" +
-                          " <i class='bi bi-emoji-wink' style='color: #1E9FFF'></i> 添加你的第一标签吧 " +
+                          " <i class='bi bi-emoji-wink' style='color: #1E9FFF'></i> <span style='color: #1E9FFF;cursor: pointer'>添加你的第一群组吧</span> " +
                           "</li>")
 
                   }
@@ -478,7 +477,6 @@
                       if(res.data.length==0) {
                       }
                       else {
-                          console.log(res)
                           for(let data of res.data){
                               $(".col-users .g_users").append("<li class=\"u_head col-md-1\" relationId='"+ data.groupRelationshipId +"'>" +
                                   "<img src='/avatar/"+ data.userId +"' class=\"rounded-circle\" alt=\"\">" +
@@ -519,9 +517,9 @@
 			// （添加新群组时，添加用户）
 			// 检查用户是否重复
 			function checkGAddUserSelect(v) {
-			    let length = $("#gAddUsers").children.length
+			    let length = $("#gAddUsers").children().length
 					for (let i=0; i<length; i++) {
-              if(v === $("#gAddUsers").children().eq(i).attr("userId"))
+              if(v == $("#gAddUsers").children().eq(i).attr("userId"))
                   return false
           }
 					return true

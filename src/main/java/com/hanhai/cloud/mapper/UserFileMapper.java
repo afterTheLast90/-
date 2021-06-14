@@ -38,6 +38,10 @@ public interface UserFileMapper extends BaseMapper<UserFile> {
     @Select("select * from user_files where user_file_id=#{userFileId} and deleted=0 and user_id=#{userId}")
     public List<UserFile> getFileById(@Param("userFileId") Long userFileId,@Param("userId") Long userId);
 
+    // 根据userFileId，得到用户文件信息
+    @Select("select * from user_files where user_file_id=#{userFileId}")
+    public UserFile getUserFileById(@Param("userFileId")Long userFileId);
+
     @Select("select * from user_files where find_in_set(#{name},file_name) and user_id=#{userId} and  deleted=0 order by updated_time")
     public List<UserFile> getByName(@Param("name")String name,@Param("userId") Long usrId);
 

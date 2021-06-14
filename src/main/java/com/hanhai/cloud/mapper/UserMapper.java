@@ -40,4 +40,8 @@ public interface UserMapper extends BaseMapper<User> {
             "user_phone like concat('%',#{userName},'%')) and " +
             "deleted=false and user_id!=#{userId} limit 10")
     public List<User> getUserByName(@Param("userName")String userName, @Param("userId")Long userId);
+
+    // 得到用户剩余空间大小
+    @Select("select space_size-used_size from user where user_id=#{userId}")
+    public Long getRemainSpace(@Param("userId") Long userId);
 }

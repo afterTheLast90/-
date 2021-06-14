@@ -100,6 +100,21 @@ public class ResourceService extends BaseService {
         return userShareMapper.getFileTypeByShareId(shareId);
     }
 
+
+    // 转存前，检测用户空间是否足够
+    public Boolean checkSpace(Long[] userFileIds){
+        Long fileSpace = userShareMapper.getSizeByUserFileIds(userFileIds);
+        System.out.println(fileSpace);
+        for(Long userFileId : userFileIds){
+            UserFile userFile = userFileMapper.getUserFileById(userFileId);
+            fileSpace += userShareMapper.getChildSizeById(userFile.getFileParentPath() + userFileId + "/");
+            System.out.println(fileSpace);
+        }
+        Long userRemainSpace = userMapper.getRemainSpace(StpUtil.getLoginIdAsLong());
+        System.out.println("userRemainSpace "  + userRemainSpace);
+        return userRemainSpace > fileSpace;
+    }
+
     // 转存文件
     @Transactional
     public void resourceDump(Long[] userFileIds, String targetPath, String[] shareIds) throws UpdateException {

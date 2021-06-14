@@ -185,6 +185,15 @@
             padding-right: 0.5rem;
             cursor: pointer;
         }
+
+        .row .tAdd {
+            padding: 0;
+            margin-top: 2%;
+            font-size: 20px;
+            color: #1296db;
+            vertical-align: middle;
+            cursor: pointer;
+        }
     </style>
     <script>
         const currentPath = "[[${current}]]";
@@ -250,7 +259,8 @@
 <!--选择目录模态框-->
 <div th:replace="common/selectDir :: selectDir"></div>
 <!-- 添加标签模态框 -->
-<div class="modal" id="addTagModal">
+<!-- 添加标签模态框 -->
+<div class="modal fade" id="addTagModal">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
 
@@ -263,16 +273,17 @@
             <!-- 模态框主体 -->
             <div class="modal-body">
                 <div class="row form-group">
-                    <label class="col-form-label col-4 offset-1 text-right">标签名:</label>
+                    <label for="newTag" class="col-form-label col-4 text-right">标签名:</label>
                     <input type="text" name="newTag" class="form-control col-5" id="newTag" required placeholder="标签名">
                 </div>
             </div>
 
             <!-- 模态框底部 -->
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary addConfirm">确定</button>
+                <button type="button" class="btn btn-primary" id="addTagConfirm">确定</button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
             </div>
+
         </div>
     </div>
 </div>
@@ -398,8 +409,10 @@
             <div class="row" style="margin-top: 5px;">
                 <!--	添加标签	-->
                 <label class="col-form-label col-4 text-right">添加标签:</label>
-                <select id="addTag" class="selectpicker col-11" title="搜索并选择标签" data-live-search="true">
+                <select id="addTag" class="selectpicker col-10" title="搜索并选择标签" data-live-search="true">
                 </select>
+                <!--	添加标签按钮 	-->
+                <i class="bi bi-plus-square tAdd" data-toggle="modal" data-target="#addTagModal"></i>
             </div>
             <div class="row" style="margin-top: 5px;">
                 <label class="col-form-label col-4 text-right">已有标签:</label>
@@ -441,6 +454,7 @@
 
 <script type="module">
     import httpUtil from "/static/httpUtil.js";
+    import httpUtilFormDate from "/static/httpUtilFormDate.js";
     // 关系id的li
     let relationIdLi
     // 获取标签id
@@ -511,6 +525,27 @@
         })
         })
 
+    }
+
+    // 添加确认
+    $("#addTagConfirm").click(function () {
+        addTagFunction()
+        $("#addTagModal").modal("hide");
+        // $(".drawer-nav").removeClass("col-my-drawer")
+        // $(".drawer").drawer("close")
+    })
+    // 添加标签事件
+    function addTagFunction(){
+        // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
+        let data = new URLSearchParams()
+        data.append('tagName', $("#newTag").val())
+
+        httpUtilFormDate.post("/tag/tagAdd", data
+        ).then(res => {
+            initTag()
+            $("#newTag").val("")
+        }).catch(e => {
+        })
     }
     // 文件分享
     $.fn.bindEventForShare = function bindEventShare(){
