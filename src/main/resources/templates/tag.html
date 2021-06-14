@@ -51,7 +51,7 @@
       background-color: #fff;
     }
 
-    .tLists .row #tAdd {
+    .row .tAdd {
       padding: 0;
       margin-left: 15%;
       margin-top: 2%;
@@ -237,8 +237,8 @@
     }
 
     .icon_detail {
-      width: 4em;
-      height: 4em;
+      width: 6em;
+      height: 6em;
       vertical-align: -0.15em;
       fill: currentColor;
       overflow: hidden;
@@ -274,20 +274,9 @@
           $('.drawer').drawer();
 
           // 标签操作
-          // 添加
+          // 添加确认
           $("#addTagConfirm").click(function () {
-              // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
-              let data = new URLSearchParams()
-              data.append('tagName', $("#newTag").val())
-
-              httpUtilFormDate.post("/tag/tagAdd", data
-              ).then(res => {
-                  // if (res.code)
-                  // 不是从后台再获取数据，而是从得到新数据，在前端用数据更新页面
-                  initTag()
-                  $("#newTag").val("")
-              }).catch(e => {
-              })
+              addTagFunction()
               $("#addTagModal").modal("hide");
           })
           // 删除 确认
@@ -492,7 +481,7 @@
                               value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                           else
                               value += "<use xlink:href='#icon-other'></use>"
-                          return value + "</svg>" + fName
+                          return value + "</svg>" + "<span title='"+ fName +"'>" + fName +"</span>"
                       }
                   },
                   {
@@ -529,7 +518,7 @@
               // 渲染完数据
               onPostBody: function () {
                   // 打开文件详情抽屉
-                  $(".bi-three-dots").click(function () {
+                  $(".bi-three-dots").click(function (e) {
                       $(".drawer").drawer("open")         // 打开drawer，设置大小
                       $(".drawer-nav").addClass("width400")
                       $("#selectTags").html("")
@@ -539,12 +528,14 @@
                       // 设置数据
                       userFileId = $(this).attr("userFileId")
                       let fileType = $(this).parent().siblings().eq(1).children("svg").attr("filetype").toLowerCase()
-                      let fileName = $(this).parent().siblings().eq(1).text()
+                      let fileName = $(this).parent().siblings().eq(1).children("span").text()
 		                  if(fileTypeSet.has(fileType.toUpperCase()))
                           $("#sFileType use").attr("xlink:href", "#icon-" + fileType)
 		                  else
                           $("#sFileType use").attr("xlink:href", "#icon-other")
                       $("#sFileName").text(fileName)
+		                  $("#sFileName").attr("title", fileName)
+		                  // 标签管理
                       httpUtil.get("/tag/fileTagsGet", {
                           params: {
                               userFileId: userFileId
@@ -561,6 +552,38 @@
                                   $("#delTagModal2").modal("show")
                               })
                           })
+		                  // 文件历史管理
+                      //文件历史管理
+                      httpUtil.get("/getFileHistory", {
+                          params: {
+                              fileId: e.target.getAttribute("userFileId")
+                          }
+                      })
+                      .then(res => {
+                          $("#history tr").remove()
+
+                          for (let i = 0; i < res.data.length; i++) {
+                              $("#history").append('<tr><td>' + res.data[i].updatedTime.replace("T"," ") + '</td><td>' + res.data[i].updatePersonName +
+                                  '</td><td class="action" style="color: #007bff"><i class="bi bi bi-arrow-repeat reduction" title="还原" historyId="'+res.data[i].historyId+'"></i></td></tr>')
+                          }
+                          $(".reduction").click(function(){
+                              let t = this;
+                              layer.confirm('是否确认还原？', {
+                                  btn: ['确认','取消'] //按钮
+                              }, function(){
+                                  httpUtil.post("/file/reduction",JSON.stringify({
+                                      id:$(t).attr("historyId")
+                                  })).then(res =>{
+                                      $(".drawer-nav").removeClass("col-my-drawer")
+                                      $(".drawer").drawer("close")
+                                      $('#mTable').bootstrapTable('refresh');
+                                  })
+                              }, function(){
+                                  layer.closeAll();
+                              });
+
+                          })
+                      })
                   })
                   // 删除文件关系按钮
                   $(".delFile").click(function () {
@@ -620,6 +643,19 @@
                   }
               })
       }
+      // 添加标签事件
+      function addTagFunction(){
+          // 封装axios只能传json，所以需要用这种方法传单个参数（无法用拦截器了）
+          let data = new URLSearchParams()
+          data.append('tagName', $("#newTag").val())
+
+          httpUtilFormDate.post("/tag/tagAdd", data
+          ).then(res => {
+              initTag()
+              $("#newTag").val("")
+          }).catch(e => {
+          })
+      }
       //td宽度以及内容超过宽度隐藏
       function formatTableUnit(value, row, index) {
           return {
@@ -627,7 +663,7 @@
                   "white-space": "nowrap",
                   "text-overflow": "ellipsis",
                   "overflow": "hidden",
-                  "max-width": "10vw"
+                  "max-width": "10vw",
               }
           }
       }
@@ -651,7 +687,7 @@
 					<select id="tagQuery" class="selectpicker" data-live-search="true" style="width: 80%;"></select>
 				</div>
 				<!--	添加标签按钮 	-->
-				<i class="bi bi-plus-square offset-1 col-2" id="tAdd" data-toggle="modal" data-target="#addTagModal"></i>
+				<i class="bi bi-plus-square offset-1 col-2 tAdd" data-toggle="modal" data-target="#addTagModal"></i>
 			</div>
 			<div class="row tTags">
 				<!--	 标签列表显示		-->
@@ -833,13 +869,16 @@
 			<span class="sInfo col-8 p-0 pr-2 text-center" title="" id="sFileName">南非世界杯</span>
 		</li>
 		<hr>
+		<!--	标签管理	-->
 		<fieldset class="mb-3">
 			<legend>标签管理</legend>
 			<div class="row" style="margin-top: 5px;">
 				<!--	添加标签	-->
 				<label class="col-form-label col-4 text-right">添加标签:</label>
-				<select id="addTag" class="selectpicker col-11" title="搜索并选择标签" data-live-search="true">
+				<select id="addTag" class="selectpicker col-10" title="搜索并选择标签" data-live-search="true">
 				</select>
+				<!--	添加标签按钮 	-->
+				<i class="bi bi-plus-square tAdd m-0 p-0" data-toggle="modal" data-target="#addTagModal"></i>
 			</div>
 			<div class="row" style="margin-top: 5px;">
 				<label class="col-form-label col-4 text-right">已有标签:</label>
@@ -847,7 +886,28 @@
 				</ul>
 			</div>
 		</fieldset>
-
+		<!-- 文件历史 -->
+		<fieldset>
+			<legend>文件历史</legend>
+			<table class="table files" style="background-color: white;table-layout: fixed;word-break:break-all;">
+				<thead>
+				<tr>
+					<th width="150">修改时间</th>
+					<th width="80">修改人</th>
+					<th width="50"></th>
+				</tr>
+				</thead>
+				<tbody id="history">
+				<tr></tr>
+				<tr></tr>
+				<tr>
+					<td class="action" style="color: #007bff">
+						<i class="bi bi bi-arrow-repeat reduction" title="还原"></i>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</fieldset>
 	</ul>
 </nav>
 

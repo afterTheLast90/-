@@ -191,18 +191,18 @@
                           cellStyle: formatTableUnit,
                           formatter: function fileNameFormatter(value, row, index) {
 													    if(row.fileType == "DIR") {
-													        return "<a title='打开子目录' href='/main?path="+ row.fileParentPath + row.userFileId  +"/" +"'><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
+													        return "<a title='"+ value +"' href='/main?path="+ row.fileParentPath + row.userFileId  +"/" +"'><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>" +
                                       "<use xlink:href='#icon-" + row.fileType.toLowerCase() + "'></use>" +
                                       "</svg>" + value + "</a>"
 													    }
 													    else{
                                   let fName = value
-                                  value = "<div><svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>"
+                                  value = "<svg fileType=" + row.fileType + " class='icon_table' aria-hidden='true'>"
                                   if(fileTypeSet.has(row.fileType))
                                       value += "<use xlink:href='#icon-"+ row.fileType.toLowerCase() +"'></use>"
                                   else
                                       value += "<use xlink:href='#icon-other'></use>"
-                                  return value + "</svg>" + fName + "</div>"
+                                  return value + "</svg>" + "<span title='"+ fName +"'>" + fName +"</span>"
 													    }
                           }
 			                },
@@ -278,6 +278,7 @@
                                   $("#sFileType use").attr("xlink:href",  '#icon-other')
                               // 文件名
 		                          $("#sFileName").text(res.data.fileName)
+				                      $("#sFileName").attr('title', res.data.fileName)
 				                      // 分享类型
 				                      $("#sType").text(res.data.shareType)
 				                      // 固定人/群组 分享
@@ -285,13 +286,11 @@
 				                          $("#shareList").html("")
 				                          $("#shareMumbers").show()
 				                          for(let group of res.data.shareMumbersVO.groupName){
-                                      console.log(group)
 				                              $("#shareList").append("<li title='"+ group +"'>" +
 						                                                      "<i class=\"bi bi-people-fill\"></i> "+ group +
 						                                                "</li>")
 				                          }
                                   for(let user of res.data.shareMumbersVO.userName){
-                                      console.log(user)
                                       $("#shareList").append("<li title='"+ user +"'>" +
 									                                                "<i class=\"bi bi-person-fill\"></i> "+ user +
 									                                            "</li>")
