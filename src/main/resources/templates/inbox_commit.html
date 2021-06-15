@@ -188,10 +188,14 @@
     function CheckIsUpload(file) {
         var r = new FileReader();
         r.readAsArrayBuffer(file);
+        var checkIndex = layer.load(1, {
+            shade: [0.1,'#fff'] //0.1透明度的白色背景
+        });
         $(r).load(function (e) {
             var blob = e.target.result;
             var fileMd5 = SparkMD5.ArrayBuffer.hash(blob);
             console.log("fileMd5=" + fileMd5);
+            layer.close(checkIndex);
             var form = new FormData();
             form.append("path","[[${fileInbox.savePathId}]]");
             form.append("name",file.name);
