@@ -311,16 +311,16 @@
 						                      // 不显示分享链接、二维码、转存次数、复制分享链接
                                   $("#sHaveLink").hide()
                                   $("#sHaveQR").hide()
-						                      $("#sHaveDump").hide()
+						                      // $("#sHaveDump").hide()
 						                      $("#copyShareUrl").hide()
-						                      // 下载次数
-                                  $("#sDownTime").text(res.data.downloadTimes)
-                                  if(res.data.maxDownloadTimes == -1) {
-                                      $("#sMaxDownTime").text("不限")
-                                  }
-                                  else{
-                                      $("#sMaxDownTime").text(res.data.maxDownloadTimes)
-                                  }
+						                      // // 下载次数
+                                  // $("#sDownTime").text(res.data.downloadTimes)
+                                  // if(res.data.maxDownloadTimes == -1) {
+                                  //     $("#sMaxDownTime").text("不限")
+                                  // }
+                                  // else{
+                                  //     $("#sMaxDownTime").text(res.data.maxDownloadTimes)
+                                  // }
 				                      }
 				                      else {
 						                      // 分享链接
@@ -331,22 +331,22 @@
                                   // 二维码
                                   $("#sQR").attr("src", "/share/QRCode?url="+$("#sUrl").val())
                                   $("#sHaveQR").show()
-                                  // 下载/转存次数
-                                  $("#sHaveDump").show()
-                                  $("#sFileDumpTime").text(res.data.fileDumpTime)
-                                  if(res.data.maxFileDumpTimes == -1) {
-                                      $("#sMaxFileDumpTime").text("不限")
-                                  }
-                                  else{
-                                      $("#sMaxFileDumpTime").text(res.data.maxFileDumpTimes)
-                                  }
-                                  $("#sDownTime").text(res.data.downloadTimes)
-                                  if(res.data.maxDownloadTimes == -1) {
-                                      $("#sMaxDownTime").text("不限")
-                                  }
-                                  else{
-                                      $("#sMaxDownTime").text(res.data.maxDownloadTimes)
-                                  }
+                              }
+                              // 下载/转存次数
+                              $("#sHaveDump").show()
+                              $("#sFileDumpTime").text(res.data.fileDumpTime)
+                              if(res.data.maxFileDumpTimes == -1) {
+                                  $("#sMaxFileDumpTime").text("不限")
+                              }
+                              else{
+                                  $("#sMaxFileDumpTime").text(res.data.maxFileDumpTimes)
+                              }
+                              $("#sDownTime").text(res.data.downloadTimes)
+                              if(res.data.maxDownloadTimes == -1) {
+                                  $("#sMaxDownTime").text("不限")
+                              }
+                              else{
+                                  $("#sMaxDownTime").text(res.data.maxDownloadTimes)
                               }
 
                               // 文件详细抽屉显示(并增加宽度)
@@ -506,13 +506,13 @@
 				<hr>
 				<li class="row" id="sHaveDump">
 					<span class="col-5 text-right">转存次数:</span>
-					<span class="sInfo p-0 pr-2" id="sFileDumpTime">10</span> /
-					<span class="sInfo pl-2 p-0" id="sMaxFileDumpTime">15</span>
+					<span class="sInfo p-0 pr-2" id="sFileDumpTime"></span> /
+					<span class="sInfo pl-2 p-0" id="sMaxFileDumpTime"></span>
 				</li>
 				<li class="row">
 					<span class="col-5 text-right">下载次数:</span>
-					<span class="sInfo p-0 pr-2" id="sDownTime">3</span> /
-					<span class="sInfo pl-2 p-0" id="sMaxDownTime">15</span>
+					<span class="sInfo p-0 pr-2" id="sDownTime"></span> /
+					<span class="sInfo pl-2 p-0" id="sMaxDownTime"></span>
 				</li>
 				<hr>
 				<li class="row" id="sHavePwd">
