@@ -215,7 +215,7 @@
             $("#userInfobtuSave").click(function () {
                 httpUtil.put("/userInfo/update", JSON.stringify({
                     userName: $("#userName").val(),
-                    userGender: $('input[name="sex"]:checked').val(),
+                    userGender: $('#userGender').val(),
                 })).then(res => {
                     $('#personalModal').modal('hide');
                 }).catch(e => {

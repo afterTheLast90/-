@@ -17,6 +17,6 @@ public class AlySmsTestParams extends AlySmsParams{
 
     @NotBlank(message = "接收信息的手机号不能为空")
     @NotNull(message = "接收信息的手机号不能为空")
-    @Pattern(regexp = "^1[345678]\\d{9}$", message = "手机号格式错误")
+    @Pattern(regexp = "(?:0|86|\\+86)?1[3-9]\\d{9}", message = "手机号格式错误")
     private String testPhoneRec;
 }
