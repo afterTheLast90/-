@@ -639,7 +639,9 @@
             $("#pause"+uuid).removeAttr("hidden");
             var fileState=map.get(md5).get("fileState");
             map.get(md5).set("fileState","0");
-            filesUpload();
+            if(state==0){
+                filesUpload();
+            }
         })
         $("#remove"+uuid).click(function(e){  //移除
             // console.log("移除");
@@ -655,8 +657,8 @@
                 }, function(index){
                     layer.close(index);
                     $("#li-"+uuid).remove();
-                    state=0;
                     map.delete(md5);
+                    state=0;
                     filesUpload();
                 },function(index){
                     layer.close(index);
