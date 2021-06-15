@@ -48,7 +48,8 @@ public final class Pattern {
             "/upload",
             "/receiveRecordCommit",
             "/inboxCommitIsCover",
-            "/fastUpload"
+            "/fastUpload",
+            "/inboxSuccess"
 
     };
 
