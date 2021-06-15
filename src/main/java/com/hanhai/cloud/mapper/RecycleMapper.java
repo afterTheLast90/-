@@ -16,8 +16,8 @@ public interface RecycleMapper extends BaseMapper<Recycle> {
     @Select("select * from recycle where recycle_id in (select recycle_id from user_files where user_id=#{userId} and deleted=1) and deleted=0 and datediff(now(),created_time) between 0 and 30 order by created_time")
     public List<Recycle> getRecycleFile(@Param("userId")  Long userId);
 
-    @Select("select * from recycle where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= date" +
-            "(created_time) and deleted =0 ")
+    @Select("select * from recycle where DATE_SUB(CURDATE(), INTERVAL 30 DAY) <= date(created_time) " +
+            " and deleted =0 ")
     public List<Recycle> getAllNotDelete();
     public List<Recycle> getByIds(@Param("ids") Long[] ids);
 

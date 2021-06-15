@@ -6,6 +6,7 @@
     </th:block>
     <link rel="stylesheet" href="/static/bootstrap-switch/bootstrap-switch.min.css">
     <script src="/static/bootstrap-switch/bootstrap-switch.min.js"></script>
+    <script src="/static/converFileSize.js"></script>
     <style>
         .infos {
             width: 70%;
@@ -46,10 +47,13 @@
             </div>
             <div class="form-group row">
             <label for="defaultSpaceSize" class="col-sm-2 col-form-label">用户默认空间大小:</label>
-            <div class="col-sm-10">
+            <div class="col-sm-7">
                 <input type="number" class="form-control" id="defaultSpaceSize"
                        th:value="${systemInfo.getDefaultSpaceSize()}">
             </div>
+                <div class="col-sm-2">
+                    <span id="sizeShow"></span>
+                </div>
         </div>
             <div class="form-group " >
                     <button class="btn btn-primary offset-11" id="savaWebSiteInfo">保存</button>
@@ -101,7 +105,7 @@
                 <div class="form-group row">
                     <label for="smtpPassword" class="col-sm-2 col-form-label">Smtp密码:</label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="smtpPassword"
+                        <input type="password" class="form-control" id="smtpPassword"
                                placeholder="请输入Smtp的密码" th:value="${systemInfo.getSmtpPassword()}">
                     </div>
                 </div>
@@ -160,7 +164,7 @@
                     <label for="alySmsSecret" class="col-sm-2 col-form-label">密码:
                     </label>
                     <div class="col-sm-10">
-                        <input type="text" class="form-control" id="alySmsSecret"
+                        <input type="password" class="form-control" id="alySmsSecret"
                                placeholder="请输入阿里云服务访问密码"
                                th:value="${systemInfo.getAlySmsSecret()}">
                     </div>
@@ -288,6 +292,18 @@
                 defaultSpaceSize:$("#defaultSpaceSize").val()
             }).then(res=>{}).catch(e=>{
             })
+        })
+        $("#defaultSpaceSize").on('input',function(e){
+            if($("#defaultSpaceSize").val())
+                $("#sizeShow").text("约 "+convertFileSize($("#defaultSpaceSize").val()))
+            else
+                $("#sizeShow").text("")
+        })
+        $(function () {
+            if($("#defaultSpaceSize").val())
+                $("#sizeShow").text("约 "+convertFileSize($("#defaultSpaceSize").val()))
+            else
+                $("#sizeShow").text("")
         })
     </script>
 </div>

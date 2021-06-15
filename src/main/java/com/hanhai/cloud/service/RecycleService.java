@@ -296,6 +296,17 @@ public class RecycleService extends BaseService {
             }
             recycleMapper.deleteById(recycle.getRecycleId());
         }
+
+        List<RecycleSum> notDelete = fileHistoryMapper.getNotDelete();
+        for (RecycleSum recycleSum : notDelete) {
+            Files files = fileMapper.selectById(recycleSum.getFileId());
+            files.setCitationsCount(files.getCitationsCount()-recycleSum.getCou());
+            User user = userService.getUserById(recycleSum.getUserId());
+            user.setUsedSize(user.getUsedSize()-recycleSum.getSum());
+            userService.updateById(user);
+            fileMapper.updateById(files);
+        }
+
     }
 }
 

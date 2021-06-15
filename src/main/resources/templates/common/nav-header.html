@@ -12,7 +12,7 @@
         <a class="navbar-brand" href="/main">
             <img style="display: inline" src="/static/img/logo-capacity.png" width="40px" title="这是瀚海云盘的LOGO"
                  alt="此处是瀚海云盘的LOGO">
-            <span style="font-size: 25px">瀚海云盘</span>
+            <span style="font-size: 25px" th:text="${siteName}"></span>
         </a>
         <th:block th:if="${isLogin}">
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
