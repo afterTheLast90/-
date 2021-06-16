@@ -92,4 +92,26 @@ public class ShareService extends BaseService {
         return userShare;
     }
 
+    // 检查 是否有下载次数
+    public Boolean checkDownload(String shareId){
+        UserShare userShare = userShareMapper.selectById(shareId);
+        LocalDateTime expireTime = userShare.getExpireTime();
+        System.out.println("%^&*("+userShare.toString());
+        if((userShare.getMaxDownloadTimes()==-1 || userShare.getMaxDownloadTimes()>userShare.getDownloadTimes()) &&
+                (expireTime.isEqual(LocalDateTime.of(1970, 1, 1, 7, 59, 59)) || expireTime.isAfter(LocalDateTime.now()))){
+            return true;
+        }
+        return false;
+    }
+
+    // 检查 是否有转存次数
+    public Boolean checkDump(String shareId){
+        UserShare userShare = userShareMapper.selectById(shareId);
+        LocalDateTime expireTime = userShare.getExpireTime();
+        if((userShare.getMaxFileDumpTimes()==-1 || userShare.getMaxFileDumpTimes()>userShare.getFileDumpTime()) &&
+                expireTime.isEqual(LocalDateTime.of(1970, 1, 1, 7, 59, 59)) || expireTime.isAfter(LocalDateTime.now())){
+            return true;
+        }
+        return false;
+    }
 }

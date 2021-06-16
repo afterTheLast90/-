@@ -10,6 +10,7 @@ import com.hanhai.cloud.entity.UserShare;
 import com.hanhai.cloud.params.DumpResourceParams;
 import com.hanhai.cloud.params.ResourceSearchParams;
 import com.hanhai.cloud.service.ResourceService;
+import com.hanhai.cloud.service.ShareService;
 import com.hanhai.cloud.service.UserFileService;
 import com.hanhai.cloud.vo.GetShareVO;
 import com.hanhai.cloud.vo.ResourceVO;
@@ -29,6 +30,8 @@ public class ResourceController {
     ResourceService resourceService;
     @Autowired
     UserFileService userFileService;
+    @Autowired
+    ShareService shareService;
 
     @GetMapping("/resource")
     public String getResourcePage(Model model) {
@@ -310,14 +313,21 @@ public class ResourceController {
 //            return "getShareFile";
 //    }
 
+    // 文件转存
     @PostMapping("/resource/dump")
     @ResponseBody
     public R resourceDump(@RequestBody DumpResourceParams resourceParams){
+        // 检查用户空间是否足够
         if(resourceService.checkSpace(resourceParams.getUserFileIds())) {
+            for(String shareId : resourceParams.getShareIds()){
+                // 是否还有转存次数
+                if(!shareService.checkDump(shareId))
+                    return new R(ResultCode.SUCCESS).setMsg("有文件已失效或无转存次数，请重新选择");
+            }
             resourceService.resourceDump(resourceParams.getUserFileIds(), resourceParams.getTargetPath(), resourceParams.getShareIds());
-            return new R(ResultCode.SUCCESS).setData("保存成功");
+            return new R(ResultCode.SUCCESS).setMsg("保存成功");
         }
-        return new R(ResultCode.SUCCESS).setData("保存失败，用户空间不足");
+        return new R(ResultCode.SUCCESS).setMsg("保存失败，用户空间不足");
     }
 
 //    // 链接失效界面测试
