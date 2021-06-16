@@ -341,6 +341,11 @@ public class PreviewController {
     @GetMapping("/shareDownload")
     public void fileDownload(@RequestParam("userFileId") Long userFileId,
                              @RequestParam("shareId") String shareId, HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        // 后端验证是否还有下载次数
+        System.out.println("下载次数----------------------"+shareService.checkDownload(shareId));
+        if(!shareService.checkDownload(shareId)){
+            throw new BaseException().setCode(470).setMsg("文件下载次数已用尽");
+        }
         Files downFile = null;
 
         UserFile file = userFileService.getFileById(userFileId);    // 下载的文件

@@ -114,7 +114,6 @@ public class ResourceService extends BaseService {
 //            System.out.println(fileSpace);
         }
         Long userRemainSpace = userMapper.getRemainSpace(StpUtil.getLoginIdAsLong());
-//        System.out.println("userRemainSpace "  + userRemainSpace);
         return userRemainSpace >= fileSpace;
     }
 
